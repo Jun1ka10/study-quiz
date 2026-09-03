@@ -1,70 +1,8 @@
 ---
 id: js-07
-title: "PWA と Service Worker"
-summary: "manifest、Service Worker のライフサイクル、キャッシュ戦略、更新の流し方。このアプリがオフラインで動く仕組み"
+title: PWA と Service Worker
+summary: manifest、Service Worker のライフサイクル、キャッシュ戦略、更新の流し方。このアプリがオフラインで動く仕組み
 minutes: 12
-exercise: |
-  **ゴール:** 最小の PWA を作り、オフラインで開けるところまで。
-
-  1. `pwa/index.html`:
-     ```html
-     <link rel="manifest" href="manifest.json"><h1 id="h">hello</h1>
-     <script>navigator.serviceWorker.register("sw.js");</script>
-     ```
-     `manifest.json`: `{"name":"Demo","start_url":"./","display":"standalone","icons":[]}`
-     `sw.js`:
-     ```javascript
-     const C = "v1";
-     self.addEventListener("install", e => e.waitUntil(caches.open(C).then(c => c.addAll(["./", "index.html", "manifest.json"]))));
-     self.addEventListener("activate", e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k))))));
-     self.addEventListener("fetch", e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-     ```
-  2. `python3 -m http.server 8080` で開き、DevTools → Application → Service Workers で `activated` を確認
-  3. Network タブで Offline にして再読み込み。表示されることを確認
-  4. `hello` を `hello v2` に、`C` を `v2` に変えて再読み込み 2 回。Application → Cache Storage に v2 だけ残るのを見る
-
-  **確認:** オフラインで開けた。バージョンを変えると古いキャッシュが消えた。
-questions:
-  - id: js-l07-1
-    difficulty: 1
-    question: "PWA をオフラインで動かすために必須の要素は?"
-    choices:
-      - "React"
-      - "Service Worker (fetch を横取りしてキャッシュから返す) と HTTPS"
-      - "Node.js のサーバー"
-      - "ネイティブアプリ化"
-    answer: 1
-    explanation: "Service Worker はページと別のスレッドで動き、ネットワーク要求を横取りできる。HTTPS (localhost は例外) でしか登録できない。"
-  - id: js-l07-2
-    difficulty: 2
-    question: "新しい sw.js をデプロイしたのに、ユーザーの画面が古いまま。よくある原因は?"
-    choices:
-      - "ブラウザのバグ"
-      - "新 SW は install されても、古い SW が制御しているタブが閉じるまで待機 (waiting) する。skipWaiting + clients.claim か、タブを閉じて開き直す必要がある"
-      - "manifest の問題"
-      - "HTTPS でない"
-    answer: 1
-    explanation: "ライフサイクルは install → waiting → activate。更新を即反映したいなら skipWaiting し、controllerchange で reload する。"
-  - id: js-l07-3
-    difficulty: 2
-    question: "API のレスポンスを Service Worker でキャッシュ優先にすると何が起きる?"
-    choices:
-      - "速くなるだけ"
-      - "古いデータが返り続け、ログインや書き込みの結果が反映されない。API はネットワーク優先か素通しにする"
-      - "何も起きない"
-      - "セキュリティが上がる"
-    answer: 1
-    explanation: "キャッシュ戦略は資源の種類で変える。アプリ本体 (HTML/JS/CSS) はキャッシュ優先、データはネットワーク優先、書き込みは絶対にキャッシュしない。"
-  - id: js-l07-4
-    difficulty: 1
-    question: "manifest.json の `display: \"standalone\"` の効果は?"
-    choices:
-      - "全画面の動画"
-      - "ホーム画面から起動したときブラウザの UI (アドレスバー) を出さず、アプリのように見せる"
-      - "ダークモード"
-      - "効果は無い"
-    answer: 1
-    explanation: "name / icons / start_url / display / theme_color が最低限。これで「ホーム画面に追加」がアプリらしくなる。"
 ---
 ## PWA の 3 要素
 
@@ -145,3 +83,26 @@ DevTools → Application → Service Workers (状態、Update、Unregister)、Ca
 - install でキャッシュ、activate で古いのを消す、fetch で横取り
 - 本体はキャッシュ優先、API は素通し、書き込みは触らない
 - 更新は skipWaiting + claim + reload。前面復帰時に update()
+
+## やってみる
+
+**ゴール:** 最小の PWA を作り、オフラインで開けるところまで。
+
+1. `pwa/index.html`:
+   ```html
+   <link rel="manifest" href="manifest.json"><h1 id="h">hello</h1>
+   <script>navigator.serviceWorker.register("sw.js");</script>
+   ```
+   `manifest.json`: `{"name":"Demo","start_url":"./","display":"standalone","icons":[]}`
+   `sw.js`:
+   ```javascript
+   const C = "v1";
+   self.addEventListener("install", e => e.waitUntil(caches.open(C).then(c => c.addAll(["./", "index.html", "manifest.json"]))));
+   self.addEventListener("activate", e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k))))));
+   self.addEventListener("fetch", e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+   ```
+2. `python3 -m http.server 8080` で開き、DevTools → Application → Service Workers で `activated` を確認
+3. Network タブで Offline にして再読み込み。表示されることを確認
+4. `hello` を `hello v2` に、`C` を `v2` に変えて再読み込み 2 回。Application → Cache Storage に v2 だけ残るのを見る
+
+**確認:** オフラインで開けた。バージョンを変えると古いキャッシュが消えた。

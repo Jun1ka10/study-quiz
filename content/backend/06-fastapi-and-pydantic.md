@@ -3,73 +3,6 @@ id: be-06
 title: FastAPI と Pydantic
 summary: ルーター分割、パス / クエリ / ボディの受け取り、Pydantic による検証、Depends、HTTPException
 minutes: 14
-exercise: |
-  **ゴール:** FastAPI で 422 と Depends を体験する。
-
-  1. `uv init fademo && cd fademo && uv add fastapi uvicorn`
-  2. `main.py`:
-     ```python
-     from fastapi import Depends, FastAPI, HTTPException
-     from pydantic import BaseModel, Field
-     app = FastAPI()
-     class Item(BaseModel):
-         name: str = Field(min_length=1)
-         price: int = Field(ge=0)
-     DB = {}
-     def get_db(): return DB
-     @app.post("/items", status_code=201)
-     def create(item: Item, db=Depends(get_db)):
-         db[item.name] = item; return item
-     @app.get("/items/{name}")
-     def read(name: str, db=Depends(get_db)):
-         if name not in db: raise HTTPException(404, "not found")
-         return db[name]
-     ```
-  3. `uv run uvicorn main:app --reload` → `http://localhost:8000/docs` で試す
-  4. `curl -i -X POST localhost:8000/items -H "Content-Type: application/json" -d '{"name":"","price":-1}'` → 422 を読む
-
-  **確認:** 422 の本文に 2 つのエラーが field 名付きで入っている。/docs が自動でできている。
-questions:
-  - id: be-l06-1
-    difficulty: 1
-    question: "`@router.get(\"/actors/{actor_id}\")` の `actor_id` をビュー関数で受け取るには?"
-    choices:
-      - "request.GET[\"actor_id\"]"
-      - "関数の引数に `actor_id: int` と書く (パスパラメータ)"
-      - "グローバル変数"
-      - "受け取れない"
-    answer: 1
-    explanation: "FastAPI は関数のシグネチャを見て、パスにある名前はパスパラメータ、無い単純型はクエリ、Pydantic モデルはボディとして解釈する。型に合わなければ 422。"
-  - id: be-l06-2
-    difficulty: 2
-    question: "POST のボディを `class UserCreate(BaseModel): email: EmailStr; password: str = Field(min_length=8)` で受けた。password が 5 文字だと?"
-    choices:
-      - "そのまま通る"
-      - "FastAPI が 422 Unprocessable Entity とエラー内容を自動で返す"
-      - "500"
-      - "None になる"
-    answer: 1
-    explanation: "Pydantic の検証に失敗すると関数は呼ばれず、どのフィールドがなぜ駄目かを含む 422 が返る。自分で if 文を書かなくてよい。"
-  - id: be-l06-3
-    difficulty: 2
-    question: "`def list_actors(db: Session = Depends(get_db)):` の `Depends` は何をしている?"
-    choices:
-      - "デフォルト値を設定"
-      - "リクエストごとに get_db() を呼んで結果を注入し、終了後に後片付け (yield の後) を実行する"
-      - "DB を作成"
-      - "キャッシュ"
-    answer: 1
-    explanation: "依存性注入 (DI)。DB セッション、ログインユーザー、権限チェックなどを引数として受け取れる。テストでは `app.dependency_overrides` で差し替えられる。"
-  - id: be-l06-4
-    difficulty: 2
-    question: "対象が見つからないとき、FastAPI で 404 を返す書き方は?"
-    choices:
-      - "return None"
-      - "raise HTTPException(status_code=404, detail=\"not found\")"
-      - "return 404"
-      - "print(\"404\")"
-    answer: 1
-    explanation: "HTTPException を raise すると、その場で処理を打ち切り JSON のエラーレスポンスになる。"
 ---
 ## 最小のアプリ
 
@@ -218,3 +151,31 @@ raise HTTPException(status_code=403, detail="forbidden")
 - 出力は `response_model` で形を固定
 - DB やユーザーは `Depends`。yield の後が後片付け
 - エラーは `HTTPException`
+
+## やってみる
+
+**ゴール:** FastAPI で 422 と Depends を体験する。
+
+1. `uv init fademo && cd fademo && uv add fastapi uvicorn`
+2. `main.py`:
+   ```python
+   from fastapi import Depends, FastAPI, HTTPException
+   from pydantic import BaseModel, Field
+   app = FastAPI()
+   class Item(BaseModel):
+       name: str = Field(min_length=1)
+       price: int = Field(ge=0)
+   DB = {}
+   def get_db(): return DB
+   @app.post("/items", status_code=201)
+   def create(item: Item, db=Depends(get_db)):
+       db[item.name] = item; return item
+   @app.get("/items/{name}")
+   def read(name: str, db=Depends(get_db)):
+       if name not in db: raise HTTPException(404, "not found")
+       return db[name]
+   ```
+3. `uv run uvicorn main:app --reload` → `http://localhost:8000/docs` で試す
+4. `curl -i -X POST localhost:8000/items -H "Content-Type: application/json" -d '{"name":"","price":-1}'` → 422 を読む
+
+**確認:** 422 の本文に 2 つのエラーが field 名付きで入っている。/docs が自動でできている。

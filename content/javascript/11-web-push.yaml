@@ -1,0 +1,43 @@
+# 「Web Push 通知」の確認問題。lesson は隣の 11-web-push.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: js-11
+questions:
+- id: js-l11-1
+  difficulty: 1
+  question: Web Push で、アプリを閉じていても通知が届く仕組みは?
+  choices:
+  - ページが常に開いている
+  - ブラウザベンダーの push サービスが端末に届け、Service Worker の push イベントが起動して通知を表示する
+  - サーバーが端末に直接接続する
+  - メールで送る
+  answer: 1
+  explanation: サーバー → push サービス (endpoint URL) → ブラウザ → SW。サーバーは端末を知らず、購読情報 (endpoint + 鍵) だけを持つ。
+- id: js-l11-2
+  difficulty: 2
+  question: VAPID 鍵の役割は?
+  choices:
+  - 通知本文の暗号化
+  - 「この送信者はこの購読を作ったアプリ本人だ」と push サービスに示す署名。公開鍵は購読時にブラウザへ、秘密鍵はサーバーに
+  - ユーザーの認証
+  - 不要
+  answer: 1
+  explanation: 秘密鍵が漏れると他人がそのアプリの名前で通知を送れる。Secret Manager に置く。
+- id: js-l11-3
+  difficulty: 2
+  question: iPhone で Web Push を受け取る条件は?
+  choices:
+  - 条件なし
+  - iOS 16.4 以降で、ホーム画面に追加した PWA から、ユーザー操作をきっかけに許可を得ること
+  - Safari のタブで開いていればよい
+  - iPhone では不可能
+  answer: 1
+  explanation: Safari のタブからは購読できない。「インストールしてから通知を有効化」の導線が要る。
+- id: js-l11-4
+  difficulty: 2
+  question: 送信時に push サービスが 404 / 410 を返した。適切な処理は?
+  choices:
+  - リトライし続ける
+  - 購読が失効している (ユーザーが解除、ブラウザが削除)。DB からその購読を消す
+  - 無視
+  - ユーザーにメールする
+  answer: 1
+  explanation: 失効した購読に送り続けると無駄で、push サービスから制限されることもある。送信結果で掃除する。

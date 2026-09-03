@@ -1,0 +1,53 @@
+# 「Cloud Logging / Monitoring とアラート」の確認問題。lesson は隣の 07-logging-monitoring.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: gcp-07
+questions:
+- id: gcp-l07-1
+  difficulty: 1
+  question: Cloud Run のアプリのログを Cloud Logging に送るために必要なことは?
+  choices:
+  - エージェントのインストール
+  - 何もしない。stdout / stderr に書いたものが自動で収集される。1 行 1 JSON なら jsonPayload として構造化される
+  - ログ API を呼ぶ
+  - ファイルに書く
+  answer: 1
+  explanation: '`severity` フィールドがあればレベルも認識される。ファイルに書くとコンテナと一緒に消える。'
+- id: gcp-l07-2
+  difficulty: 2
+  question: 「ERROR ログが 5 分で 10 件超えたら通知」を作るには?
+  choices:
+  - できない
+  - ログベースのメトリクス (counter) をフィルタ `severity>=ERROR` で作り、それを対象にアラートポリシーを作る
+  - ログを毎分読む
+  - メールでログを送る
+  answer: 1
+  explanation: ログ → メトリクス → アラート の 3 段。Terraform では google_logging_metric + google_monitoring_alert_policy。
+- id: gcp-l07-3
+  difficulty: 2
+  question: アラートの閾値を決めるときの考え方として適切なのは?
+  choices:
+  - できるだけ敏感に (1 件でも鳴らす)
+  - ユーザー影響が出る水準 (エラー率 2%、p95 2 秒など) で鳴らす。鳴りすぎるアラートは無視されるようになり、本当の障害を見逃す
+  - 鳴らさない
+  - 毎日決まった時間に鳴らす
+  answer: 1
+  explanation: 「対応が必要なときだけ鳴る」が原則。鳴ったが何もしなかったアラートは閾値を見直す。
+- id: gcp-l07-4
+  difficulty: 1
+  question: ログの保持と課金で気をつけることは?
+  choices:
+  - 無制限で無料
+  - 取り込み量で課金される。DEBUG を本番で出さない、巨大な本文を出さない、不要なログは除外フィルタで捨てる
+  - 保持は 1 日
+  - 気にしなくてよい
+  answer: 1
+  explanation: 既定 30 日保持。長期保存が要るものはシンクで GCS / BigQuery へ。
+- id: gcp-012
+  difficulty: 1
+  question: GCP でプロジェクトのログを一元的に見るサービスは?
+  choices:
+  - Cloud Logging
+  - Cloud Trace
+  - Cloud Profiler
+  - Error Reporting
+  answer: 0
+  explanation: Cloud Logging がログ集約。Trace は分散トレース、Profiler は CPU / メモリプロファイル、Error Reporting は例外集計。

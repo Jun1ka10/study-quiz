@@ -1,0 +1,53 @@
+# 「pytest でテストを書く」の確認問題。lesson は隣の 09-pytest.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: py-09
+questions:
+- id: py-l09-1
+  difficulty: 1
+  question: pytest がテストとして認識するものは?
+  choices:
+  - すべての関数
+  - '`test_*.py` または `*_test.py` の中の `test_` で始まる関数'
+  - main 関数
+  - docstring のある関数
+  answer: 1
+  explanation: '`assert` を書くだけでよい。unittest のような TestCase クラスや self.assertEqual は不要。'
+- id: py-l09-2
+  difficulty: 2
+  question: fixture の役割は?
+  choices:
+  - テストを速くする
+  - テストに必要な前提 (DB セッション、サンプルデータ、一時ファイル) を用意し、終わったら片付ける仕組み。引数名で受け取る
+  - テストを並列化する
+  - アサーションの別名
+  answer: 1
+  explanation: '`@pytest.fixture` で定義し、テスト関数の引数に同名で書くと注入される。yield の後が後片付け。'
+- id: py-l09-3
+  difficulty: 2
+  question: 同じロジックを 5 種類の入力で検証したい。良い書き方は?
+  choices:
+  - テスト関数を 5 つコピーする
+  - '`@pytest.mark.parametrize` で入力と期待値の組を並べる'
+  - 1 つの関数に assert を 5 つ書く
+  - for で回す
+  answer: 1
+  explanation: parametrize なら 5 件が別々のテストとして報告され、どれが落ちたか一目で分かる。assert を並べると最初の失敗で止まる。
+- id: py-l09-4
+  difficulty: 2
+  question: 外部 API (決済) を呼ぶ関数をテストするとき、適切なのは?
+  choices:
+  - 本番の API を叩く
+  - API クライアントを差し替え可能にしておき、テストでは偽物 (フェイク / モック) を注入して、送った内容と戻りの扱いを検証する
+  - テストしない
+  - テスト用の本番アカウントで課金する
+  answer: 1
+  explanation: 設計の「テストしやすい設計」と同じ。依存を引数や Depends で受ける形にしておくと、テストが速く安定する。
+- id: py-p011
+  difficulty: 3
+  question: テストしやすい設計にするために最も効果的なものは?
+  choices:
+  - すべてをグローバル変数にして共有する
+  - 副作用 (I/O, 時刻, 乱数) を外から注入できるようにし、純粋なロジックと分離する
+  - テストコードで本番 DB に接続する
+  - private メソッドを全部 public にする
+  answer: 1
+  explanation: '`now()` や DB アクセスを引数 / 依存として渡せば、テストでは固定値やフェイクに差し替えられる。ロジックが純粋関数に近づくほどテストは簡単になる。'

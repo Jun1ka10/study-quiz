@@ -1,0 +1,53 @@
+# 「例外処理と with」の確認問題。lesson は隣の 04-exceptions-and-with.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: py-04
+questions:
+- id: py-l04-1
+  difficulty: 1
+  question: '`try / except / else / finally` のうち、例外の有無に関係なく必ず実行されるのは?'
+  choices:
+  - except
+  - else
+  - finally
+  - try
+  answer: 2
+  explanation: finally は常に実行される。else は例外が出なかったときだけ。
+- id: py-l04-2
+  difficulty: 2
+  question: '`except Exception:` と `except:` (裸の except) の違いは?'
+  choices:
+  - 違いはない
+  - 裸の except は KeyboardInterrupt や SystemExit まで捕まえてしまう
+  - 裸の except の方が速い
+  - Exception は ValueError しか捕まえない
+  answer: 1
+  explanation: 裸の except は BaseException をすべて捕まえるので Ctrl+C も止められなくなる。最低でも `except Exception:`、できれば具体的な例外を書く。
+- id: py-l04-3
+  difficulty: 1
+  question: '`with open("f.txt") as fp:` を使う主な理由は?'
+  choices:
+  - 読み込みが速くなる
+  - ブロックを抜けたら例外が起きても必ずファイルが閉じられる
+  - ファイルが無ければ作ってくれる
+  - 文字コードを自動判定する
+  answer: 1
+  explanation: with はコンテキストマネージャの `__exit__` を必ず呼ぶ。close の書き忘れや例外時の閉じ忘れを防ぐ。
+- id: py-l04-4
+  difficulty: 2
+  question: 独自の例外クラスを作るときの基本形は?
+  choices:
+  - 'class MyError: pass'
+  - 'class MyError(Exception): pass'
+  - 'def MyError(): raise'
+  - MyError = Exception
+  answer: 1
+  explanation: Exception を継承する。呼び出し側は `except MyError:` で自分の例外だけを狙って捕まえられる。
+- id: py-008
+  difficulty: 2
+  question: '`try / except / else / finally` のうち、例外が発生しなかったときだけ実行されるブロックは?'
+  choices:
+  - except
+  - else
+  - finally
+  - try
+  answer: 1
+  explanation: else は try ブロックが例外なく完了したときだけ実行される。finally は常に実行される。

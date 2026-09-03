@@ -3,59 +3,6 @@ id: js-02
 title: 非同期処理と fetch
 summary: Promise / async / await と、API を呼ぶ fetch。画面が API を叩く仕組み
 minutes: 12
-exercise: |
-  **ゴール:** fetch で公開 API を呼び、ok 判定と並行呼び出しを体験する。
-
-  1. ブラウザのコンソールで:
-     ```javascript
-     const r = await fetch("https://httpbin.org/status/404"); r.ok, r.status
-     const d = await (await fetch("https://httpbin.org/json")).json(); d
-     console.time("seq"); await fetch("https://httpbin.org/delay/1"); await fetch("https://httpbin.org/delay/1"); console.timeEnd("seq")
-     console.time("par"); await Promise.all([fetch("https://httpbin.org/delay/1"), fetch("https://httpbin.org/delay/1")]); console.timeEnd("par")
-     ```
-  2. POST も 1 回:
-     ```javascript
-     (await (await fetch("https://httpbin.org/post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ a: 1 }) })).json()).json
-     ```
-
-  **確認:** 404 でも例外にならず `ok` が false。並行は直列の約半分の時間。
-questions:
-  - id: js-l02-1
-    difficulty: 1
-    question: "`fetch(url)` が返すものは?"
-    choices: ["レスポンスの JSON", "レスポンスの文字列", "Response に解決する Promise", "true / false"]
-    answer: 2
-    explanation: "fetch は Promise を返す。`await fetch(url)` で Response を得て、さらに `await res.json()` で本文を取り出す。"
-  - id: js-l02-2
-    difficulty: 2
-    question: "次のコードの問題は?\n\n```javascript\nconst res = await fetch(\"/api/items\");\nconst data = await res.json();\n```"
-    choices:
-      - "問題ない"
-      - "404 や 500 でも例外にならず、エラー本文を JSON として読もうとする"
-      - "await は 2 回使えない"
-      - "fetch には URL を渡せない"
-    answer: 1
-    explanation: "fetch はネットワークエラー以外では reject しない。`if (!res.ok) throw new Error(res.status)` を挟む。"
-  - id: js-l02-3
-    difficulty: 2
-    question: "POST で JSON を送るときに必要なものは?"
-    choices:
-      - "method: \"POST\" と body: JSON.stringify(data) と Content-Type ヘッダー"
-      - "method: \"POST\" だけ"
-      - "body にオブジェクトをそのまま渡す"
-      - "fetch では POST できない"
-    answer: 0
-    explanation: "body は文字列にする必要があり、サーバーが JSON と分かるよう `Content-Type: application/json` を付ける。"
-  - id: js-l02-4
-    difficulty: 2
-    question: "3 つの API を並行して呼び、全部揃ってから処理したい。"
-    choices:
-      - "await を 3 回順番に書く"
-      - "Promise.all([fetch(a), fetch(b), fetch(c)]) を await する"
-      - "setTimeout で待つ"
-      - "fetch を 1 回にまとめる"
-    answer: 1
-    explanation: "順番に await すると直列になり合計時間が伸びる。Promise.all で同時に投げて全部待つ。Python の asyncio.gather に相当。"
 ---
 ## なぜ非同期か
 
@@ -148,3 +95,21 @@ button.addEventListener("click", async () => {
 - `fetch` → `res.ok` を確認 → `res.json()`
 - POST は `method` + `headers` + `JSON.stringify(body)`
 - 複数を並行に待つなら `Promise.all`
+
+## やってみる
+
+**ゴール:** fetch で公開 API を呼び、ok 判定と並行呼び出しを体験する。
+
+1. ブラウザのコンソールで:
+   ```javascript
+   const r = await fetch("https://httpbin.org/status/404"); r.ok, r.status
+   const d = await (await fetch("https://httpbin.org/json")).json(); d
+   console.time("seq"); await fetch("https://httpbin.org/delay/1"); await fetch("https://httpbin.org/delay/1"); console.timeEnd("seq")
+   console.time("par"); await Promise.all([fetch("https://httpbin.org/delay/1"), fetch("https://httpbin.org/delay/1")]); console.timeEnd("par")
+   ```
+2. POST も 1 回:
+   ```javascript
+   (await (await fetch("https://httpbin.org/post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ a: 1 }) })).json()).json
+   ```
+
+**確認:** 404 でも例外にならず `ok` が false。並行は直列の約半分の時間。

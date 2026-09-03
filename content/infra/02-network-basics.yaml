@@ -1,0 +1,73 @@
+# 「ネットワークの基礎」の確認問題。lesson は隣の 02-network-basics.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: infra-02
+questions:
+- id: infra-l02-1
+  difficulty: 1
+  question: '`10.0.0.0/16` に含まれるアドレスの数は?'
+  choices:
+  - '256'
+  - 65,536
+  - '16'
+  - 4,096
+  answer: 1
+  explanation: /16 はホスト部が 16 ビット → 2^16 = 65,536。/24 なら 256。
+- id: infra-l02-2
+  difficulty: 1
+  question: '`192.168.1.0/24` で、実際にホストに割り当てられる数は?'
+  choices:
+  - '256'
+  - '254'
+  - '255'
+  - '253'
+  answer: 1
+  explanation: ネットワークアドレス (.0) とブロードキャスト (.255) を除いて 254。AWS はさらに 3 つ予約するので 251。
+- id: infra-l02-3
+  difficulty: 2
+  question: TCP と UDP の違いとして正しいのは?
+  choices:
+  - TCP は到達保証と順序保証があり、UDP は無い代わりに軽い
+  - UDP の方が信頼性が高い
+  - TCP は動画配信専用
+  - 違いは無い
+  answer: 0
+  explanation: HTTP / SSH / DB 接続は TCP。DNS の問い合わせや動画・音声ストリーミングは UDP が多い。
+- id: infra-l02-4
+  difficulty: 2
+  question: '`example.com` を `www.example.com` の別名として解決させたい。使う DNS レコードは?'
+  choices:
+  - A
+  - CNAME
+  - MX
+  - TXT
+  answer: 1
+  explanation: CNAME は名前 → 別の名前。A は名前 → IPv4。ただしゾーン頂点 (example.com そのもの) には CNAME を置けないので、その場合は ALIAS / A レコードを使う。
+- id: infra-l02-5
+  difficulty: 1
+  question: HTTPS が HTTP に加えて提供するものは?
+  choices:
+  - 高速化
+  - 通信の暗号化と相手サーバーの認証
+  - キャッシュ
+  - 圧縮
+  answer: 1
+  explanation: TLS で暗号化し、証明書でサーバーの身元を確認する。ポートは 443。
+- id: infra-002
+  difficulty: 1
+  question: TCP の 3 ウェイハンドシェイクの順序は?
+  choices:
+  - SYN → ACK → SYN-ACK
+  - SYN → SYN-ACK → ACK
+  - ACK → SYN → FIN
+  - SYN → FIN → ACK
+  answer: 1
+  explanation: クライアントが SYN、サーバーが SYN-ACK、クライアントが ACK で接続確立。
+- id: infra-003
+  difficulty: 1
+  question: HTTPS が標準で使うポート番号は?
+  choices:
+  - '22'
+  - '80'
+  - '443'
+  - '8080'
+  answer: 2
+  explanation: HTTP は 80、HTTPS は 443、SSH は 22。

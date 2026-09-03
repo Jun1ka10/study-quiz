@@ -3,64 +3,6 @@ id: py-07
 title: 内包表記とジェネレータ
 summary: リスト・辞書・集合の内包表記、ジェネレータで大きなデータをメモリに載せずに処理する、itertools
 minutes: 10
-exercise: |
-  **ゴール:** ジェネレータでメモリを使わずに処理する。
-
-  1. `python3`:
-     ```python
-     import sys
-     xs = [x * x for x in range(10**6)]; sys.getsizeof(xs)
-     g = (x * x for x in range(10**6)); sys.getsizeof(g)
-     sum(g); sum(g)      # 2 回目は 0
-     ```
-  2. 巨大ファイルを作って 1 行ずつ数える
-     ```python
-     with open("big.txt", "w") as f:
-         for i in range(200000): f.write(f"line {i} {'ERROR' if i % 1000 == 0 else 'ok'}\n")
-     def lines(p):
-         with open(p) as f:
-             for l in f: yield l
-     sum(1 for l in lines("big.txt") if "ERROR" in l)
-     ```
-
-  **確認:** ジェネレータのサイズが一定で小さい。2 回目の sum が 0。
-questions:
-  - id: py-l07-1
-    difficulty: 1
-    question: "`{x: len(x) for x in [\"a\", \"bb\"]}` の結果は?"
-    choices: ["[1, 2]", "{\"a\": 1, \"bb\": 2}", "{1, 2}", "エラー"]
-    answer: 1
-    explanation: "`{k: v for ...}` は辞書内包表記。`{x for ...}` (コロン無し) は set。"
-  - id: py-l07-2
-    difficulty: 2
-    question: "`sum(x * x for x in range(10**8))` が `sum([x * x for x in range(10**8)])` より優れている点は?"
-    choices:
-      - "速い"
-      - "1 億要素のリストをメモリに作らず、1 つずつ生成して足すのでメモリをほぼ使わない"
-      - "結果が違う"
-      - "違いは無い"
-    answer: 1
-    explanation: "丸括弧 (または関数呼び出しの中で括弧省略) はジェネレータ式。遅延評価で 1 要素ずつ流れる。"
-  - id: py-l07-3
-    difficulty: 2
-    question: "ジェネレータを 2 回 for で回すとどうなる?"
-    choices:
-      - "2 回とも同じ結果"
-      - "2 回目は何も出ない (使い切り)"
-      - "エラー"
-      - "2 回目は逆順"
-    answer: 1
-    explanation: "ジェネレータは状態を持つイテレータで、最後まで進むと終わり。もう一度使うなら作り直すか list に変換しておく。"
-  - id: py-l07-4
-    difficulty: 2
-    question: "内包表記を使うべきでないのは?"
-    choices:
-      - "1 行の変換やフィルタ"
-      - "副作用 (print や append) を起こす目的で書くとき"
-      - "辞書を作るとき"
-      - "条件付きで要素を選ぶとき"
-    answer: 1
-    explanation: "`[print(x) for x in xs]` は結果のリストを捨てるだけで意図が伝わらない。副作用は普通の for で書く。ネストが 2 段を超える場合も for に戻す。"
 ---
 ## 内包表記
 
@@ -151,3 +93,26 @@ any(x > 0 for x in xs), all(...)   # 短絡評価。最初に決まった時点�
 - 括弧で list / dict / set / ジェネレータが決まる
 - 大きなデータは `yield` で 1 つずつ。使い切りに注意
 - ジェネレータをつないでパイプライン
+
+## やってみる
+
+**ゴール:** ジェネレータでメモリを使わずに処理する。
+
+1. `python3`:
+   ```python
+   import sys
+   xs = [x * x for x in range(10**6)]; sys.getsizeof(xs)
+   g = (x * x for x in range(10**6)); sys.getsizeof(g)
+   sum(g); sum(g)      # 2 回目は 0
+   ```
+2. 巨大ファイルを作って 1 行ずつ数える
+   ```python
+   with open("big.txt", "w") as f:
+       for i in range(200000): f.write(f"line {i} {'ERROR' if i % 1000 == 0 else 'ok'}\n")
+   def lines(p):
+       with open(p) as f:
+           for l in f: yield l
+   sum(1 for l in lines("big.txt") if "ERROR" in l)
+   ```
+
+**確認:** ジェネレータのサイズが一定で小さい。2 回目の sum が 0。

@@ -3,52 +3,6 @@ id: aws-01
 title: AWS の全体像と IAM の最初の一歩
 summary: リージョン・AZ・アカウントの構造と、ルートユーザーを封印して IAM で作業する理由
 minutes: 10
-exercise: |
-  **ゴール:** IAM ポリシーを読み、ロールの仕組みをコンソールで確認する (課金なし)。
-
-  1. AWS コンソール → IAM → ポリシー → `AmazonS3ReadOnlyAccess` を開き、JSON タブで Action と Resource を読む
-  2. 自分のユーザー → 「アクセス許可」と「セキュリティ認証情報」。アクセスキーがあるか、MFA が有効かを確認
-  3. IAM → ロール → 何か 1 つ開き、「信頼関係」タブで「誰が引き受けられるか」(`Principal`) を読む
-  4. ルートユーザーの MFA が有効かを「セキュリティ認証情報」で確認
-
-  **確認:** ポリシーの Effect / Action / Resource を指せる。ロールの信頼ポリシーとアクセス許可ポリシーの違いが分かる。
-questions:
-  - id: aws-l01-1
-    difficulty: 1
-    question: "AZ (アベイラビリティゾーン) とは?"
-    choices:
-      - "国単位の区分"
-      - "リージョン内で物理的に分離された 1 つ以上のデータセンター群"
-      - "VPC のサブネット"
-      - "課金の単位"
-    answer: 1
-    explanation: "リージョン (例: 東京) の中に複数の AZ があり、AZ をまたいで配置すると 1 つのデータセンター障害に耐えられる。"
-  - id: aws-l01-2
-    difficulty: 1
-    question: "ルートユーザーの扱いとして正しいのは?"
-    choices:
-      - "日常作業に使う"
-      - "MFA を有効化し、日常作業には使わない"
-      - "アクセスキーを発行して CI に使う"
-      - "削除する"
-    answer: 1
-    explanation: "ルートは全権限を持ち制限できない。MFA を付けて封印し、作業は IAM ユーザー / IAM Identity Center で行う。"
-  - id: aws-l01-3
-    difficulty: 2
-    question: "EC2 上のアプリから S3 にアクセスさせたい。推奨される方法は?"
-    choices:
-      - "IAM ユーザーのアクセスキーをコードに埋め込む"
-      - "IAM ロールを作って EC2 にアタッチする"
-      - "ルートユーザーのキーを環境変数に置く"
-      - "S3 バケットを公開する"
-    answer: 1
-    explanation: "ロールは一時クレデンシャルを自動で配るので、キーの漏洩やローテーションの問題が無い。AWS 上のリソースには常にロールを使う。"
-  - id: aws-l01-4
-    difficulty: 2
-    question: "IAM ポリシーで、明示的な Deny と Allow が両方当たるときの結果は?"
-    choices: ["Allow が勝つ", "Deny が勝つ", "後に書いた方が勝つ", "エラーになる"]
-    answer: 1
-    explanation: "評価順は「明示的 Deny > 明示的 Allow > 暗黙の Deny」。何も書かれていなければ拒否。"
 ---
 ## 地理的な構造
 
@@ -115,3 +69,14 @@ IAM (Identity and Access Management) は AWS の権限管理の中核です。
 - ルートは MFA で封印して使わない
 - AWS 上のリソースには常にロール。キーを埋め込まない
 - 明示的 Deny > Allow > 暗黙の Deny
+
+## やってみる
+
+**ゴール:** IAM ポリシーを読み、ロールの仕組みをコンソールで確認する (課金なし)。
+
+1. AWS コンソール → IAM → ポリシー → `AmazonS3ReadOnlyAccess` を開き、JSON タブで Action と Resource を読む
+2. 自分のユーザー → 「アクセス許可」と「セキュリティ認証情報」。アクセスキーがあるか、MFA が有効かを確認
+3. IAM → ロール → 何か 1 つ開き、「信頼関係」タブで「誰が引き受けられるか」(`Principal`) を読む
+4. ルートユーザーの MFA が有効かを「セキュリティ認証情報」で確認
+
+**確認:** ポリシーの Effect / Action / Resource を指せる。ロールの信頼ポリシーとアクセス許可ポリシーの違いが分かる。

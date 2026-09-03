@@ -1,0 +1,43 @@
+# 「Cloud SQL と Private IP」の確認問題。lesson は隣の 03-cloud-sql.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: gcp-03
+questions:
+- id: gcp-l03-1
+  difficulty: 1
+  question: Cloud SQL を使う理由として正しいのは?
+  choices:
+  - 無料だから
+  - バックアップ・パッチ・フェイルオーバー・監視を Google が面倒を見る。自分で VM に PostgreSQL を入れて運用するより安全
+  - 速いから
+  - SQL が不要になる
+  answer: 1
+  explanation: 運用の手間を買う。代わりにインスタンス課金が常時発生する (最小構成でも月数千円)。
+- id: gcp-l03-2
+  difficulty: 2
+  question: Private IP のみで作る理由は?
+  choices:
+  - 速い
+  - インターネットから到達できず、VPC 内 (Cloud Run / VM) からしか繋げない。パスワード総当たりの入口が消える
+  - 安い
+  - 必須だから
+  answer: 1
+  explanation: パブリック IP を付けるなら承認済みネットワークか Cloud SQL Auth Proxy 経由に限定する。
+- id: gcp-l03-3
+  difficulty: 2
+  question: Cloud Run から Private IP の Cloud SQL に繋ぐために必要なのは?
+  choices:
+  - 何も要らない
+  - Cloud Run を VPC に接続する (Direct VPC egress か Serverless VPC Access コネクタ) と、サービスアカウントに cloudsql.client
+  - パブリック IP
+  - SSH トンネル
+  answer: 1
+  explanation: Cloud Run は既定では VPC の外。VPC egress の設定で内側に出られるようにする。Terraform では `vpc_access` ブロック。
+- id: gcp-l03-4
+  difficulty: 2
+  question: PITR (ポイントインタイムリカバリ) が有効だと何ができる?
+  choices:
+  - レプリカが増える
+  - 「昨日の 14:03 の状態」のように任意の時点に復元 (別インスタンスとして) できる。誤った DELETE の救済
+  - 自動でスケールする
+  - 何もできない
+  answer: 1
+  explanation: 日次バックアップだけだと最大 1 日分失う。PITR はトランザクションログを保持して秒単位で戻せる。

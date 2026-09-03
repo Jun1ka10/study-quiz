@@ -3,58 +3,6 @@ id: infra-05
 title: Terraform の基本
 summary: resource / variable / output、init → plan → apply、state の意味。IaC でクラウドを組む土台
 minutes: 12
-exercise: |
-  **ゴール:** Terraform を init → plan → apply → destroy まで回す (ローカルファイルなので課金なし)。
-
-  1. `mkdir tfdemo && cd tfdemo`、`main.tf`:
-     ```hcl
-     terraform { required_providers { local = { source = "hashicorp/local" } } }
-     variable "name" { type = string, default = "hello" }
-     resource "local_file" "f" { filename = "${path.module}/${var.name}.txt", content = "hi" }
-     output "path" { value = local_file.f.filename }
-     ```
-  2. `terraform init && terraform plan && terraform apply` → `cat hello.txt`、`cat terraform.tfstate | head -30`
-  3. `terraform apply -var name=world` → plan に `-/+ replace` が出る理由を読む
-  4. `terraform destroy`
-
-  **確認:** state にリソースが記録されている。名前変更が replace になる。
-questions:
-  - id: infra-l05-1
-    difficulty: 1
-    question: "Terraform の基本的な作業の流れは?"
-    choices:
-      - "apply → plan → init"
-      - "init (プロバイダ取得) → plan (差分確認) → apply (適用)"
-      - "plan だけで反映される"
-      - "init だけで反映される"
-    answer: 1
-    explanation: "plan で「何を作る / 変える / 消す」を必ず見てから apply する。特に destroy や replace が出ていないか確認する。"
-  - id: infra-l05-2
-    difficulty: 2
-    question: "tfstate (state ファイル) の役割は?"
-    choices:
-      - "ログ"
-      - "Terraform が「自分が管理しているリソースの現状」を記録したもの。これと設定の差分で plan が決まる"
-      - "バックアップ"
-      - "不要なファイル"
-    answer: 1
-    explanation: "state を失うと Terraform はリソースを知らない状態になり、作り直そうとする。チームでは GCS / S3 などのリモートバックエンドに置き、ロックをかける。"
-  - id: infra-l05-3
-    difficulty: 2
-    question: "plan の出力に `-/+ resource must be replaced` と出た。意味は?"
-    choices:
-      - "何も起きない"
-      - "そのリソースを一度削除して作り直す。DB やディスクならデータが消える可能性がある"
-      - "更新だけ"
-      - "警告のみで apply には影響しない"
-    answer: 1
-    explanation: "変更できない属性 (名前やリージョンなど) を変えたときに出る。本番で見たら止まって確認する。"
-  - id: infra-l05-4
-    difficulty: 1
-    question: "環境 (dev / prod) で値を変えたい項目はどこに書く?"
-    choices: ["resource に直書き", "variable で宣言し、tfvars や -var で渡す", "state に書く", "コメント"]
-    answer: 1
-    explanation: "`variable \"project_id\" {}` と宣言し、`terraform.tfvars` や `-var=\"project_id=...\"`、環境変数 `TF_VAR_project_id` で渡す。"
 ---
 ## IaC の考え方
 
@@ -166,3 +114,20 @@ TF_VAR_project_id=my-prod terraform apply
 - init → plan → apply。plan の replace / destroy を必ず見る
 - state が現状の記録。リモートに置き、失わない、公開しない
 - 環境差は variable。リソース間は `種類.名前.属性` で参照
+
+## やってみる
+
+**ゴール:** Terraform を init → plan → apply → destroy まで回す (ローカルファイルなので課金なし)。
+
+1. `mkdir tfdemo && cd tfdemo`、`main.tf`:
+   ```hcl
+   terraform { required_providers { local = { source = "hashicorp/local" } } }
+   variable "name" { type = string, default = "hello" }
+   resource "local_file" "f" { filename = "${path.module}/${var.name}.txt", content = "hi" }
+   output "path" { value = local_file.f.filename }
+   ```
+2. `terraform init && terraform plan && terraform apply` → `cat hello.txt`、`cat terraform.tfstate | head -30`
+3. `terraform apply -var name=world` → plan に `-/+ replace` が出る理由を読む
+4. `terraform destroy`
+
+**確認:** state にリソースが記録されている。名前変更が replace になる。

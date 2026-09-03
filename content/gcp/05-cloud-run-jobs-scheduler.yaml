@@ -1,0 +1,43 @@
+# 「Cloud Run Jobs と Cloud Scheduler」の確認問題。lesson は隣の 05-cloud-run-jobs-scheduler.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: gcp-05
+questions:
+- id: gcp-l05-1
+  difficulty: 1
+  question: Cloud Run Service と Job の違いは?
+  choices:
+  - 同じ
+  - Service は HTTP を待ち受けて常駐 (0 台にスケールイン可)、Job は起動して処理を終えたら終了する。バッチは Job
+  - Job の方が速い
+  - Service はバッチ専用
+  answer: 1
+  explanation: 「HTTP を受けたら重い処理をする Service」は タイムアウト (最大 60 分) と課金の面で不利。処理して終わるものは Job にする。
+- id: gcp-l05-2
+  difficulty: 2
+  question: Job のタスクが途中で失敗して再実行された。安全に設計するには?
+  choices:
+  - 再実行しない設定にする
+  - 処理を冪等にする (同じ入力で 2 回走っても結果が変わらない)。UPSERT、処理済みフラグ、client_id
+  - 失敗しないように祈る
+  - 手動で確認する
+  answer: 1
+  explanation: '`--max-retries` があるため再実行は前提。「日次集計を 2 回走らせたら 2 倍になる」設計は事故になる。'
+- id: gcp-l05-3
+  difficulty: 2
+  question: Cloud Scheduler から Job を起動するときの認証は?
+  choices:
+  - 不要
+  - Scheduler に専用サービスアカウントを持たせ、Job に run.invoker を付与し、OAuth トークンで Cloud Run Admin API を叩く
+  - API キー
+  - パスワード
+  answer: 1
+  explanation: 誰でも Job を起動できる状態にしない。Scheduler → Job も IAM で守る。
+- id: gcp-l05-4
+  difficulty: 1
+  question: cron 式 `0 8 * * *` を `--time-zone=Asia/Tokyo` で登録した。いつ動く?
+  choices:
+  - UTC 8:00
+  - 日本時間 毎日 8:00
+  - 毎時 0 分
+  - 月初
+  answer: 1
+  explanation: 分 時 日 月 曜日。time-zone を省略すると UTC になり 17:00 JST に動く、が典型的な事故。

@@ -1,63 +1,8 @@
 ---
 id: be-08
-title: "SQL と PostgreSQL の基礎"
-summary: "SELECT / JOIN / GROUP BY を psql で手を動かして覚える。ORM の裏で何が走っているかを読めるようになる"
+title: SQL と PostgreSQL の基礎
+summary: SELECT / JOIN / GROUP BY を psql で手を動かして覚える。ORM の裏で何が走っているかを読めるようになる
 minutes: 14
-exercise: |
-  **ゴール:** psql で JOIN と集計を自分で書く。
-
-  1. `docker run -d --name pg -e POSTGRES_PASSWORD=pw -p 5432:5432 postgres:16` → `docker exec -it pg psql -U postgres`
-  2. 次を実行する
-     ```sql
-     create table users(id serial primary key, email text unique not null);
-     create table attempts(id serial primary key, user_id int references users(id), question_id text, correct bool, at timestamptz default now());
-     insert into users(email) values ('a@x'),('b@x');
-     insert into attempts(user_id, question_id, correct) values (1,'q1',true),(1,'q2',false),(1,'q2',true),(2,'q1',false);
-     select u.email, count(*) filter (where a.correct) as ok, count(*) as total
-       from users u join attempts a on a.user_id = u.id group by u.email;
-     select question_id, count(*) from attempts group by 1 having count(*) > 1;
-     select * from users u left join attempts a on a.user_id = u.id where a.id is null;
-     ```
-  3. `\d attempts` と `\dt` を打つ。`explain select * from attempts where user_id = 1;` を読む
-
-  **確認:** ユーザー別の正答数が出た。LEFT JOIN で「回答が無いユーザー」を出せた。
-questions:
-  - id: be-l08-1
-    difficulty: 1
-    question: "`JOIN` と `LEFT JOIN` の違いは?"
-    choices:
-      - "同じ"
-      - "JOIN は両方に一致する行だけ、LEFT JOIN は左の表の行を全部残し、右に無ければ NULL"
-      - "LEFT JOIN は左の表だけ返す"
-      - "JOIN の方が遅い"
-    answer: 1
-    explanation: "「回答が 1 件も無いユーザーも一覧に出したい」なら LEFT JOIN。内部結合だと消える。"
-  - id: be-l08-2
-    difficulty: 1
-    question: "`WHERE` と `HAVING` の違いは?"
-    choices:
-      - "同じ"
-      - "WHERE は集計前に行を絞る、HAVING は GROUP BY で集計した後のグループを絞る"
-      - "HAVING は JOIN 専用"
-      - "WHERE は文字列専用"
-    answer: 1
-    explanation: "`count(*) > 1` のような集計結果で絞るのは HAVING。WHERE には集計関数を書けない。"
-  - id: be-l08-3
-    difficulty: 2
-    question: "`count(*) filter (where correct)` は何を数える?"
-    choices: ["全行", "correct が真の行だけ", "NULL の行", "エラー"]
-    answer: 1
-    explanation: "PostgreSQL の FILTER 句。`sum(case when correct then 1 else 0 end)` と同じ意味で読みやすい。正答率の集計に使う。"
-  - id: be-l08-4
-    difficulty: 2
-    question: "`references users(id)` (外部キー) を付ける効果は?"
-    choices:
-      - "速くなる"
-      - "存在しない user_id の行を入れられなくなり、参照先の削除も制約される (整合性の保証)"
-      - "自動で JOIN される"
-      - "効果は無い"
-    answer: 1
-    explanation: "アプリのバグで孤児レコードができるのを DB が防ぐ。`on delete cascade` で連鎖削除も指定できる。"
 ---
 ## なぜ SQL を直接学ぶか
 
@@ -170,3 +115,23 @@ delete from attempts where answered_at < now() - interval '1 year';
 - 実行順は FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY
 - 集計は `count(*) filter (where ...)`。整数割り算に注意
 - update / delete は WHERE を先に select で確かめる
+
+## やってみる
+
+**ゴール:** psql で JOIN と集計を自分で書く。
+
+1. `docker run -d --name pg -e POSTGRES_PASSWORD=pw -p 5432:5432 postgres:16` → `docker exec -it pg psql -U postgres`
+2. 次を実行する
+   ```sql
+   create table users(id serial primary key, email text unique not null);
+   create table attempts(id serial primary key, user_id int references users(id), question_id text, correct bool, at timestamptz default now());
+   insert into users(email) values ('a@x'),('b@x');
+   insert into attempts(user_id, question_id, correct) values (1,'q1',true),(1,'q2',false),(1,'q2',true),(2,'q1',false);
+   select u.email, count(*) filter (where a.correct) as ok, count(*) as total
+     from users u join attempts a on a.user_id = u.id group by u.email;
+   select question_id, count(*) from attempts group by 1 having count(*) > 1;
+   select * from users u left join attempts a on a.user_id = u.id where a.id is null;
+   ```
+3. `\d attempts` と `\dt` を打つ。`explain select * from attempts where user_id = 1;` を読む
+
+**確認:** ユーザー別の正答数が出た。LEFT JOIN で「回答が無いユーザー」を出せた。

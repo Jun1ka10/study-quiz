@@ -3,48 +3,6 @@ id: py-02
 title: リスト・タプル・辞書・セット
 summary: 4 つのコレクションの使い分けと、ミュータブル / イミュータブルの違い
 minutes: 10
-exercise: |
-  **ゴール:** 代入がコピーではないことを確かめる。
-
-  1. `python3` で:
-     ```python
-     a = [1, 2, 3]; b = a; b.append(4); a
-     c = a.copy(); c.append(5); a, c
-     d = {"x": 1}; d.get("y"), d.get("y", 0)
-     list(set([3, 1, 3, 2]))
-     ```
-  2. 関数に list を渡して中で append し、呼び出し元の list が変わることを確認する
-     ```python
-     def add(xs): xs.append(99)
-     nums = [1]; add(nums); nums
-     ```
-
-  **確認:** `b = a` では `a` も変わり、`copy()` なら変わらない。
-questions:
-  - id: py-l02-1
-    difficulty: 1
-    question: "「順序があり、あとから要素を追加・変更できる」コレクションは?"
-    choices: ["tuple", "list", "set", "frozenset"]
-    answer: 1
-    explanation: "list は順序付きで変更可能。tuple は順序付きだが変更不可。set は順序なし。"
-  - id: py-l02-2
-    difficulty: 1
-    question: "`d = {\"a\": 1}` のとき、キー `\"b\"` が無くてもエラーにならずに `None` を返す書き方は?"
-    choices: ["d[\"b\"]", "d.get(\"b\")", "d.b", "d(\"b\")"]
-    answer: 1
-    explanation: "`d[\"b\"]` は KeyError。`d.get(\"b\")` は無ければ None (第 2 引数で既定値も指定できる)。"
-  - id: py-l02-3
-    difficulty: 2
-    question: "次のコードの出力は?\n\n```python\na = [1, 2, 3]\nb = a\nb.append(4)\nprint(a)\n```"
-    choices: ["[1, 2, 3]", "[1, 2, 3, 4]", "[4]", "エラー"]
-    answer: 1
-    explanation: "`b = a` は同じリストに別名を付けただけ。コピーしたいなら `b = a.copy()` や `b = list(a)`。"
-  - id: py-l02-4
-    difficulty: 2
-    question: "重複を取り除きたい。最も簡単なのは?"
-    choices: ["list(set(items))", "items.unique()", "items.distinct()", "for 文で 1 つずつ比較する"]
-    answer: 0
-    explanation: "set は重複を持てないので、set に通してから list に戻す。ただし順序は保証されない。順序も保ちたいなら `list(dict.fromkeys(items))`。"
 ---
 ## 4 つのコレクション
 
@@ -123,3 +81,22 @@ c = a.copy()    # 別物を作るならコピー
 - 並びは list、固定の組は tuple、キーで引くなら dict、重複除去は set
 - dict の安全な参照は `get()`
 - 代入はコピーではない。別物が欲しければ `copy()`
+
+## やってみる
+
+**ゴール:** 代入がコピーではないことを確かめる。
+
+1. `python3` で:
+   ```python
+   a = [1, 2, 3]; b = a; b.append(4); a
+   c = a.copy(); c.append(5); a, c
+   d = {"x": 1}; d.get("y"), d.get("y", 0)
+   list(set([3, 1, 3, 2]))
+   ```
+2. 関数に list を渡して中で append し、呼び出し元の list が変わることを確認する
+   ```python
+   def add(xs): xs.append(99)
+   nums = [1]; add(nums); nums
+   ```
+
+**確認:** `b = a` では `a` も変わり、`copy()` なら変わらない。

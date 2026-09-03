@@ -1,0 +1,63 @@
+# 「GCP の全体像とプロジェクト・IAM」の確認問題。lesson は隣の 01-projects-and-iam.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: gcp-01
+questions:
+- id: gcp-l01-1
+  difficulty: 1
+  question: GCP でリソース (VM, バケットなど) が直接属する単位は?
+  choices:
+  - 組織
+  - フォルダ
+  - プロジェクト
+  - リージョン
+  answer: 2
+  explanation: すべてのリソースはプロジェクトに属し、課金・API 有効化・IAM もプロジェクト単位が基本。
+- id: gcp-l01-2
+  difficulty: 1
+  question: IAM ポリシーの継承として正しいのは?
+  choices:
+  - プロジェクトの権限が組織に継承される
+  - 組織 / フォルダで付けた権限は配下のプロジェクトに継承される
+  - 継承はされない
+  - フォルダの権限だけ継承される
+  answer: 1
+  explanation: 上位で付けた権限は下位に伝わる。逆は無い。上位で広い権限を付けると全プロジェクトに効くので注意。
+- id: gcp-l01-3
+  difficulty: 2
+  question: 本番で避けるべき IAM ロールの種類は?
+  choices:
+  - 事前定義ロール
+  - カスタムロール
+  - 基本ロール (Owner / Editor / Viewer)
+  - どれも問題ない
+  answer: 2
+  explanation: '基本ロールは粗すぎて最小権限にならない。事前定義ロール (例: roles/storage.objectViewer) を探し、無ければカスタムロール。'
+- id: gcp-l01-4
+  difficulty: 2
+  question: Cloud Run 上のアプリから Cloud Storage を読ませたい。推奨は?
+  choices:
+  - サービスアカウントの JSON 鍵をダウンロードしてコンテナに同梱
+  - Cloud Run にサービスアカウントをアタッチし、そこにロールを付与する (鍵なし)
+  - 個人のユーザー認証情報を環境変数に置く
+  - バケットを allUsers に公開する
+  answer: 1
+  explanation: GCP 上で動くものにはサービスアカウントをアタッチすれば鍵なしで認証できる。JSON 鍵は漏洩リスクが高く、GCP 外から使う場合の最後の手段。
+- id: gcp-002
+  difficulty: 1
+  question: GCP のリソース階層で、プロジェクトの上に位置するものは?
+  choices:
+  - リージョン
+  - フォルダ / 組織
+  - VPC
+  - ゾーン
+  answer: 1
+  explanation: 組織 → フォルダ → プロジェクト → リソース の階層。IAM ポリシーは上位から継承される。
+- id: gcp-006
+  difficulty: 2
+  question: サービスアカウントについて正しいものは?
+  choices:
+  - 人間のユーザーがログインに使う
+  - アプリケーションや VM が API を呼ぶためのアイデンティティ
+  - プロジェクトごとに 1 つしか作れない
+  - IAM ロールを付与できない
+  answer: 1
+  explanation: サービスアカウントは非人間用のアイデンティティ。IAM ロールを付与でき、VM や Cloud Run にアタッチしてキーレスで認証できる。

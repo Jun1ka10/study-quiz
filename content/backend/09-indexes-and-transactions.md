@@ -1,69 +1,8 @@
 ---
 id: be-09
-title: "インデックスとトランザクション"
-summary: "EXPLAIN で遅い理由を見る、インデックスの効く条件、トランザクションの原子性と UPSERT、ロックの基本"
+title: インデックスとトランザクション
+summary: EXPLAIN で遅い理由を見る、インデックスの効く条件、トランザクションの原子性と UPSERT、ロックの基本
 minutes: 14
-exercise: |
-  **ゴール:** インデックスの有無で実行計画が変わるのを見て、UPSERT を書く。
-
-  1. be-08 のコンテナで:
-     ```sql
-     insert into attempts(user_id, question_id, correct)
-       select (random()*1+1)::int, 'q' || (random()*100)::int, random() < 0.7 from generate_series(1, 200000);
-     explain analyze select count(*) from attempts where question_id = 'q7';
-     create index on attempts(question_id);
-     explain analyze select count(*) from attempts where question_id = 'q7';
-     ```
-  2. UPSERT:
-     ```sql
-     create table review(user_id int, question_id text, streak int, due_at timestamptz, primary key(user_id, question_id));
-     insert into review values (1,'q1',1,now()) on conflict (user_id, question_id) do update set streak = review.streak + 1, due_at = now() + interval '3 days';
-     ```
-     を 3 回実行して `select * from review;`
-  3. 2 つの psql を開き、片方で `begin; update review set streak = 99 where user_id = 1;` (commit しない)、もう片方で同じ update を打って待たされるのを見る。最初の方で `rollback;`
-
-  **確認:** Seq Scan が Index Scan に変わり時間が桁で減った。UPSERT で 1 行のまま streak が増えた。ロック待ちを体験した。
-questions:
-  - id: be-l09-1
-    difficulty: 1
-    question: "`EXPLAIN ANALYZE` で `Seq Scan` が出た。意味は?"
-    choices:
-      - "インデックスを使っている"
-      - "テーブル全体を先頭から読んでいる (全件走査)。件数が多いと遅い"
-      - "エラー"
-      - "キャッシュから読んだ"
-    answer: 1
-    explanation: "WHERE の列にインデックスが無いか、使えない書き方 (関数を掛けている、型が違う) をしている。小さい表なら Seq Scan が正解なこともある。"
-  - id: be-l09-2
-    difficulty: 2
-    question: "インデックスを張っても効かないのは?"
-    choices:
-      - "where email = 'a@x'"
-      - "where lower(email) = 'a@x' (列に関数を掛けている)"
-      - "where user_id = 1"
-      - "where created_at > now() - interval '1 day'"
-    answer: 1
-    explanation: "列に関数を掛けると素のインデックスは使えない。関数インデックス `create index on users(lower(email))` を作るか、保存時に正規化する。"
-  - id: be-l09-3
-    difficulty: 2
-    question: "トランザクションの中で 2 つの UPDATE をした後に例外が起きた。適切な処理は?"
-    choices:
-      - "そのまま放置"
-      - "ROLLBACK して両方なかったことにする (全部成功か全部なし)"
-      - "1 つ目だけ COMMIT"
-      - "再起動"
-    answer: 1
-    explanation: "原子性。片方だけ反映されると不整合になる。アプリでは `try: ... commit() except: rollback()`。"
-  - id: be-l09-4
-    difficulty: 2
-    question: "`INSERT ... ON CONFLICT (key) DO UPDATE` を使う場面は?"
-    choices:
-      - "常に INSERT の代わりに使う"
-      - "「無ければ作る、あれば更新する」を 1 文で原子的に行いたいとき (UPSERT)"
-      - "削除"
-      - "JOIN の代わり"
-    answer: 1
-    explanation: "SELECT してから INSERT/UPDATE を分けると、同時実行で重複や競合が起きる。UPSERT なら DB が排他してくれる。"
 ---
 ## インデックスとは
 
@@ -149,3 +88,25 @@ do update set streak = review.streak + 1, due_at = excluded.due_at;
 - 列に関数・型違い・前方以外の LIKE はインデックスが効かない
 - トランザクションは短く、リクエスト 1 つに 1 つ
 - 「無ければ作る」は UPSERT。読んで書くは `for update` か DB 側で計算
+
+## やってみる
+
+**ゴール:** インデックスの有無で実行計画が変わるのを見て、UPSERT を書く。
+
+1. be-08 のコンテナで:
+   ```sql
+   insert into attempts(user_id, question_id, correct)
+     select (random()*1+1)::int, 'q' || (random()*100)::int, random() < 0.7 from generate_series(1, 200000);
+   explain analyze select count(*) from attempts where question_id = 'q7';
+   create index on attempts(question_id);
+   explain analyze select count(*) from attempts where question_id = 'q7';
+   ```
+2. UPSERT:
+   ```sql
+   create table review(user_id int, question_id text, streak int, due_at timestamptz, primary key(user_id, question_id));
+   insert into review values (1,'q1',1,now()) on conflict (user_id, question_id) do update set streak = review.streak + 1, due_at = now() + interval '3 days';
+   ```
+   を 3 回実行して `select * from review;`
+3. 2 つの psql を開き、片方で `begin; update review set streak = 99 where user_id = 1;` (commit しない)、もう片方で同じ update を打って待たされるのを見る。最初の方で `rollback;`
+
+**確認:** Seq Scan が Index Scan に変わり時間が桁で減った。UPSERT で 1 行のまま streak が増えた。ロック待ちを体験した。

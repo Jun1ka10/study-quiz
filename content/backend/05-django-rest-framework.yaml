@@ -1,0 +1,43 @@
+# 「Django REST framework」の確認問題。lesson は隣の 05-django-rest-framework.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: be-05
+questions:
+- id: be-l05-1
+  difficulty: 1
+  question: DRF のシリアライザの役割は?
+  choices:
+  - DB 接続
+  - モデル ↔ JSON の変換と、入力のバリデーション
+  - URL のルーティング
+  - テンプレートの描画
+  answer: 1
+  explanation: 出力時は model → dict → JSON、入力時は JSON → 検証 → model。`ModelSerializer` ならフィールド定義をモデルから拾える。
+- id: be-l05-2
+  difficulty: 2
+  question: '`APIView` の `get` / `post` メソッドが返すべきものは?'
+  choices:
+  - dict
+  - '`Response(data, status=...)`'
+  - render(...)
+  - 文字列
+  answer: 1
+  explanation: '`from rest_framework.response import Response`。dict を渡せば JSON になる。ステータスは `status.HTTP_201_CREATED` などの定数で。'
+- id: be-l05-3
+  difficulty: 2
+  question: '`authentication_classes` と `permission_classes` の違いは?'
+  choices:
+  - 同じ
+  - authentication は「誰か」を特定する、permission は「その人にこの操作を許すか」を決める
+  - permission が先に動く
+  - authentication は管理画面専用
+  answer: 1
+  explanation: 認証 (セッション / トークン / API キー) で request.user が決まり、その後に権限 (IsAuthenticated / 自作) が判定する。
+- id: be-l05-4
+  difficulty: 2
+  question: '`serializer.is_valid()` が False のとき、正しい対応は?'
+  choices:
+  - 無視して save() する
+  - '`serializer.errors` を 400 で返す (または `is_valid(raise_exception=True)`)'
+  - 500 を返す
+  - 空の JSON を返す
+  answer: 1
+  explanation: 入力不正はクライアント側の問題なので 400。errors にはフィールドごとの理由が入る。

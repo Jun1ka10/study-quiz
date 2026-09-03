@@ -3,66 +3,6 @@ id: js-04
 title: TypeScript の基本
 summary: 型注釈、interface / type、ユニオン、ジェネリクス、any を避ける。Next.js のコードを読むための土台
 minutes: 12
-exercise: |
-  **ゴール:** TypeScript のエラーを出して直す。
-
-  1. `mkdir tsdemo && cd tsdemo && npm init -y && npm i -D typescript && npx tsc --init`
-  2. `a.ts`:
-     ```typescript
-     type Status = "draft" | "published";
-     interface User { id: number; name: string; email?: string }
-     function label(s: Status) { return s === "draft" ? "下書き" : "公開"; }
-     const u: User = { id: 1, name: "a" };
-     console.log(u.email.toLowerCase());     // エラーになるはず
-     label("deleted");                        // エラーになるはず
-     ```
-  3. `npx tsc --noEmit` でエラー 2 件を読む
-  4. `u.email?.toLowerCase()` と `"draft"` に直して通す
-
-  **確認:** 実行前に undefined の可能性と不正な値が見つかった。
-questions:
-  - id: js-l04-1
-    difficulty: 1
-    question: "TypeScript を使う主な理由は?"
-    choices:
-      - "実行が速くなる"
-      - "型の不整合をコンパイル時 (書いている時) に見つけられ、補完が効く"
-      - "ブラウザが直接実行できる"
-      - "JavaScript より短く書ける"
-    answer: 1
-    explanation: "TS はコンパイルすると素の JS になる。実行時の速さは変わらず、開発時のミス検出と補完が価値。"
-  - id: js-l04-2
-    difficulty: 1
-    question: "`function f(user: { name: string; age?: number })` の `age?` の意味は?"
-    choices: ["age は必須", "age は省略可能 (undefined でもよい)", "age は null", "文法エラー"]
-    answer: 1
-    explanation: "`?` で省略可能なプロパティ。値の型は `number | undefined` になる。"
-  - id: js-l04-3
-    difficulty: 2
-    question: "`type Status = \"draft\" | \"published\"` に対して `const s: Status = \"deleted\"` は?"
-    choices: ["通る", "コンパイルエラー", "実行時エラー", "警告のみ"]
-    answer: 1
-    explanation: "文字列リテラルのユニオン型。列挙した値以外は入れられないので、状態の取り違えを防げる。"
-  - id: js-l04-4
-    difficulty: 2
-    question: "`any` を使うと何が起きる?"
-    choices:
-      - "何でも入るが、その値に対する型チェックが全部消える"
-      - "速くなる"
-      - "null が入らなくなる"
-      - "エラーになる"
-    answer: 0
-    explanation: "any は「型チェックをやめる」宣言。型が分からないなら `unknown` にして、使う前に絞り込む。"
-  - id: js-l04-5
-    difficulty: 3
-    question: "`function first<T>(xs: T[]): T | undefined` の `<T>` は?"
-    choices:
-      - "HTML タグ"
-      - "ジェネリクス。呼び出し時の配列の要素型に合わせて戻り値の型が決まる"
-      - "型を無視する指定"
-      - "テンプレート文字列"
-    answer: 1
-    explanation: "`first([1, 2])` は number | undefined、`first([\"a\"])` は string | undefined。同じ関数を型を保ったまま使い回せる。"
 ---
 ## TypeScript とは
 
@@ -177,3 +117,22 @@ React の `useState<User | null>(null)` もジェネリクスです。
 - `undefined` を型に含めて絞り込む。これが一番バグを減らす
 - `any` は使わない。分からないなら `unknown`
 - 型を引数にするのがジェネリクス
+
+## やってみる
+
+**ゴール:** TypeScript のエラーを出して直す。
+
+1. `mkdir tsdemo && cd tsdemo && npm init -y && npm i -D typescript && npx tsc --init`
+2. `a.ts`:
+   ```typescript
+   type Status = "draft" | "published";
+   interface User { id: number; name: string; email?: string }
+   function label(s: Status) { return s === "draft" ? "下書き" : "公開"; }
+   const u: User = { id: 1, name: "a" };
+   console.log(u.email.toLowerCase());     // エラーになるはず
+   label("deleted");                        // エラーになるはず
+   ```
+3. `npx tsc --noEmit` でエラー 2 件を読む
+4. `u.email?.toLowerCase()` と `"draft"` に直して通す
+
+**確認:** 実行前に undefined の可能性と不正な値が見つかった。

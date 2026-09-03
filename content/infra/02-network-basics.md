@@ -3,50 +3,6 @@ id: infra-02
 title: ネットワークの基礎
 summary: IP アドレスとサブネット、TCP / UDP、DNS、HTTP / HTTPS。クラウドの設定を読むための土台
 minutes: 12
-exercise: |
-  **ゴール:** CIDR・DNS・TCP を手で確かめる。
-
-  1. `python3 -c "import ipaddress as i; n=i.ip_network('10.0.0.0/22'); print(n.num_addresses, list(n.hosts())[0], list(n.hosts())[-1])"` を /24 /16 で試す
-  2. `dig +short example.com A`、`dig example.com ANY | head -20`、`dig +short www.github.com CNAME`
-  3. `curl -v https://example.com 2>&1 | grep -E "Connected|SSL|HTTP/"` で TLS ハンドシェイクとステータス行を見る
-  4. `ss -ltn` で自分のマシンが待ち受けているポートを見る
-
-  **確認:** /22 のホスト数、CNAME の向き先、443 に接続してから TLS が始まる順番を見た。
-questions:
-  - id: infra-l02-1
-    difficulty: 1
-    question: "`10.0.0.0/16` に含まれるアドレスの数は?"
-    choices: ["256", "65,536", "16", "4,096"]
-    answer: 1
-    explanation: "/16 はホスト部が 16 ビット → 2^16 = 65,536。/24 なら 256。"
-  - id: infra-l02-2
-    difficulty: 1
-    question: "`192.168.1.0/24` で、実際にホストに割り当てられる数は?"
-    choices: ["256", "254", "255", "253"]
-    answer: 1
-    explanation: "ネットワークアドレス (.0) とブロードキャスト (.255) を除いて 254。AWS はさらに 3 つ予約するので 251。"
-  - id: infra-l02-3
-    difficulty: 2
-    question: "TCP と UDP の違いとして正しいのは?"
-    choices:
-      - "TCP は到達保証と順序保証があり、UDP は無い代わりに軽い"
-      - "UDP の方が信頼性が高い"
-      - "TCP は動画配信専用"
-      - "違いは無い"
-    answer: 0
-    explanation: "HTTP / SSH / DB 接続は TCP。DNS の問い合わせや動画・音声ストリーミングは UDP が多い。"
-  - id: infra-l02-4
-    difficulty: 2
-    question: "`example.com` を `www.example.com` の別名として解決させたい。使う DNS レコードは?"
-    choices: ["A", "CNAME", "MX", "TXT"]
-    answer: 1
-    explanation: "CNAME は名前 → 別の名前。A は名前 → IPv4。ただしゾーン頂点 (example.com そのもの) には CNAME を置けないので、その場合は ALIAS / A レコードを使う。"
-  - id: infra-l02-5
-    difficulty: 1
-    question: "HTTPS が HTTP に加えて提供するものは?"
-    choices: ["高速化", "通信の暗号化と相手サーバーの認証", "キャッシュ", "圧縮"]
-    answer: 1
-    explanation: "TLS で暗号化し、証明書でサーバーの身元を確認する。ポートは 443。"
 ---
 ## IP アドレスと CIDR
 
@@ -129,3 +85,14 @@ curl -I https://example.com/     # ヘッダーだけ
 - ポートはサービスの入口。443/TCP のように必ずプロトコルとセットで考える
 - DNS は A / CNAME / TXT が読めれば大半は足りる
 - 5xx はサーバー側。502 / 503 / 504 はロードバランサの後ろを疑う
+
+## やってみる
+
+**ゴール:** CIDR・DNS・TCP を手で確かめる。
+
+1. `python3 -c "import ipaddress as i; n=i.ip_network('10.0.0.0/22'); print(n.num_addresses, list(n.hosts())[0], list(n.hosts())[-1])"` を /24 /16 で試す
+2. `dig +short example.com A`、`dig example.com ANY | head -20`、`dig +short www.github.com CNAME`
+3. `curl -v https://example.com 2>&1 | grep -E "Connected|SSL|HTTP/"` で TLS ハンドシェイクとステータス行を見る
+4. `ss -ltn` で自分のマシンが待ち受けているポートを見る
+
+**確認:** /22 のホスト数、CNAME の向き先、443 に接続してから TLS が始まる順番を見た。

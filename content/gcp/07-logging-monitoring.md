@@ -1,60 +1,8 @@
 ---
 id: gcp-07
-title: "Cloud Logging / Monitoring とアラート"
-summary: "ログの検索、ログベースのメトリクス、アラートポリシーと通知チャネル、ダッシュボード。壊れたら気づく仕組み"
+title: Cloud Logging / Monitoring とアラート
+summary: ログの検索、ログベースのメトリクス、アラートポリシーと通知チャネル、ダッシュボード。壊れたら気づく仕組み
 minutes: 12
-exercise: |
-  **ゴール:** Cloud Run のログをフィールドで絞り、5xx のアラートを作って実際に鳴らす。
-
-  1. gcp-02 の demo (FastAPI) に `/boom` (`raise HTTPException(500)`) と、py-10 の JSON ログを足して再デプロイ
-  2. 数回 `/boom` を叩き、Logs Explorer で `resource.type="cloud_run_revision" AND severity>=ERROR` と `jsonPayload.request_id="..."` で絞る
-  3. 通知チャネル: `gcloud monitoring channels create --display-name=me --type=email --channel-labels=email_address=you@example.com`
-  4. アラート: Monitoring → Alerting → Create policy → メトリクス `Cloud Run Revision / Request count`、フィルタ `response_code_class = 5xx`、条件「5 分間で 5 以上」、通知チャネルに上のメール
-  5. `/boom` を 10 回叩いて 5〜10 分待つ。メールが来る。止まる (resolved) まで見る
-  6. 終わったらアラートポリシーと demo を削除
-
-  **確認:** ログを request_id で 1 リクエストに絞れた。アラートが届き、収束通知も来た。
-questions:
-  - id: gcp-l07-1
-    difficulty: 1
-    question: "Cloud Run のアプリのログを Cloud Logging に送るために必要なことは?"
-    choices:
-      - "エージェントのインストール"
-      - "何もしない。stdout / stderr に書いたものが自動で収集される。1 行 1 JSON なら jsonPayload として構造化される"
-      - "ログ API を呼ぶ"
-      - "ファイルに書く"
-    answer: 1
-    explanation: "`severity` フィールドがあればレベルも認識される。ファイルに書くとコンテナと一緒に消える。"
-  - id: gcp-l07-2
-    difficulty: 2
-    question: "「ERROR ログが 5 分で 10 件超えたら通知」を作るには?"
-    choices:
-      - "できない"
-      - "ログベースのメトリクス (counter) をフィルタ `severity>=ERROR` で作り、それを対象にアラートポリシーを作る"
-      - "ログを毎分読む"
-      - "メールでログを送る"
-    answer: 1
-    explanation: "ログ → メトリクス → アラート の 3 段。Terraform では google_logging_metric + google_monitoring_alert_policy。"
-  - id: gcp-l07-3
-    difficulty: 2
-    question: "アラートの閾値を決めるときの考え方として適切なのは?"
-    choices:
-      - "できるだけ敏感に (1 件でも鳴らす)"
-      - "ユーザー影響が出る水準 (エラー率 2%、p95 2 秒など) で鳴らす。鳴りすぎるアラートは無視されるようになり、本当の障害を見逃す"
-      - "鳴らさない"
-      - "毎日決まった時間に鳴らす"
-    answer: 1
-    explanation: "「対応が必要なときだけ鳴る」が原則。鳴ったが何もしなかったアラートは閾値を見直す。"
-  - id: gcp-l07-4
-    difficulty: 1
-    question: "ログの保持と課金で気をつけることは?"
-    choices:
-      - "無制限で無料"
-      - "取り込み量で課金される。DEBUG を本番で出さない、巨大な本文を出さない、不要なログは除外フィルタで捨てる"
-      - "保持は 1 日"
-      - "気にしなくてよい"
-    answer: 1
-    explanation: "既定 30 日保持。長期保存が要るものはシンクで GCS / BigQuery へ。"
 ---
 ## 3 つの層
 
@@ -173,3 +121,16 @@ Cloud Trace でリクエスト 1 つの内訳 (DB 何 ms、外部 API 何 ms) �
 - ログ → メトリクス → アラートの 3 段
 - アラートは「対応が必要なときだけ」。エラー率・p95・アップタイム・飽和・バッチ失敗
 - ダッシュボードは 5 枚で十分。費用は取り込み量
+
+## やってみる
+
+**ゴール:** Cloud Run のログをフィールドで絞り、5xx のアラートを作って実際に鳴らす。
+
+1. gcp-02 の demo (FastAPI) に `/boom` (`raise HTTPException(500)`) と、py-10 の JSON ログを足して再デプロイ
+2. 数回 `/boom` を叩き、Logs Explorer で `resource.type="cloud_run_revision" AND severity>=ERROR` と `jsonPayload.request_id="..."` で絞る
+3. 通知チャネル: `gcloud monitoring channels create --display-name=me --type=email --channel-labels=email_address=you@example.com`
+4. アラート: Monitoring → Alerting → Create policy → メトリクス `Cloud Run Revision / Request count`、フィルタ `response_code_class = 5xx`、条件「5 分間で 5 以上」、通知チャネルに上のメール
+5. `/boom` を 10 回叩いて 5〜10 分待つ。メールが来る。止まる (resolved) まで見る
+6. 終わったらアラートポリシーと demo を削除
+
+**確認:** ログを request_id で 1 リクエストに絞れた。アラートが届き、収束通知も来た。

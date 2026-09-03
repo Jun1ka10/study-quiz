@@ -1,0 +1,43 @@
+# 「docker compose で開発環境を作る」の確認問題。lesson は隣の 03-docker-compose.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: dk-03
+questions:
+- id: dk-l03-1
+  difficulty: 1
+  question: compose で `api` が `db` のホスト名で PostgreSQL に繋げる理由は?
+  choices:
+  - IP を固定しているから
+  - 同じ compose ネットワーク内ではサービス名が DNS 名になるから
+  - localhost だから
+  - 繋げない
+  answer: 1
+  explanation: '`postgresql://...@db/...` のように書く。localhost はコンテナ自身を指すので DB には届かない。'
+- id: dk-l03-2
+  difficulty: 2
+  question: '`depends_on: [db]` だけでは API 起動時に DB 接続エラーになることがある。なぜ? 対処は?'
+  choices:
+  - バグ
+  - 'depends_on は「コンテナの起動順」だけで、DB が接続を受け付ける状態かは見ない。healthcheck + `condition: service_healthy` で待つ'
+  - sleep 10 を入れる
+  - DB を先に手で起動する
+  answer: 1
+  explanation: PostgreSQL はプロセス起動から数秒後に受け付けを始める。ヘルスチェックで「準備完了」を定義して待たせる。
+- id: dk-l03-3
+  difficulty: 1
+  question: '`docker compose down` と `down -v` の違いは?'
+  choices:
+  - 同じ
+  - -v は名前付きボリュームも消す (DB のデータが消える)
+  - -v は詳細表示
+  - -v はイメージも消す
+  answer: 1
+  explanation: 作り直したいときは -v。普段は付けない。
+- id: dk-l03-4
+  difficulty: 2
+  question: '開発時に `volumes: [.:/app]` でソースをマウントする目的は?'
+  choices:
+  - イメージを小さくする
+  - ホストで編集したファイルが即コンテナに反映され、ビルドし直さずに動作確認できる (ホットリロード)
+  - 本番と同じにする
+  - セキュリティ
+  answer: 1
+  explanation: 本番イメージでは COPY で固める。開発だけマウントで上書きする、という使い分け。

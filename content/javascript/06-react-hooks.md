@@ -3,63 +3,6 @@ id: js-06
 title: React の hooks
 summary: useEffect で API を呼ぶ、依存配列、クリーンアップ、カスタム hook。バグの温床を先に潰す
 minutes: 12
-exercise: |
-  **ゴール:** useEffect の依存配列とクリーンアップを体感する。
-
-  1. 前の課題の `App.tsx` に足す:
-     ```tsx
-     const [sec, setSec] = useState(0);
-     useEffect(() => {
-       const t = setInterval(() => setSec((s) => s + 1), 1000);
-       return () => clearInterval(t);
-     }, []);
-     ```
-     と `<p>{sec} 秒</p>`
-  2. `return () => clearInterval(t)` を消し、コンポーネントを再マウント (ファイル保存で HMR) してカウントが加速するのを見る
-  3. 戻してから、依存配列を `[]` から省略に変え、コンソールに `console.log("effect")` を足して毎描画走るのを見る
-
-  **確認:** クリーンアップが無いとタイマーが積み重なる。依存配列で回数が変わる。
-questions:
-  - id: js-l06-1
-    difficulty: 1
-    question: "画面の初回表示時に 1 回だけ API を呼びたい。正しい書き方は?"
-    choices:
-      - "コンポーネント関数の本体で直接 fetch する"
-      - "useEffect(() => { fetch... }, []) と依存配列を空にする"
-      - "useEffect(() => { fetch... }) と依存配列を書かない"
-      - "useState の初期値で fetch する"
-    answer: 1
-    explanation: "本体で fetch すると描画のたびに呼ばれる。依存配列 [] は「マウント時に 1 回」。省略すると毎描画。"
-  - id: js-l06-2
-    difficulty: 2
-    question: "`useEffect(() => { load(id); }, [])` で、id が変わっても再取得されない。直し方は?"
-    choices:
-      - "依存配列に id を入れる: `[id]`"
-      - "useState に変える"
-      - "setInterval で監視"
-      - "直せない"
-    answer: 0
-    explanation: "依存配列は「この値が変わったら effect をやり直す」。effect 内で使う値は依存に入れる (eslint の react-hooks/exhaustive-deps が教えてくれる)。"
-  - id: js-l06-3
-    difficulty: 2
-    question: "useEffect の中で `return () => { ... }` する目的は?"
-    choices:
-      - "値を返す"
-      - "クリーンアップ。次の effect 実行前やアンマウント時に、タイマー解除や購読解除を行う"
-      - "エラー処理"
-      - "再描画の抑止"
-    answer: 1
-    explanation: "setInterval や addEventListener を effect で始めたら、戻り値の関数で止める。忘れるとメモリリークや二重実行になる。"
-  - id: js-l06-4
-    difficulty: 2
-    question: "hooks を呼ぶ場所のルールとして正しいのは?"
-    choices:
-      - "if 文の中で条件付きで呼んでよい"
-      - "コンポーネント関数 (またはカスタム hook) のトップレベルで、毎回同じ順序で呼ぶ"
-      - "ループの中で呼ぶ"
-      - "どこでもよい"
-    answer: 1
-    explanation: "React は呼び出し順で hook を対応付ける。条件やループの中で呼ぶと順序がずれて壊れる。"
 ---
 ## hooks とは
 
@@ -169,3 +112,21 @@ hook の中で hook を呼べます。名前は `use` で始めます。
 - 副作用は `useEffect`。依存配列に使う値を全部入れる
 - 始めたものはクリーンアップで止める
 - 繰り返すロジックはカスタム hook に
+
+## やってみる
+
+**ゴール:** useEffect の依存配列とクリーンアップを体感する。
+
+1. 前の課題の `App.tsx` に足す:
+   ```tsx
+   const [sec, setSec] = useState(0);
+   useEffect(() => {
+     const t = setInterval(() => setSec((s) => s + 1), 1000);
+     return () => clearInterval(t);
+   }, []);
+   ```
+   と `<p>{sec} 秒</p>`
+2. `return () => clearInterval(t)` を消し、コンポーネントを再マウント (ファイル保存で HMR) してカウントが加速するのを見る
+3. 戻してから、依存配列を `[]` から省略に変え、コンソールに `console.log("effect")` を足して毎描画走るのを見る
+
+**確認:** クリーンアップが無いとタイマーが積み重なる。依存配列で回数が変わる。

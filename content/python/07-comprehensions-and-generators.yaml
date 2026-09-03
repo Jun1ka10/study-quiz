@@ -1,0 +1,63 @@
+# 「内包表記とジェネレータ」の確認問題。lesson は隣の 07-comprehensions-and-generators.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: py-07
+questions:
+- id: py-l07-1
+  difficulty: 1
+  question: '`{x: len(x) for x in ["a", "bb"]}` の結果は?'
+  choices:
+  - '[1, 2]'
+  - '{"a": 1, "bb": 2}'
+  - '{1, 2}'
+  - エラー
+  answer: 1
+  explanation: '`{k: v for ...}` は辞書内包表記。`{x for ...}` (コロン無し) は set。'
+- id: py-l07-2
+  difficulty: 2
+  question: '`sum(x * x for x in range(10**8))` が `sum([x * x for x in range(10**8)])` より優れている点は?'
+  choices:
+  - 速い
+  - 1 億要素のリストをメモリに作らず、1 つずつ生成して足すのでメモリをほぼ使わない
+  - 結果が違う
+  - 違いは無い
+  answer: 1
+  explanation: 丸括弧 (または関数呼び出しの中で括弧省略) はジェネレータ式。遅延評価で 1 要素ずつ流れる。
+- id: py-l07-3
+  difficulty: 2
+  question: ジェネレータを 2 回 for で回すとどうなる?
+  choices:
+  - 2 回とも同じ結果
+  - 2 回目は何も出ない (使い切り)
+  - エラー
+  - 2 回目は逆順
+  answer: 1
+  explanation: ジェネレータは状態を持つイテレータで、最後まで進むと終わり。もう一度使うなら作り直すか list に変換しておく。
+- id: py-l07-4
+  difficulty: 2
+  question: 内包表記を使うべきでないのは?
+  choices:
+  - 1 行の変換やフィルタ
+  - 副作用 (print や append) を起こす目的で書くとき
+  - 辞書を作るとき
+  - 条件付きで要素を選ぶとき
+  answer: 1
+  explanation: '`[print(x) for x in xs]` は結果のリストを捨てるだけで意図が伝わらない。副作用は普通の for で書く。ネストが 2 段を超える場合も for に戻す。'
+- id: py-006
+  difficulty: 2
+  question: ジェネレータ関数を定義するために使うキーワードは?
+  choices:
+  - return
+  - yield
+  - async
+  - lambda
+  answer: 1
+  explanation: 関数本体に `yield` があるとジェネレータ関数になり、呼び出すとジェネレータオブジェクトを返す。値は遅延評価される。
+- id: py-007
+  difficulty: 2
+  question: '`[x * 2 for x in range(3)]` と同じ結果になるものは?'
+  choices:
+  - 'list(map(lambda x: x * 2, range(3)))'
+  - 'list(filter(lambda x: x * 2, range(3)))'
+  - (x * 2 for x in range(3))
+  - '{x * 2 for x in range(3)}'
+  answer: 0
+  explanation: map は各要素に関数を適用する。3 番目はジェネレータ式、4 番目は set 内包表記で型が異なる。

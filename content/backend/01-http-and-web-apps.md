@@ -3,49 +3,6 @@ id: be-01
 title: Web アプリの仕組みと HTTP
 summary: ブラウザからサーバー、DB まで 1 リクエストがどう流れるか。Django と FastAPI の位置づけ
 minutes: 10
-exercise: |
-  **ゴール:** curl で HTTP の生の姿を見る。
-
-  1. 次を実行する
-
-     ```bash
-     curl -v https://httpbin.org/get 2>&1 | head -40
-     curl -i https://httpbin.org/status/404
-     curl -i -X POST -H "Content-Type: application/json" -d '{"a":1}' https://httpbin.org/post
-     curl -I https://httpbin.org/redirect/1
-     ```
-  2. それぞれで「メソッド・パス・ヘッダー・ステータス行」を指で追う
-
-  **確認:** リクエストとレスポンスの各部分を言葉で言える。302 の `Location` ヘッダーを見つけた。
-questions:
-  - id: be-l01-1
-    difficulty: 1
-    question: "HTTP リクエストに含まれないものは?"
-    choices: ["メソッド (GET / POST)", "パス (/api/items)", "ヘッダー", "データベースの接続情報"]
-    answer: 3
-    explanation: "リクエストはメソッド・パス・ヘッダー・(あれば) ボディ。DB はサーバーの内側の話でクライアントは知らない。"
-  - id: be-l01-2
-    difficulty: 1
-    question: "「フォームを送信して保存する」処理に使う HTTP メソッドは?"
-    choices: ["GET", "POST", "HEAD", "OPTIONS"]
-    answer: 1
-    explanation: "GET は取得で副作用なし (ブックマークや再読み込みで何度呼ばれてもよい)。状態を変える操作は POST / PUT / PATCH / DELETE。"
-  - id: be-l01-3
-    difficulty: 2
-    question: "Django と FastAPI の違いとして最も適切なのは?"
-    choices:
-      - "Django は Python、FastAPI は JavaScript"
-      - "Django は ORM・管理画面・認証まで同梱のフルスタック、FastAPI は API に特化した軽量フレームワーク"
-      - "FastAPI は DB を使えない"
-      - "Django は API を作れない"
-    answer: 1
-    explanation: "画面まで出す業務アプリは Django、API だけ提供して画面は Next.js に任せる構成は FastAPI、のように用途で選ぶ。"
-  - id: be-l01-4
-    difficulty: 2
-    question: "ステータスコード 502 / 503 / 504 を見たとき、まず疑うべき場所は?"
-    choices: ["ブラウザ", "DNS", "ロードバランサの後ろのアプリサーバー (落ちている / 過負荷 / 遅い)", "クライアントの送ったデータ"]
-    answer: 2
-    explanation: "5xx はサーバー側。502 は上流が応答しない、503 は過負荷やメンテ、504 は上流のタイムアウト。4xx ならクライアント側を疑う。"
 ---
 ## 1 リクエストの旅
 
@@ -121,3 +78,19 @@ HTTP は 1 回ごとに独立していて、前のリクエストを覚えてい
 - 4xx はクライアント、5xx はサーバー。502〜504 は LB の後ろを疑う
 - ログイン状態は Cookie のセッションか JWT で持つ
 - Django は全部入り、FastAPI は API 特化
+
+## やってみる
+
+**ゴール:** curl で HTTP の生の姿を見る。
+
+1. 次を実行する
+
+   ```bash
+   curl -v https://httpbin.org/get 2>&1 | head -40
+   curl -i https://httpbin.org/status/404
+   curl -i -X POST -H "Content-Type: application/json" -d '{"a":1}' https://httpbin.org/post
+   curl -I https://httpbin.org/redirect/1
+   ```
+2. それぞれで「メソッド・パス・ヘッダー・ステータス行」を指で追う
+
+**確認:** リクエストとレスポンスの各部分を言葉で言える。302 の `Location` ヘッダーを見つけた。

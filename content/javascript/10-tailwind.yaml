@@ -1,0 +1,43 @@
+# 「Tailwind CSS」の確認問題。lesson は隣の 10-tailwind.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: js-10
+questions:
+- id: js-l10-1
+  difficulty: 1
+  question: Tailwind の考え方は?
+  choices:
+  - CSS を書かず、`p-4` `text-sm` のような小さなユーティリティクラスを HTML に並べて見た目を作る
+  - コンポーネントライブラリ (ボタンなどの完成品)
+  - CSS-in-JS
+  - CSS を自動生成する AI
+  answer: 0
+  explanation: クラス名 = スタイルの宣言。CSS ファイルを行き来せず、その場で完結する。
+- id: js-l10-2
+  difficulty: 1
+  question: '`md:flex` の意味は?'
+  choices:
+  - 中くらいの flex
+  - 画面幅が md (768px) 以上のときだけ flex
+  - flex の別名
+  - モバイルだけ flex
+  answer: 1
+  explanation: モバイルファースト。プレフィックス無しが最小幅、`sm:` `md:` `lg:` でそれ以上の幅を上書き。
+- id: js-l10-3
+  difficulty: 2
+  question: 同じクラスの組み合わせがあちこちに出てきた。Tailwind での対処は?
+  choices:
+  - コピーし続ける
+  - React コンポーネント (Button など) にまとめる。CSS 側で `@apply` する手もあるが、まずコンポーネント化
+  - Tailwind をやめる
+  - id セレクタにする
+  answer: 1
+  explanation: Tailwind は「繰り返しはコンポーネントで抽象化する」前提。@apply の多用は CSS に逆戻りする。
+- id: js-l10-4
+  difficulty: 2
+  question: 本番の CSS が小さいのはなぜ?
+  choices:
+  - 圧縮しているから
+  - ビルド時にソースを走査し、実際に使われているクラスの CSS だけ生成するから (使っていないクラスは出ない)
+  - CDN から読むから
+  - 小さくない
+  answer: 1
+  explanation: クラス名を文字列連結で動的に作ると (`bg-${color}-500`) 走査で見つからず出力されない。完全なクラス名を書く。

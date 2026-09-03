@@ -1,0 +1,49 @@
+# 「非同期処理と fetch」の確認問題。lesson は隣の 02-async-and-fetch.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: js-02
+questions:
+- id: js-l02-1
+  difficulty: 1
+  question: '`fetch(url)` が返すものは?'
+  choices:
+  - レスポンスの JSON
+  - レスポンスの文字列
+  - Response に解決する Promise
+  - true / false
+  answer: 2
+  explanation: fetch は Promise を返す。`await fetch(url)` で Response を得て、さらに `await res.json()` で本文を取り出す。
+- id: js-l02-2
+  difficulty: 2
+  question: |-
+    次のコードの問題は?
+
+    ```javascript
+    const res = await fetch("/api/items");
+    const data = await res.json();
+    ```
+  choices:
+  - 問題ない
+  - 404 や 500 でも例外にならず、エラー本文を JSON として読もうとする
+  - await は 2 回使えない
+  - fetch には URL を渡せない
+  answer: 1
+  explanation: fetch はネットワークエラー以外では reject しない。`if (!res.ok) throw new Error(res.status)` を挟む。
+- id: js-l02-3
+  difficulty: 2
+  question: POST で JSON を送るときに必要なものは?
+  choices:
+  - 'method: "POST" と body: JSON.stringify(data) と Content-Type ヘッダー'
+  - 'method: "POST" だけ'
+  - body にオブジェクトをそのまま渡す
+  - fetch では POST できない
+  answer: 0
+  explanation: 'body は文字列にする必要があり、サーバーが JSON と分かるよう `Content-Type: application/json` を付ける。'
+- id: js-l02-4
+  difficulty: 2
+  question: 3 つの API を並行して呼び、全部揃ってから処理したい。
+  choices:
+  - await を 3 回順番に書く
+  - Promise.all([fetch(a), fetch(b), fetch(c)]) を await する
+  - setTimeout で待つ
+  - fetch を 1 回にまとめる
+  answer: 1
+  explanation: 順番に await すると直列になり合計時間が伸びる。Promise.all で同時に投げて全部待つ。Python の asyncio.gather に相当。

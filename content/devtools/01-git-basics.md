@@ -3,53 +3,6 @@ id: dt-01
 title: Git の基本
 summary: コミット・ブランチ・リモート。毎日使う 10 個のコマンドと、困ったときの戻し方
 minutes: 12
-exercise: |
-  **ゴール:** ブランチ、amend、revert を安全な場所で一通りやる。
-
-  1. `mkdir gitdemo && cd gitdemo && git init && echo a > f && git add -A && git commit -m "first"`
-  2. `git switch -c feature`、`echo b >> f && git commit -am "add b"`、メッセージを `git commit --amend -m "add line b"` で直して `git log --oneline`
-  3. `git switch main && git merge feature`
-  4. `echo c >> f && git commit -am "add c"` → `git revert HEAD` → `cat f` と `git log --oneline` で打ち消しコミットを見る
-  5. `echo tmp >> f && git stash && git status && git stash pop`
-
-  **確認:** amend は履歴を書き換え、revert は積む。stash で退避できる。
-questions:
-  - id: dt-l01-1
-    difficulty: 1
-    question: "変更をコミットに含めるための正しい順序は?"
-    choices:
-      - "git commit → git add"
-      - "git add (ステージ) → git commit"
-      - "git push → git commit"
-      - "git add だけで記録される"
-    answer: 1
-    explanation: "add でステージングエリアに載せ、commit で記録する。add していない変更はコミットに入らない。"
-  - id: dt-l01-2
-    difficulty: 1
-    question: "`git pull` は何をする?"
-    choices:
-      - "ローカルの変更をリモートに送る"
-      - "リモートの変更を取得してローカルブランチに統合する (fetch + merge)"
-      - "ブランチを作る"
-      - "コミットを取り消す"
-    answer: 1
-    explanation: "pull = fetch (取得) + merge (統合)。送るのは push。"
-  - id: dt-l01-3
-    difficulty: 2
-    question: "直前のコミットメッセージを書き間違えた。まだ push していない。"
-    choices: ["git commit --amend", "git reset --hard", "git revert HEAD", "git push --force"]
-    answer: 0
-    explanation: "amend は直前のコミットを作り直す。push 済みのコミットを amend すると履歴がずれるので、その場合は新しいコミットで直す。"
-  - id: dt-l01-4
-    difficulty: 2
-    question: "push 済みのコミットを取り消したい。安全なのは?"
-    choices:
-      - "git reset --hard で消して force push"
-      - "git revert で「打ち消すコミット」を作って push"
-      - "リポジトリを作り直す"
-      - "ファイルを手で戻してコミット"
-    answer: 1
-    explanation: "revert は履歴を書き換えず、逆の変更を新しいコミットとして積む。共有済みの履歴を reset + force push で消すと他の人の作業と食い違う。"
 ---
 ## Git の 3 つの場所
 
@@ -115,3 +68,15 @@ git push -u origin feature/add-login   # 初回 push (以降は git push)
 - 作業はブランチで、main は PR 経由
 - 未 push は amend、push 済みは revert
 - `.env` はコミットしない
+
+## やってみる
+
+**ゴール:** ブランチ、amend、revert を安全な場所で一通りやる。
+
+1. `mkdir gitdemo && cd gitdemo && git init && echo a > f && git add -A && git commit -m "first"`
+2. `git switch -c feature`、`echo b >> f && git commit -am "add b"`、メッセージを `git commit --amend -m "add line b"` で直して `git log --oneline`
+3. `git switch main && git merge feature`
+4. `echo c >> f && git commit -am "add c"` → `git revert HEAD` → `cat f` と `git log --oneline` で打ち消しコミットを見る
+5. `echo tmp >> f && git stash && git status && git stash pop`
+
+**確認:** amend は履歴を書き換え、revert は積む。stash で退避できる。

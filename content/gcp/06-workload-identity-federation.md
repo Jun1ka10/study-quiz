@@ -1,78 +1,8 @@
 ---
 id: gcp-06
-title: "Workload Identity Federation"
-summary: "GitHub Actions から鍵ファイル無しで GCP に認証する。プール・プロバイダ・属性条件・サービスアカウントの借用"
+title: Workload Identity Federation
+summary: GitHub Actions から鍵ファイル無しで GCP に認証する。プール・プロバイダ・属性条件・サービスアカウントの借用
 minutes: 12
-exercise: |
-  **ゴール:** 自分のリポジトリの Actions から、鍵無しで `gcloud` が動く状態を作る。
-
-  1. 変数を決める: `PROJECT`、`REPO=owner/name`
-  2. ```bash
-     gcloud iam workload-identity-pools create github --location=global
-     gcloud iam workload-identity-pools providers create-oidc github --location=global --workload-identity-pool=github \
-       --issuer-uri="https://token.actions.githubusercontent.com" \
-       --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
-       --attribute-condition="assertion.repository == '$REPO'"
-     gcloud iam service-accounts create deploy
-     PN=$(gcloud projects describe $PROJECT --format='value(projectNumber)')
-     gcloud iam service-accounts add-iam-policy-binding deploy@$PROJECT.iam.gserviceaccount.com \
-       --role=roles/iam.workloadIdentityUser \
-       --member="principalSet://iam.googleapis.com/projects/$PN/locations/global/workloadIdentityPools/github/attribute.repository/$REPO"
-     ```
-  3. workflow:
-     ```yaml
-     permissions: { contents: read, id-token: write }
-     steps:
-       - uses: google-github-actions/auth@v2
-         with:
-           workload_identity_provider: projects/<PN>/locations/global/workloadIdentityPools/github/providers/github
-           service_account: deploy@<PROJECT>.iam.gserviceaccount.com
-       - run: gcloud auth list && gcloud projects describe <PROJECT> --format='value(name)'
-     ```
-  4. 別のリポジトリから同じ workflow を実行して **失敗する** ことを確認 (属性条件が効いている)
-
-  **確認:** Actions のログに deploy@ が active と出た。鍵ファイルは一切作っていない。
-questions:
-  - id: gcp-l06-1
-    difficulty: 1
-    question: "WIF がサービスアカウントの JSON 鍵より安全な理由は?"
-    choices:
-      - "暗号が強い"
-      - "長期の秘密がどこにも存在しない。GitHub が発行する数分で切れるトークンを都度交換するので、漏れる物が無く、ローテーションも不要"
-      - "速い"
-      - "無料だから"
-    answer: 1
-    explanation: "JSON 鍵は「持っていれば永遠に使える」もの。CI の secrets に置いた鍵はいつか漏れる前提で扱う必要がある。"
-  - id: gcp-l06-2
-    difficulty: 2
-    question: "プロバイダの属性条件 `assertion.repository == 'owner/name'` を省略すると?"
-    choices:
-      - "何も変わらない"
-      - "GitHub 上の任意のリポジトリの Actions がこのプールを通ってサービスアカウントを借用できてしまう"
-      - "エラーになる"
-      - "速くなる"
-    answer: 1
-    explanation: "issuer は GitHub 全体で共通。誰の workflow かは属性条件で絞る。リポジトリだけでなくブランチ (`assertion.ref`) で絞ることもできる。"
-  - id: gcp-l06-3
-    difficulty: 2
-    question: "`roles/iam.workloadIdentityUser` は何を許可している?"
-    choices:
-      - "プロジェクトの閲覧"
-      - "外部 ID (このプールの principal) が、そのサービスアカウントとして振る舞う (借用する) こと"
-      - "鍵の作成"
-      - "IAM の編集"
-    answer: 1
-    explanation: "SA 側に「誰が私を名乗ってよいか」を binding する。SA 自身の権限 (Cloud Run admin など) は別に付ける。"
-  - id: gcp-l06-4
-    difficulty: 1
-    question: "workflow の `permissions: id-token: write` が無いと?"
-    choices:
-      - "問題ない"
-      - "GitHub が OIDC トークンを発行してくれず、auth ステップが失敗する"
-      - "遅くなる"
-      - "警告のみ"
-    answer: 1
-    explanation: "既定では OIDC トークンを要求する権限が無い。job 単位で明示する。"
 ---
 ## 問題: CI にクラウドの鍵を置きたくない
 
@@ -182,3 +112,34 @@ steps:
 - Pool + Provider + 属性条件 (リポジトリ / ブランチ) + workloadIdentityUser
 - 属性条件は必須。無いと全世界に開く
 - workflow は `id-token: write` と `auth@v2`
+
+## やってみる
+
+**ゴール:** 自分のリポジトリの Actions から、鍵無しで `gcloud` が動く状態を作る。
+
+1. 変数を決める: `PROJECT`、`REPO=owner/name`
+2. ```bash
+   gcloud iam workload-identity-pools create github --location=global
+   gcloud iam workload-identity-pools providers create-oidc github --location=global --workload-identity-pool=github \
+     --issuer-uri="https://token.actions.githubusercontent.com" \
+     --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+     --attribute-condition="assertion.repository == '$REPO'"
+   gcloud iam service-accounts create deploy
+   PN=$(gcloud projects describe $PROJECT --format='value(projectNumber)')
+   gcloud iam service-accounts add-iam-policy-binding deploy@$PROJECT.iam.gserviceaccount.com \
+     --role=roles/iam.workloadIdentityUser \
+     --member="principalSet://iam.googleapis.com/projects/$PN/locations/global/workloadIdentityPools/github/attribute.repository/$REPO"
+   ```
+3. workflow:
+   ```yaml
+   permissions: { contents: read, id-token: write }
+   steps:
+     - uses: google-github-actions/auth@v2
+       with:
+         workload_identity_provider: projects/<PN>/locations/global/workloadIdentityPools/github/providers/github
+         service_account: deploy@<PROJECT>.iam.gserviceaccount.com
+     - run: gcloud auth list && gcloud projects describe <PROJECT> --format='value(name)'
+   ```
+4. 別のリポジトリから同じ workflow を実行して **失敗する** ことを確認 (属性条件が効いている)
+
+**確認:** Actions のログに deploy@ が active と出た。鍵ファイルは一切作っていない。

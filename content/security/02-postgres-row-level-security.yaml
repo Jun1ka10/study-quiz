@@ -1,0 +1,53 @@
+# 「PostgreSQL の Row Level Security」の確認問題。lesson は隣の 02-postgres-row-level-security.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: sec-02
+questions:
+- id: sec-l02-1
+  difficulty: 1
+  question: Row Level Security (RLS) が解く問題は?
+  choices:
+  - テーブルごとのアクセス権
+  - 同じテーブルの中で「この接続 (ユーザー / テナント) はどの行を読み書きできるか」を DB 側で強制する
+  - 通信の暗号化
+  - バックアップ
+  answer: 1
+  explanation: アプリが WHERE org_id = ? を書き忘れても、DB が他組織の行を返さない。
+- id: sec-l02-2
+  difficulty: 2
+  question: '`ALTER TABLE orders ENABLE ROW LEVEL SECURITY;` だけ実行し、ポリシーを 1 つも作らなかった。一般ユーザーから orders はどう見える?'
+  choices:
+  - 全部見える
+  - 1 行も見えない (既定は拒否)
+  - エラーになる
+  - 所有者の行だけ見える
+  answer: 1
+  explanation: RLS を有効にするとポリシーに一致しない行は無いものとして扱われる。ポリシーを足して初めて見える。
+- id: sec-l02-3
+  difficulty: 2
+  question: RLS ポリシーの中で「今の接続はどの組織か」を参照する典型的な方法は?
+  choices:
+  - アプリが毎回 WHERE を書く
+  - 接続 (トランザクション) 開始時に `SET LOCAL app.org_id = '...'` し、ポリシーで `current_setting('app.org_id')` を使う
+  - テーブル名に組織 ID を含める
+  - できない
+  answer: 1
+  explanation: セッション変数にテナントを入れ、ポリシーは `USING (org_id = current_setting('app.org_id')::int)` のように書く。SET LOCAL ならトランザクション終了で消える。
+- id: sec-l02-4
+  difficulty: 2
+  question: テーブルの所有者 (owner) やスーパーユーザーで接続すると RLS は?
+  choices:
+  - 常に適用される
+  - 既定では適用されない (バイパスされる)。アプリは所有者でない専用ロールで接続する
+  - エラーになる
+  - 読み取りだけ適用される
+  answer: 1
+  explanation: owner は FORCE ROW LEVEL SECURITY を付けない限り素通りする。マイグレーション用 (owner) と アプリ用 (制限付き) でロールを分けるのが定石。
+- id: sec-l02-5
+  difficulty: 3
+  question: '`USING` と `WITH CHECK` の違いは?'
+  choices:
+  - 同じ
+  - USING は既存行の可視性 (SELECT / UPDATE / DELETE の対象)、WITH CHECK は新しく書く行の条件 (INSERT / UPDATE 後の値)
+  - WITH CHECK は SELECT 用
+  - USING は INSERT 用
+  answer: 1
+  explanation: WITH CHECK が無いと、他組織の org_id を持つ行を INSERT できてしまう (自分では見えないが作れる)。両方書く。

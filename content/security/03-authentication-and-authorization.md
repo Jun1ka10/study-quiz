@@ -3,73 +3,6 @@ id: sec-03
 title: 認証と認可
 summary: 「誰か」を確かめる認証と「何をしてよいか」を決める認可。セッション・JWT・OAuth の違いと落とし穴
 minutes: 14
-exercise: |
-  **ゴール:** JWT の中身を読み、署名検証が無いと何が起きるかを見る。
-
-  1. `uv add pyjwt` → `python3`:
-     ```python
-     import jwt, base64, json
-     t = jwt.encode({"sub": 42, "role": "member"}, "secret", algorithm="HS256")
-     print(t)
-     h, p, s = t.split("."); json.loads(base64.urlsafe_b64decode(p + "=="))     # 誰でも読める
-     jwt.decode(t, "secret", algorithms=["HS256"])
-     jwt.decode(t, "wrong", algorithms=["HS256"])                                  # 失敗
-     ```
-  2. ペイロードの `member` を `admin` に書き換えたトークンを手で作り、`decode` が失敗することを確認
-  3. `exp` に過去の時刻を入れて encode し、decode で `ExpiredSignatureError` を見る
-
-  **確認:** 中身は見えるが、鍵が無いと改ざんできないことを確認した。
-questions:
-  - id: sec-l03-1
-    difficulty: 1
-    question: "認証 (authentication) と認可 (authorization) の違いは?"
-    choices:
-      - "同じ"
-      - "認証は「誰か」を確かめる、認可は「その人に何を許すか」を決める"
-      - "認可はログイン画面のこと"
-      - "認証は権限チェックのこと"
-    answer: 1
-    explanation: "ログインが認証、ログイン後に「この請求書を編集できるか」を判定するのが認可。401 は認証失敗、403 は認可失敗。"
-  - id: sec-l03-2
-    difficulty: 2
-    question: "セッション方式と JWT 方式の本質的な違いは?"
-    choices:
-      - "JWT の方が安全"
-      - "セッションはサーバーが状態 (対応表) を持つ。JWT はサーバーが状態を持たず、署名付きトークン自体に情報が入っている"
-      - "セッションは API で使えない"
-      - "JWT は Cookie に入れられない"
-    answer: 1
-    explanation: "セッションは即時無効化が簡単で、JWT はサーバーをスケールしやすい。JWT は有効期限まで取り消せないのが弱点。"
-  - id: sec-l03-3
-    difficulty: 2
-    question: "JWT を受け取ったサーバーが必ずやるべきことは?"
-    choices:
-      - "ペイロードをそのまま信じる"
-      - "署名を検証し、有効期限 (exp) と発行者 (iss) を確認する"
-      - "Base64 をデコードするだけ"
-      - "DB に保存する"
-    answer: 1
-    explanation: "JWT の中身は Base64 で誰でも読めるし書き換えられる。署名検証をしないと任意のユーザーを名乗れる。`alg: none` を受け付けない設定も必須。"
-  - id: sec-l03-4
-    difficulty: 2
-    question: "`GET /invoices/123` で、ログイン済みだが他社の請求書 ID を指定された。正しい対応は?"
-    choices:
-      - "ログイン済みなので返す"
-      - "対象が自分の組織のものかを毎回確認し、違えば 403 (または存在を隠して 404)"
-      - "URL を推測しにくくすれば十分"
-      - "フロントで非表示にする"
-    answer: 1
-    explanation: "認証済み = 何でも見てよい、ではない。ID を差し替えるだけで他人のデータが見える IDOR は最も多い認可漏れ。オブジェクト単位で所有者を確認する。"
-  - id: sec-l03-5
-    difficulty: 3
-    question: "OAuth 2.0 の「Google でログイン」で、アプリが最終的に受け取り、ユーザー特定に使うべきものは?"
-    choices:
-      - "ユーザーのパスワード"
-      - "ID プロバイダが署名した ID トークン (OpenID Connect) を検証して得た subject"
-      - "アクセストークンの文字列そのもの"
-      - "メールアドレスの文字列だけ"
-    answer: 1
-    explanation: "OAuth は「代理でアクセスする」ための委譲の仕組みで、認証には OpenID Connect の ID トークンを使う。メールは変わり得るので、不変の sub で紐づける。"
 ---
 ## 2 つは別の問題
 
@@ -145,3 +78,21 @@ ID を 1 つずらすだけで他人のデータが見える、最も多い認�
 - セッションは即時無効化、JWT は状態レス。JWT は短命 + 署名検証必須
 - 「Google でログイン」は OIDC の ID トークン。`sub` で紐づける
 - 認可はオブジェクト単位で所有者確認。IDOR を潰す
+
+## やってみる
+
+**ゴール:** JWT の中身を読み、署名検証が無いと何が起きるかを見る。
+
+1. `uv add pyjwt` → `python3`:
+   ```python
+   import jwt, base64, json
+   t = jwt.encode({"sub": 42, "role": "member"}, "secret", algorithm="HS256")
+   print(t)
+   h, p, s = t.split("."); json.loads(base64.urlsafe_b64decode(p + "=="))     # 誰でも読める
+   jwt.decode(t, "secret", algorithms=["HS256"])
+   jwt.decode(t, "wrong", algorithms=["HS256"])                                  # 失敗
+   ```
+2. ペイロードの `member` を `admin` に書き換えたトークンを手で作り、`decode` が失敗することを確認
+3. `exp` に過去の時刻を入れて encode し、decode で `ExpiredSignatureError` を見る
+
+**確認:** 中身は見えるが、鍵が無いと改ざんできないことを確認した。

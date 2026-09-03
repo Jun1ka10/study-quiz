@@ -3,53 +3,6 @@ id: infra-01
 title: Linux の基本操作
 summary: ファイル・プロセス・権限・サービス。サーバーに入って最初にやることを身につける
 minutes: 12
-exercise: |
-  **ゴール:** サーバーに入ったときの最初の 5 分を手で再現する。
-
-  1. 手元の Linux (SSH 先でも WSL でも) で:
-     ```bash
-     uptime; df -h; free -h; ps aux --sort=-%mem | head -5
-     sudo systemctl status ssh   # 無ければ cron や docker
-     journalctl -u ssh -n 20 --no-pager
-     ls -la ~/.ssh; stat -c "%a %n" ~/.ssh/*
-     ```
-  2. `touch t && chmod 600 t && ls -l t`、`chmod 644 t && ls -l t` で表示の変化を見る
-  3. `du -sh /var/log/* 2>/dev/null | sort -h | tail -3` で大きいログを探す
-
-  **確認:** `.ssh` の秘密鍵が 600 になっている (なっていなければ直す)。
-questions:
-  - id: infra-l01-1
-    difficulty: 1
-    question: "ディスクの空き容量を確認するコマンドは?"
-    choices: ["du", "df -h", "free -h", "top"]
-    answer: 1
-    explanation: "df はファイルシステム単位の空き容量。du はディレクトリの使用量。free はメモリ。"
-  - id: infra-l01-2
-    difficulty: 1
-    question: "`chmod 644 file` の意味は?"
-    choices:
-      - "所有者: 読み書き / グループ: 読み / その他: 読み"
-      - "全員: 読み書き実行"
-      - "所有者のみ読み書き実行"
-      - "所有者: 読み / グループ: 読み書き / その他: なし"
-    answer: 0
-    explanation: "r=4, w=2, x=1。6=rw-, 4=r--, 4=r--。秘密鍵は 600 (所有者だけ rw)。"
-  - id: infra-l01-3
-    difficulty: 2
-    question: "systemd で nginx を「今すぐ起動し、OS 再起動後も自動起動する」には?"
-    choices:
-      - "systemctl start nginx"
-      - "systemctl enable --now nginx"
-      - "systemctl restart nginx"
-      - "service nginx boot"
-    answer: 1
-    explanation: "start は今だけ、enable は起動時の自動起動。`enable --now` で両方。"
-  - id: infra-l01-4
-    difficulty: 2
-    question: "ログファイルの末尾を追いかけながら表示するには?"
-    choices: ["cat -f app.log", "tail -f app.log", "head -f app.log", "less app.log"]
-    answer: 1
-    explanation: "`tail -f` で追記を待ち続ける。systemd のサービスなら `journalctl -u nginx -f`。"
 ---
 ## ファイルとディレクトリ
 
@@ -128,3 +81,19 @@ journalctl -u nginx -f      # そのサービスのログを追う
 - 迷ったら `ls -la`、`df -h`、`ps aux`、`tail -f`
 - 権限は 3 桁の数字で覚える。秘密鍵は 600
 - サービスは systemctl、ログは journalctl
+
+## やってみる
+
+**ゴール:** サーバーに入ったときの最初の 5 分を手で再現する。
+
+1. 手元の Linux (SSH 先でも WSL でも) で:
+   ```bash
+   uptime; df -h; free -h; ps aux --sort=-%mem | head -5
+   sudo systemctl status ssh   # 無ければ cron や docker
+   journalctl -u ssh -n 20 --no-pager
+   ls -la ~/.ssh; stat -c "%a %n" ~/.ssh/*
+   ```
+2. `touch t && chmod 600 t && ls -l t`、`chmod 644 t && ls -l t` で表示の変化を見る
+3. `du -sh /var/log/* 2>/dev/null | sort -h | tail -3` で大きいログを探す
+
+**確認:** `.ssh` の秘密鍵が 600 になっている (なっていなければ直す)。

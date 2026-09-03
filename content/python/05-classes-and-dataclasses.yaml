@@ -1,0 +1,60 @@
+# 「クラスと dataclass」の確認問題。lesson は隣の 05-classes-and-dataclasses.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: py-05
+questions:
+- id: py-l05-1
+  difficulty: 1
+  question: メソッドの第 1 引数 `self` は何か?
+  choices:
+  - クラス自身
+  - そのメソッドを呼び出したインスタンス
+  - 予約語で省略できる
+  - 親クラス
+  answer: 1
+  explanation: '`obj.method(x)` は `Class.method(obj, x)` と同じ。self は慣習名で、インスタンスの属性に `self.name` でアクセスする。'
+- id: py-l05-2
+  difficulty: 1
+  question: '`@dataclass` を付けると自動生成されるものは?'
+  choices:
+  - __init__ / __repr__ / __eq__
+  - DB テーブル
+  - JSON 変換
+  - スレッド
+  answer: 0
+  explanation: フィールド定義からコンストラクタ・表示・比較が生える。定型コードが消え、フィールドの追加漏れも減る。
+- id: py-l05-3
+  difficulty: 2
+  question: |-
+    次の dataclass の問題は?
+
+    ```python
+    @dataclass
+    class Order:
+        items: list = []
+    ```
+  choices:
+  - 問題ない
+  - ミュータブルなデフォルト値はエラーになる。`field(default_factory=list)` を使う
+  - list は使えない
+  - 型ヒントが要らない
+  answer: 1
+  explanation: 関数のデフォルト引数と同じ罠を防ぐため、dataclass は ValueError を出す。default_factory はインスタンスごとに新しい list を作る。
+- id: py-l05-4
+  difficulty: 2
+  question: 「継承より委譲 (composition)」が勧められる理由は?
+  choices:
+  - 継承は遅い
+  - 継承は親の実装に強く結合し、変更が子に波及する。必要な機能を持つオブジェクトを属性として持つ方が疎結合
+  - Python は継承できない
+  - 委譲の方が短い
+  answer: 1
+  explanation: '`class Report(Emailer)` より `class Report: def __init__(self, emailer)`。is-a が本当に成り立つときだけ継承する。'
+- id: py-010
+  difficulty: 3
+  question: '`@dataclass(frozen=True)` を付けたクラスの特徴として正しいものは?'
+  choices:
+  - インスタンス生成後に属性を代入すると FrozenInstanceError になる
+  - '`__init__` が生成されなくなる'
+  - 継承ができなくなる
+  - 属性の型チェックが実行時に行われる
+  answer: 0
+  explanation: frozen=True は属性代入を禁止し、`__hash__` も自動生成されるので dict のキーや set の要素に使える。型チェックは行わない。

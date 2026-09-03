@@ -1,70 +1,8 @@
 ---
 id: sec-08
-title: "依存ライブラリの脆弱性と更新"
-summary: "pip-audit / npm audit / Dependabot、ロックファイルと更新の習慣、サプライチェーン攻撃への基本的な備え"
+title: 依存ライブラリの脆弱性と更新
+summary: pip-audit / npm audit / Dependabot、ロックファイルと更新の習慣、サプライチェーン攻撃への基本的な備え
 minutes: 10
-exercise: |
-  **ゴール:** 自分のプロジェクトを監査し、Dependabot を有効にする。
-
-  1. Python: `uv add --dev pip-audit && uv run pip-audit` (uv なら `uv pip audit` 相当は無いので pip-audit を使う)。出た CVE の内容を 1 つ読む
-  2. Node (あれば): `npm audit` → `npm audit --audit-level=high` で終了コードが変わるのを見る
-  3. `.github/dependabot.yml`:
-     ```yaml
-     version: 2
-     updates:
-       - package-ecosystem: "pip"
-         directory: "/"
-         schedule: { interval: "weekly" }
-       - package-ecosystem: "github-actions"
-         directory: "/"
-         schedule: { interval: "weekly" }
-     ```
-     をコミットし、Security タブで Dependabot alerts を有効化
-  4. CI に `uv run pip-audit` のステップを足す
-  5. わざと古いバージョン (`requests==2.25.0`) を入れて pip-audit が非 0 になるのを見て、戻す
-
-  **確認:** 監査コマンドが CI で走り、Dependabot の PR が来る状態になった。
-questions:
-  - id: sec-l08-1
-    difficulty: 1
-    question: "自分のコードに脆弱性が無くても危険なのはなぜ?"
-    choices:
-      - "危険ではない"
-      - "依存ライブラリ (とその依存) に既知の脆弱性があれば、そこから攻撃される。アプリの大半のコードは自分が書いていない"
-      - "OS のせい"
-      - "ネットワークのせい"
-    answer: 1
-    explanation: "典型的な Web アプリは数百のパッケージに依存する。監査ツールでロックファイルを既知の CVE と突き合わせる。"
-  - id: sec-l08-2
-    difficulty: 2
-    question: "Dependabot の PR が毎週たくさん来る。良い運用は?"
-    choices:
-      - "全部閉じる"
-      - "CI が緑ならマイナー / パッチはまとめて取り込む。メジャーは変更点を読んでから。セキュリティ更新は最優先"
-      - "半年に 1 回まとめて上げる"
-      - "無視して自動マージ"
-    answer: 1
-    explanation: "小さく頻繁に上げる方が、半年分をまとめて上げるより安全で楽。テストがあるから自動で判断できる。"
-  - id: sec-l08-3
-    difficulty: 2
-    question: "ロックファイル (uv.lock / package-lock.json) をコミットする理由をセキュリティ面で言うと?"
-    choices:
-      - "理由は無い"
-      - "全依存のバージョン (とハッシュ) が固定され、監査の対象が明確になり、CI と本番で同じものが入る。知らないうちに新しい (壊れた / 悪意ある) 版が入らない"
-      - "速くなる"
-      - "小さくなる"
-    answer: 1
-    explanation: "ハッシュ検証で、レジストリ側で差し替えられたパッケージも検出できる。"
-  - id: sec-l08-4
-    difficulty: 2
-    question: "サプライチェーン攻撃 (人気パッケージの乗っ取り、タイポスクワッティング) への基本的な備えは?"
-    choices:
-      - "パッケージを使わない"
-      - "依存を増やしすぎない、名前をよく確認する、ロックとハッシュ検証、CI で監査、GitHub Actions は SHA 固定、公開時は 2FA"
-      - "ウイルス対策ソフト"
-      - "備えは不要"
-    answer: 1
-    explanation: "完全には防げないが、「入る量を減らし、入ったものを固定し、監視する」で被害確率と範囲を下げる。"
 ---
 ## 依存は攻撃面
 
@@ -154,3 +92,26 @@ updates:
 - 小さく頻繁に更新。Dependabot に PR を作らせる
 - ロックとハッシュで固定し、ロックどおりに入れる
 - 依存を減らし、名前を確認し、Actions は SHA 固定
+
+## やってみる
+
+**ゴール:** 自分のプロジェクトを監査し、Dependabot を有効にする。
+
+1. Python: `uv add --dev pip-audit && uv run pip-audit` (uv なら `uv pip audit` 相当は無いので pip-audit を使う)。出た CVE の内容を 1 つ読む
+2. Node (あれば): `npm audit` → `npm audit --audit-level=high` で終了コードが変わるのを見る
+3. `.github/dependabot.yml`:
+   ```yaml
+   version: 2
+   updates:
+     - package-ecosystem: "pip"
+       directory: "/"
+       schedule: { interval: "weekly" }
+     - package-ecosystem: "github-actions"
+       directory: "/"
+       schedule: { interval: "weekly" }
+   ```
+   をコミットし、Security タブで Dependabot alerts を有効化
+4. CI に `uv run pip-audit` のステップを足す
+5. わざと古いバージョン (`requests==2.25.0`) を入れて pip-audit が非 0 になるのを見て、戻す
+
+**確認:** 監査コマンドが CI で走り、Dependabot の PR が来る状態になった。

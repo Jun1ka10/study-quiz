@@ -3,62 +3,6 @@ id: sec-04
 title: パスワードとハッシュ
 summary: なぜ平文でも暗号化でもなくハッシュなのか。bcrypt / argon2、ソルト、ストレッチング、漏洩時の被害を抑える設計
 minutes: 10
-exercise: |
-  **ゴール:** ハッシュの速度差を測る。
-
-  1. `uv add bcrypt` → `python3`:
-     ```python
-     import hashlib, bcrypt, time
-     pw = b"password123"
-     t = time.perf_counter(); [hashlib.sha256(pw).hexdigest() for _ in range(100000)]; print("sha256 x100k", time.perf_counter() - t)
-     t = time.perf_counter(); h = bcrypt.hashpw(pw, bcrypt.gensalt(rounds=12)); print("bcrypt x1", time.perf_counter() - t)
-     print(h); print(bcrypt.hashpw(pw, bcrypt.gensalt(rounds=12)))     # 毎回違う (ソルト)
-     bcrypt.checkpw(pw, h), bcrypt.checkpw(b"wrong", h)
-     ```
-  2. rounds を 10 と 14 にして時間を比べる
-
-  **確認:** SHA-256 は 10 万回でも一瞬、bcrypt は 1 回で数百 ms。同じパスワードでもハッシュが毎回違う。
-questions:
-  - id: sec-l04-1
-    difficulty: 1
-    question: "パスワードを DB に保存する正しい形は?"
-    choices:
-      - "平文"
-      - "AES で暗号化"
-      - "bcrypt や argon2 のような、パスワード用の遅いハッシュ関数で変換した値"
-      - "MD5"
-    answer: 2
-    explanation: "暗号化は鍵があれば元に戻せる。ハッシュは戻せず、照合は「入力をハッシュして比較」で行う。MD5 / SHA-256 は速すぎて総当たりに弱い。"
-  - id: sec-l04-2
-    difficulty: 2
-    question: "ソルトの役割は?"
-    choices:
-      - "ハッシュを速くする"
-      - "ユーザーごとに異なる乱数を混ぜ、同じパスワードでも別のハッシュにし、事前計算表 (レインボーテーブル) を無効化する"
-      - "パスワードを暗号化する"
-      - "パスワードの長さを揃える"
-    answer: 1
-    explanation: "bcrypt / argon2 はソルトを自動生成してハッシュ文字列に含めるので、自分で管理する必要は無い。"
-  - id: sec-l04-3
-    difficulty: 2
-    question: "SHA-256 ではなく bcrypt を使う理由は?"
-    choices:
-      - "SHA-256 は古い"
-      - "bcrypt は意図的に遅く (コスト係数で調整可)、攻撃者の総当たり速度を桁違いに落とせる"
-      - "bcrypt の方が短い"
-      - "SHA-256 は衝突する"
-    answer: 1
-    explanation: "GPU で SHA-256 は毎秒数十億回計算できる。bcrypt はコスト 12 で 1 回 0.2 秒程度になり、辞書攻撃が現実的でなくなる。"
-  - id: sec-l04-4
-    difficulty: 2
-    question: "ログイン失敗時のメッセージとして適切なのは?"
-    choices:
-      - "「そのメールアドレスは登録されていません」"
-      - "「パスワードが違います」"
-      - "「メールアドレスまたはパスワードが違います」と区別しない"
-      - "「ユーザーは存在しますがロックされています」"
-    answer: 2
-    explanation: "どちらが間違いかを教えると、登録済みメールアドレスの列挙に使われる。パスワードリセットの応答も同様に区別しない。"
 ---
 ## 保存の 3 つの選択肢
 
@@ -115,3 +59,20 @@ argon2 (argon2id) はより新しく、メモリも消費させて GPU 攻撃に
 - 遅さが防御。コスト係数は環境に合わせて上げていく
 - ソルトはライブラリが自動で付ける
 - 失敗理由は区別しない、回数制限、管理者は多要素
+
+## やってみる
+
+**ゴール:** ハッシュの速度差を測る。
+
+1. `uv add bcrypt` → `python3`:
+   ```python
+   import hashlib, bcrypt, time
+   pw = b"password123"
+   t = time.perf_counter(); [hashlib.sha256(pw).hexdigest() for _ in range(100000)]; print("sha256 x100k", time.perf_counter() - t)
+   t = time.perf_counter(); h = bcrypt.hashpw(pw, bcrypt.gensalt(rounds=12)); print("bcrypt x1", time.perf_counter() - t)
+   print(h); print(bcrypt.hashpw(pw, bcrypt.gensalt(rounds=12)))     # 毎回違う (ソルト)
+   bcrypt.checkpw(pw, h), bcrypt.checkpw(b"wrong", h)
+   ```
+2. rounds を 10 と 14 にして時間を比べる
+
+**確認:** SHA-256 は 10 万回でも一瞬、bcrypt は 1 回で数百 ms。同じパスワードでもハッシュが毎回違う。

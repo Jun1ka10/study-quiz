@@ -3,67 +3,6 @@ id: de-02
 title: SOLID 原則
 summary: 5 つの原則を「何を防ぐための道具か」で理解する
 minutes: 12
-exercise: |
-  **ゴール:** if 分岐を Protocol + 実装クラスに置き換える (OCP / DIP)。
-
-  1. `notify.py`:
-     ```python
-     def notify(msg, kind):
-         if kind == "email": print("email:", msg)
-         elif kind == "slack": print("slack:", msg)
-     ```
-  2. これを書き換える:
-     ```python
-     from typing import Protocol
-     class Notifier(Protocol):
-         def send(self, msg: str) -> None: ...
-     class Email:
-         def send(self, msg): print("email:", msg)
-     class Slack:
-         def send(self, msg): print("slack:", msg)
-     def notify(msg: str, n: Notifier): n.send(msg)
-     notify("hi", Slack())
-     ```
-  3. `Sms` クラスを追加する。`notify` を触らずに済むことを確認
-
-  **確認:** 手段を足すときに既存の関数を変更しなかった。
-questions:
-  - id: de-l02-1
-    difficulty: 1
-    question: "単一責任の原則 (SRP) の正しい言い方は?"
-    choices:
-      - "クラスは 1 つのメソッドだけ持つ"
-      - "クラスを変更する理由は 1 つだけであるべき"
-      - "1 ファイル 1 クラス"
-      - "関数は 10 行以内"
-    answer: 1
-    explanation: "責務 = 変更理由。複数の理由で変更されるクラスは分ける。"
-  - id: de-l02-2
-    difficulty: 2
-    question: "オープン・クローズドの原則 (OCP) を満たしているのは?"
-    choices:
-      - "新しい通知手段を足すたびに if 分岐を追加する"
-      - "Notifier インターフェースを定義し、新しい通知手段は実装クラスを追加するだけにする"
-      - "全通知処理を 1 つの関数にまとめる"
-      - "通知手段を増やさない"
-    answer: 1
-    explanation: "既存コードを変更せず (closed)、新しいクラスを足すことで拡張 (open) できる形。"
-  - id: de-l02-3
-    difficulty: 2
-    question: "依存性逆転の原則 (DIP) で、ビジネスロジックが依存すべきものは?"
-    choices: ["具体的な DB ライブラリ", "抽象 (インターフェース)", "HTTP フレームワーク", "設定ファイル"]
-    answer: 1
-    explanation: "上位 (ロジック) も下位 (DB 等) も抽象に依存する。実装は外から差し込む。"
-  - id: de-l02-4
-    difficulty: 3
-    question: "インターフェース分離の原則 (ISP) に違反しているのは?"
-    choices:
-      - "巨大な Storage インターフェースを実装するために、使わないメソッドまで空実装している"
-      - "Reader と Writer を別インターフェースに分けている"
-      - "1 つのクラスが 2 つの小さいインターフェースを実装している"
-      - "インターフェースにメソッドが 1 つしかない"
-    answer: 0
-    explanation: "使わないメソッドを強制されるのが ISP 違反。利用側ごとに小さいインターフェースに分ける。"
 ---
 SOLID は 5 つの原則の頭文字です。暗記より「それぞれ何の問題を防ぐか」で覚えます。
 
@@ -136,3 +75,29 @@ SRP と ISP は「分ける」、OCP と DIP は「抽象に依存する」、LS
 - L: 子は親の代わりになれる
 - I: 使わないものに依存しない
 - D: 抽象に依存し、実装は注入する
+
+## やってみる
+
+**ゴール:** if 分岐を Protocol + 実装クラスに置き換える (OCP / DIP)。
+
+1. `notify.py`:
+   ```python
+   def notify(msg, kind):
+       if kind == "email": print("email:", msg)
+       elif kind == "slack": print("slack:", msg)
+   ```
+2. これを書き換える:
+   ```python
+   from typing import Protocol
+   class Notifier(Protocol):
+       def send(self, msg: str) -> None: ...
+   class Email:
+       def send(self, msg): print("email:", msg)
+   class Slack:
+       def send(self, msg): print("slack:", msg)
+   def notify(msg: str, n: Notifier): n.send(msg)
+   notify("hi", Slack())
+   ```
+3. `Sms` クラスを追加する。`notify` を触らずに済むことを確認
+
+**確認:** 手段を足すときに既存の関数を変更しなかった。

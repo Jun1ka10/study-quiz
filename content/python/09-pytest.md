@@ -3,66 +3,6 @@ id: py-09
 title: pytest でテストを書く
 summary: テストの書き方、fixture、parametrize、モック、何をテストすべきか
 minutes: 12
-exercise: |
-  **ゴール:** テストを 1 つ書いて落とし、直して通す。
-
-  1. `calc.py`: `def total_with_tax(amount, rate=0.1): return int(amount * (1 + rate))`
-  2. `test_calc.py`:
-     ```python
-     import pytest
-     from calc import total_with_tax
-     @pytest.mark.parametrize("amount, expected", [(1000, 1100), (0, 0), (1, 1)])
-     def test_total(amount, expected):
-         assert total_with_tax(amount) == expected
-     def test_negative():
-         with pytest.raises(ValueError):
-             total_with_tax(-1)
-     ```
-  3. `uv run pytest -q` (または `pytest -q`) で 1 件落ちるのを見る
-  4. `calc.py` に `if amount < 0: raise ValueError` を足して全部通す
-
-  **確認:** 落ちたときの表示で、どの入力が落ちたかが読めた。
-questions:
-  - id: py-l09-1
-    difficulty: 1
-    question: "pytest がテストとして認識するものは?"
-    choices:
-      - "すべての関数"
-      - "`test_*.py` または `*_test.py` の中の `test_` で始まる関数"
-      - "main 関数"
-      - "docstring のある関数"
-    answer: 1
-    explanation: "`assert` を書くだけでよい。unittest のような TestCase クラスや self.assertEqual は不要。"
-  - id: py-l09-2
-    difficulty: 2
-    question: "fixture の役割は?"
-    choices:
-      - "テストを速くする"
-      - "テストに必要な前提 (DB セッション、サンプルデータ、一時ファイル) を用意し、終わったら片付ける仕組み。引数名で受け取る"
-      - "テストを並列化する"
-      - "アサーションの別名"
-    answer: 1
-    explanation: "`@pytest.fixture` で定義し、テスト関数の引数に同名で書くと注入される。yield の後が後片付け。"
-  - id: py-l09-3
-    difficulty: 2
-    question: "同じロジックを 5 種類の入力で検証したい。良い書き方は?"
-    choices:
-      - "テスト関数を 5 つコピーする"
-      - "`@pytest.mark.parametrize` で入力と期待値の組を並べる"
-      - "1 つの関数に assert を 5 つ書く"
-      - "for で回す"
-    answer: 1
-    explanation: "parametrize なら 5 件が別々のテストとして報告され、どれが落ちたか一目で分かる。assert を並べると最初の失敗で止まる。"
-  - id: py-l09-4
-    difficulty: 2
-    question: "外部 API (決済) を呼ぶ関数をテストするとき、適切なのは?"
-    choices:
-      - "本番の API を叩く"
-      - "API クライアントを差し替え可能にしておき、テストでは偽物 (フェイク / モック) を注入して、送った内容と戻りの扱いを検証する"
-      - "テストしない"
-      - "テスト用の本番アカウントで課金する"
-    answer: 1
-    explanation: "設計の「テストしやすい設計」と同じ。依存を引数や Depends で受ける形にしておくと、テストが速く安定する。"
 ---
 ## 最小のテスト
 
@@ -184,3 +124,24 @@ PR ごとに走らせ、落ちたらマージしない。これでテストが�
 - 前提は fixture (conftest.py)、入力の並びは parametrize
 - 外部依存は差し替え可能にして偽物を注入
 - 境界と契約とバグ再発を優先。CI で回す
+
+## やってみる
+
+**ゴール:** テストを 1 つ書いて落とし、直して通す。
+
+1. `calc.py`: `def total_with_tax(amount, rate=0.1): return int(amount * (1 + rate))`
+2. `test_calc.py`:
+   ```python
+   import pytest
+   from calc import total_with_tax
+   @pytest.mark.parametrize("amount, expected", [(1000, 1100), (0, 0), (1, 1)])
+   def test_total(amount, expected):
+       assert total_with_tax(amount) == expected
+   def test_negative():
+       with pytest.raises(ValueError):
+           total_with_tax(-1)
+   ```
+3. `uv run pytest -q` (または `pytest -q`) で 1 件落ちるのを見る
+4. `calc.py` に `if amount < 0: raise ValueError` を足して全部通す
+
+**確認:** 落ちたときの表示で、どの入力が落ちたかが読めた。

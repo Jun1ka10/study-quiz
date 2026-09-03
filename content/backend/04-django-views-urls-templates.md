@@ -3,67 +3,6 @@ id: be-04
 title: Django のビュー・URL・テンプレート
 summary: 関数ビューの書き方、urls.py、テンプレート構文、フォームと CSRF、ログイン必須の付け方
 minutes: 14
-exercise: |
-  **ゴール:** ビュー・URL・テンプレートをつなぎ、CSRF エラーを 1 回出す。
-
-  1. `members/views.py`:
-     ```python
-     from django.shortcuts import render, redirect
-     from .models import Client
-     def index(request):
-         if request.method == "POST":
-             Client.objects.create(name=request.POST["name"]); return redirect("index")
-         return render(request, "index.html", {"clients": Client.objects.all()})
-     ```
-  2. `config/urls.py` に `path("", views.index, name="index")`。`templates/index.html` を作り `settings.TEMPLATES[0]["DIRS"]` に `BASE_DIR / "templates"` を足す
-     ```django
-     <form method="post"><input name="name"><button>追加</button></form>
-     <ul>{% for c in clients %}<li>{{ c.name }}</li>{% endfor %}</ul>
-     ```
-  3. 送信して 403 を見る。`{% csrf_token %}` を form 内に足して通す
-
-  **確認:** 403 の理由を説明できる。POST 後に redirect している理由も。
-questions:
-  - id: be-l04-1
-    difficulty: 1
-    question: "ビュー関数が必ず受け取り、必ず返すものは?"
-    choices:
-      - "モデル / テンプレート"
-      - "HttpRequest / HttpResponse (render や redirect が作る)"
-      - "文字列 / 辞書"
-      - "URL / HTML"
-    answer: 1
-    explanation: "`def member(request): ... return render(request, \"members/index.html\", ctx)`。render や redirect、JsonResponse はすべて HttpResponse の一種。"
-  - id: be-l04-2
-    difficulty: 1
-    question: "`path(\"members/<uuid:pk>/\", views.detail, name=\"member/detail\")` の `<uuid:pk>` は?"
-    choices:
-      - "クエリ文字列"
-      - "パスの一部を uuid として取り出し、ビューの引数 pk に渡す"
-      - "コメント"
-      - "テンプレートの変数"
-    answer: 1
-    explanation: "`def detail(request, pk):` で受ける。`name=` を付けると テンプレートで `{% url 'member/detail' pk=m.pk %}` と逆引きできる。"
-  - id: be-l04-3
-    difficulty: 2
-    question: "POST フォームで `403 CSRF verification failed` が出た。足りないものは?"
-    choices:
-      - "method=\"post\""
-      - "テンプレートの form 内の `{% csrf_token %}` (JS の fetch なら X-CSRFToken ヘッダー)"
-      - "action 属性"
-      - "ログイン"
-    answer: 1
-    explanation: "CSRF 対策で、状態を変える POST には Django が発行したトークンが必要。fetch で JSON を送る場合は Cookie の csrftoken をヘッダーに載せる。"
-  - id: be-l04-4
-    difficulty: 2
-    question: "未ログインのユーザーをログイン画面に飛ばしたい。最も簡単なのは?"
-    choices:
-      - "ビューの先頭で if request.user.is_authenticated を書く"
-      - "`@login_required` デコレータをビューに付ける"
-      - "テンプレートで隠す"
-      - "URL を秘密にする"
-    answer: 1
-    explanation: "`from django.contrib.auth.decorators import login_required`。未ログインなら settings.LOGIN_URL へリダイレクトし、`?next=` で戻り先を付けてくれる。"
 ---
 ## ビュー関数
 
@@ -189,3 +128,25 @@ messages.success(request, "保存しました")
 - URL は `path()` で型付きに受け取り、`name` で逆引き
 - テンプレートは表示だけ。ロジックはビューへ
 - POST には `{% csrf_token %}`、POST 後は redirect、認証は `@login_required`
+
+## やってみる
+
+**ゴール:** ビュー・URL・テンプレートをつなぎ、CSRF エラーを 1 回出す。
+
+1. `members/views.py`:
+   ```python
+   from django.shortcuts import render, redirect
+   from .models import Client
+   def index(request):
+       if request.method == "POST":
+           Client.objects.create(name=request.POST["name"]); return redirect("index")
+       return render(request, "index.html", {"clients": Client.objects.all()})
+   ```
+2. `config/urls.py` に `path("", views.index, name="index")`。`templates/index.html` を作り `settings.TEMPLATES[0]["DIRS"]` に `BASE_DIR / "templates"` を足す
+   ```django
+   <form method="post"><input name="name"><button>追加</button></form>
+   <ul>{% for c in clients %}<li>{{ c.name }}</li>{% endfor %}</ul>
+   ```
+3. 送信して 403 を見る。`{% csrf_token %}` を form 内に足して通す
+
+**確認:** 403 の理由を説明できる。POST 後に redirect している理由も。

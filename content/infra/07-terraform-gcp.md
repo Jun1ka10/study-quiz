@@ -1,73 +1,8 @@
 ---
 id: infra-07
-title: "Terraform で GCP を組む (import と state の運用)"
-summary: "リモート state、ファイル分割、既存リソースの import、plan の読み方、環境の分け方。本番を安全に変更する型"
+title: Terraform で GCP を組む (import と state の運用)
+summary: リモート state、ファイル分割、既存リソースの import、plan の読み方、環境の分け方。本番を安全に変更する型
 minutes: 14
-exercise: |
-  **ゴール:** 手で作ったリソースを import して plan を差分ゼロにする。
-
-  1. `gcloud storage buckets create gs://$(gcloud config get project)-tf-demo --location=asia-northeast1` を **手で** 作る (これが「既存リソース」)
-  2. `tfgcp/main.tf`:
-     ```hcl
-     terraform { required_providers { google = { source = "hashicorp/google", version = "~> 6.0" } } }
-     provider "google" { project = var.project_id  region = "asia-northeast1" }
-     variable "project_id" { type = string }
-     import {
-       to = google_storage_bucket.demo
-       id = "${var.project_id}-tf-demo"
-     }
-     resource "google_storage_bucket" "demo" {
-       name     = "${var.project_id}-tf-demo"
-       location = "ASIA-NORTHEAST1"
-     }
-     ```
-  3. `terraform init && terraform plan -var project_id=...` → `1 to import` と、属性の差分があれば表示される。差分が出たら resource の属性を実物に合わせる (例: `uniform_bucket_level_access = true`)
-  4. `terraform apply` → もう一度 `plan` で **No changes** になるまで合わせる
-  5. `terraform state list`、`terraform state show google_storage_bucket.demo`
-  6. `terraform destroy` で消す (import したものも管理下なので消える)
-
-  **確認:** import → 差分ゼロ → 管理下、の流れを 1 リソースで通した。
-questions:
-  - id: infra-l07-1
-    difficulty: 1
-    question: "state を GCS のリモートバックエンドに置く理由は?"
-    choices:
-      - "速い"
-      - "複数人・CI から同じ state を共有でき、ロックで同時 apply を防げる。ローカルの tfstate は消えたり食い違ったりする"
-      - "無料"
-      - "必須ではないので理由は無い"
-    answer: 1
-    explanation: "バケットにはバージョニングを付け、壊れた state を戻せるようにする。"
-  - id: infra-l07-2
-    difficulty: 2
-    question: "手で作った既存リソースを Terraform 管理下に入れる手順は?"
-    choices:
-      - "resource を書いて apply (作り直される)"
-      - "resource を書き、`import` ブロック (または terraform import) で state に取り込み、plan の差分が無くなるまで属性を合わせる"
-      - "state ファイルを手で編集"
-      - "できない"
-    answer: 1
-    explanation: "import 前に apply すると「既に存在する」エラーか、名前が違えば二重に作られる。"
-  - id: infra-l07-3
-    difficulty: 2
-    question: "plan に `google_sql_database_instance.main must be replaced` と出た。取るべき行動は?"
-    choices:
-      - "apply する"
-      - "止まる。DB が削除・再作成されデータが消える。どの属性が原因か (`# forces replacement`) を読み、変更をやめるか移行計画を立てる"
-      - "-auto-approve で apply"
-      - "state を消す"
-    answer: 1
-    explanation: "`deletion_protection = true` を付けておくと apply 自体が失敗して守られる。本番 DB には必ず付ける。"
-  - id: infra-l07-4
-    difficulty: 2
-    question: "dev と prod を分ける方法として堅いのは?"
-    choices:
-      - "1 つの state で変数だけ変える"
-      - "プロジェクト (GCP) も state も分け、同じモジュール / コードに環境ごとの tfvars を渡す。dev の apply が prod に触れない構造にする"
-      - "prod は手で作る"
-      - "ブランチで分ける"
-    answer: 1
-    explanation: "state を分けると、dev で壊しても prod は無事。ディレクトリ分け (`envs/dev`, `envs/prod`) か workspace。"
 ---
 ## リモート state
 
@@ -185,3 +120,29 @@ terraform apply tfplan
 - 既存は import → 差分ゼロまで合わせる
 - replace / destroy で止まる。prevent_destroy と deletion_protection
 - 環境はプロジェクトと state を分ける。plan は保存して apply
+
+## やってみる
+
+**ゴール:** 手で作ったリソースを import して plan を差分ゼロにする。
+
+1. `gcloud storage buckets create gs://$(gcloud config get project)-tf-demo --location=asia-northeast1` を **手で** 作る (これが「既存リソース」)
+2. `tfgcp/main.tf`:
+   ```hcl
+   terraform { required_providers { google = { source = "hashicorp/google", version = "~> 6.0" } } }
+   provider "google" { project = var.project_id  region = "asia-northeast1" }
+   variable "project_id" { type = string }
+   import {
+     to = google_storage_bucket.demo
+     id = "${var.project_id}-tf-demo"
+   }
+   resource "google_storage_bucket" "demo" {
+     name     = "${var.project_id}-tf-demo"
+     location = "ASIA-NORTHEAST1"
+   }
+   ```
+3. `terraform init && terraform plan -var project_id=...` → `1 to import` と、属性の差分があれば表示される。差分が出たら resource の属性を実物に合わせる (例: `uniform_bucket_level_access = true`)
+4. `terraform apply` → もう一度 `plan` で **No changes** になるまで合わせる
+5. `terraform state list`、`terraform state show google_storage_bucket.demo`
+6. `terraform destroy` で消す (import したものも管理下なので消える)
+
+**確認:** import → 差分ゼロ → 管理下、の流れを 1 リソースで通した。

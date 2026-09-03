@@ -1,0 +1,43 @@
+# 「SQL と PostgreSQL の基礎」の確認問題。lesson は隣の 08-sql-and-postgres.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: be-08
+questions:
+- id: be-l08-1
+  difficulty: 1
+  question: '`JOIN` と `LEFT JOIN` の違いは?'
+  choices:
+  - 同じ
+  - JOIN は両方に一致する行だけ、LEFT JOIN は左の表の行を全部残し、右に無ければ NULL
+  - LEFT JOIN は左の表だけ返す
+  - JOIN の方が遅い
+  answer: 1
+  explanation: 「回答が 1 件も無いユーザーも一覧に出したい」なら LEFT JOIN。内部結合だと消える。
+- id: be-l08-2
+  difficulty: 1
+  question: '`WHERE` と `HAVING` の違いは?'
+  choices:
+  - 同じ
+  - WHERE は集計前に行を絞る、HAVING は GROUP BY で集計した後のグループを絞る
+  - HAVING は JOIN 専用
+  - WHERE は文字列専用
+  answer: 1
+  explanation: '`count(*) > 1` のような集計結果で絞るのは HAVING。WHERE には集計関数を書けない。'
+- id: be-l08-3
+  difficulty: 2
+  question: '`count(*) filter (where correct)` は何を数える?'
+  choices:
+  - 全行
+  - correct が真の行だけ
+  - NULL の行
+  - エラー
+  answer: 1
+  explanation: PostgreSQL の FILTER 句。`sum(case when correct then 1 else 0 end)` と同じ意味で読みやすい。正答率の集計に使う。
+- id: be-l08-4
+  difficulty: 2
+  question: '`references users(id)` (外部キー) を付ける効果は?'
+  choices:
+  - 速くなる
+  - 存在しない user_id の行を入れられなくなり、参照先の削除も制約される (整合性の保証)
+  - 自動で JOIN される
+  - 効果は無い
+  answer: 1
+  explanation: アプリのバグで孤児レコードができるのを DB が防ぐ。`on delete cascade` で連鎖削除も指定できる。

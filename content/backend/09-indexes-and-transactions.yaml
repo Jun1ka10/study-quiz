@@ -1,0 +1,43 @@
+# 「インデックスとトランザクション」の確認問題。lesson は隣の 09-indexes-and-transactions.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: be-09
+questions:
+- id: be-l09-1
+  difficulty: 1
+  question: '`EXPLAIN ANALYZE` で `Seq Scan` が出た。意味は?'
+  choices:
+  - インデックスを使っている
+  - テーブル全体を先頭から読んでいる (全件走査)。件数が多いと遅い
+  - エラー
+  - キャッシュから読んだ
+  answer: 1
+  explanation: WHERE の列にインデックスが無いか、使えない書き方 (関数を掛けている、型が違う) をしている。小さい表なら Seq Scan が正解なこともある。
+- id: be-l09-2
+  difficulty: 2
+  question: インデックスを張っても効かないのは?
+  choices:
+  - where email = 'a@x'
+  - where lower(email) = 'a@x' (列に関数を掛けている)
+  - where user_id = 1
+  - where created_at > now() - interval '1 day'
+  answer: 1
+  explanation: 列に関数を掛けると素のインデックスは使えない。関数インデックス `create index on users(lower(email))` を作るか、保存時に正規化する。
+- id: be-l09-3
+  difficulty: 2
+  question: トランザクションの中で 2 つの UPDATE をした後に例外が起きた。適切な処理は?
+  choices:
+  - そのまま放置
+  - ROLLBACK して両方なかったことにする (全部成功か全部なし)
+  - 1 つ目だけ COMMIT
+  - 再起動
+  answer: 1
+  explanation: '原子性。片方だけ反映されると不整合になる。アプリでは `try: ... commit() except: rollback()`。'
+- id: be-l09-4
+  difficulty: 2
+  question: '`INSERT ... ON CONFLICT (key) DO UPDATE` を使う場面は?'
+  choices:
+  - 常に INSERT の代わりに使う
+  - 「無ければ作る、あれば更新する」を 1 文で原子的に行いたいとき (UPSERT)
+  - 削除
+  - JOIN の代わり
+  answer: 1
+  explanation: SELECT してから INSERT/UPDATE を分けると、同時実行で重複や競合が起きる。UPSERT なら DB が排他してくれる。

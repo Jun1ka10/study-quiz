@@ -1,0 +1,53 @@
+# 「VPC の基本」の確認問題。lesson は隣の 02-vpc-basics.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: aws-02
+questions:
+- id: aws-l02-1
+  difficulty: 1
+  question: パブリックサブネットの定義として正しいのは?
+  choices:
+  - パブリック IP を持つインスタンスがあるサブネット
+  - ルートテーブルに 0.0.0.0/0 → インターネットゲートウェイ の経路があるサブネット
+  - リージョンの最初のサブネット
+  - NAT ゲートウェイがあるサブネット
+  answer: 1
+  explanation: 「パブリック」はルートテーブルで決まる。IGW への経路が無ければパブリック IP を付けても外に出られない。
+- id: aws-l02-2
+  difficulty: 2
+  question: プライベートサブネットの EC2 から外部 API を呼びたい (外からは入れたくない)。必要なのは?
+  choices:
+  - インターネットゲートウェイ
+  - NAT ゲートウェイ
+  - Elastic IP
+  - VPC ピアリング
+  answer: 1
+  explanation: NAT ゲートウェイはパブリックサブネットに置き、プライベートサブネットのルートテーブルで 0.0.0.0/0 → NAT にする。外向きだけ通り、内向きは通らない。
+- id: aws-l02-3
+  difficulty: 2
+  question: セキュリティグループの説明として正しいのは?
+  choices:
+  - サブネット単位、ステートレス、許可と拒否を書ける
+  - インスタンス (ENI) 単位、ステートフル、許可ルールのみ
+  - VPC 単位、ステートフル、拒否ルールのみ
+  - リージョン単位で共有される
+  answer: 1
+  explanation: SG はステートフル (戻りの通信は自動で許可)、許可ルールだけを書く。サブネット単位でステートレスなのはネットワーク ACL。
+- id: aws-l02-4
+  difficulty: 3
+  question: プライベートサブネットから S3 へ、インターネットも NAT も通さずアクセスしたい。使うのは?
+  choices:
+  - ゲートウェイ型 VPC エンドポイント
+  - インターフェース型 VPC エンドポイント
+  - Direct Connect
+  - Transit Gateway
+  answer: 0
+  explanation: S3 と DynamoDB はゲートウェイ型エンドポイント (無料、ルートテーブルに追加)。他サービスはインターフェース型 (PrivateLink、ENI が作られ有料)。
+- id: aws-003
+  difficulty: 1
+  question: VPC 内でインターネットへ直接出るために、パブリックサブネットのルートテーブルに必要なものは?
+  choices:
+  - NAT ゲートウェイ
+  - インターネットゲートウェイ
+  - VPC エンドポイント
+  - Transit Gateway
+  answer: 1
+  explanation: 0.0.0.0/0 → IGW のルートがあるサブネットがパブリックサブネット。NAT はプライベートサブネットから外向きのみ通す。

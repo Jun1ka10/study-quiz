@@ -3,71 +3,6 @@ id: sec-01
 title: Web の 3 大脆弱性 (XSS / CSRF / SQL インジェクション)
 summary: 何が起きるのか、なぜ防げるのかを仕組みで理解する。フレームワークが守ってくれる範囲と、自分で壊してしまう書き方
 minutes: 14
-exercise: |
-  **ゴール:** XSS と SQL インジェクションを自分で起こして、自分で塞ぐ。
-
-  1. XSS: `xss.html` に `<div id="o"></div><script>document.querySelector("#o").innerHTML = location.hash.slice(1)</script>`。ブラウザで `xss.html#<img src=x onerror=alert(1)>` を開く。`innerHTML` を `textContent` に変えて再度開く
-  2. SQLi: `python3`
-     ```python
-     import sqlite3; c = sqlite3.connect(":memory:")
-     c.execute("create table u(name)"); c.execute("insert into u values('a'),('b')")
-     name = "' OR 1=1 --"
-     c.execute(f"select * from u where name = '{name}'").fetchall()
-     c.execute("select * from u where name = ?", [name]).fetchall()
-     ```
-
-  **確認:** alert が出た → 出なくなった。全件返った → 0 件になった。
-questions:
-  - id: sec-l01-1
-    difficulty: 1
-    question: "XSS (クロスサイトスクリプティング) で攻撃者ができることは?"
-    choices:
-      - "サーバーのファイルを消す"
-      - "被害者のブラウザ上で任意の JS を動かし、Cookie やトークンを盗む・操作を代行する"
-      - "DB を直接読む"
-      - "サーバーを停止させる"
-    answer: 1
-    explanation: "ユーザー入力を HTML としてそのまま出力すると、埋め込まれた script が他のユーザーのブラウザで動く。対策はエスケープ (textContent / テンプレートの自動エスケープ)。"
-  - id: sec-l01-2
-    difficulty: 2
-    question: "CSRF トークンが防いでいる攻撃は?"
-    choices:
-      - "パスワードの総当たり"
-      - "ログイン済みユーザーを罠サイトに誘導し、本人の Cookie 付きで勝手に POST させる攻撃"
-      - "SQL の書き換え"
-      - "通信の盗聴"
-    answer: 1
-    explanation: "ブラウザは他サイトへのリクエストにも Cookie を自動で付ける。罠サイトは正規サイトのトークンを知らないので、トークン必須にすると偽リクエストが弾かれる。"
-  - id: sec-l01-3
-    difficulty: 2
-    question: "SQL インジェクションを防ぐ正しい書き方は?"
-    choices:
-      - "f\"SELECT * FROM users WHERE name = '{name}'\""
-      - "cursor.execute(\"SELECT * FROM users WHERE name = %s\", [name])  (プレースホルダ)"
-      - "name から ' を削る"
-      - "SQL を大文字で書く"
-    answer: 1
-    explanation: "値を SQL 文字列に混ぜず、ドライバに別渡しする。ORM (Django の filter / SQLAlchemy の where) は内部でこれをやっている。文字削りは抜け道が残る。"
-  - id: sec-l01-4
-    difficulty: 2
-    question: "ORM を使っていても SQL インジェクションが起きるのはどんなとき?"
-    choices:
-      - "起きない"
-      - "`.raw()` や `text()` で SQL 文字列を自分で組み立て、そこに入力を連結したとき"
-      - "filter を使ったとき"
-      - "テーブルが大きいとき"
-    answer: 1
-    explanation: "生 SQL を書く場面では自分でプレースホルダを使う責任がある。ORDER BY の列名やテーブル名のように値渡しできない部分は、許可リストで検証する。"
-  - id: sec-l01-5
-    difficulty: 2
-    question: "`SameSite=Lax` の Cookie が効いていても CSRF トークンを付ける理由は?"
-    choices:
-      - "理由は無い"
-      - "SameSite は古いブラウザや一部の遷移で効かず、多層防御として両方使う"
-      - "SameSite はトークンの別名"
-      - "トークンの方が速い"
-    answer: 1
-    explanation: "SameSite は大きな緩和策だが、単独に頼らない。フレームワークの CSRF 対策は切らずに残す。"
 ---
 ## 共通する構造
 
@@ -152,3 +87,19 @@ Cookie の `SameSite=Lax` (現代のブラウザの既定) は他サイトから
 - ORM とテンプレートを素直に使っていれば大半は守られる
 - 迂回スイッチ (`safe` / `innerHTML` / `raw` / `csrf_exempt`) は理由付きで
 - Cookie は `HttpOnly` + `SameSite`、それでもトークンは残す
+
+## やってみる
+
+**ゴール:** XSS と SQL インジェクションを自分で起こして、自分で塞ぐ。
+
+1. XSS: `xss.html` に `<div id="o"></div><script>document.querySelector("#o").innerHTML = location.hash.slice(1)</script>`。ブラウザで `xss.html#<img src=x onerror=alert(1)>` を開く。`innerHTML` を `textContent` に変えて再度開く
+2. SQLi: `python3`
+   ```python
+   import sqlite3; c = sqlite3.connect(":memory:")
+   c.execute("create table u(name)"); c.execute("insert into u values('a'),('b')")
+   name = "' OR 1=1 --"
+   c.execute(f"select * from u where name = '{name}'").fetchall()
+   c.execute("select * from u where name = ?", [name]).fetchall()
+   ```
+
+**確認:** alert が出た → 出なくなった。全件返った → 0 件になった。

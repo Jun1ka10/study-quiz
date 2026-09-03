@@ -3,71 +3,6 @@ id: be-03
 title: Django モデルと ORM
 summary: モデル定義、マイグレーション、QuerySet。N+1 を避ける select_related / prefetch_related
 minutes: 14
-exercise: |
-  **ゴール:** モデルを作り、マイグレーションと N+1 を見る。
-
-  1. `members/models.py`:
-     ```python
-     from django.db import models
-     class Client(models.Model):
-         name = models.CharField(max_length=100)
-     class Invoice(models.Model):
-         client = models.ForeignKey(Client, on_delete=models.PROTECT)
-         amount = models.IntegerField()
-     ```
-  2. `uv run python manage.py makemigrations && uv run python manage.py migrate`。生成されたファイルを開く
-  3. `uv run python manage.py shell`:
-     ```python
-     from members.models import *
-     c = Client.objects.create(name="A"); [Invoice.objects.create(client=c, amount=i) for i in range(5)]
-     from django.db import connection, reset_queries
-     from django.conf import settings; settings.DEBUG = True
-     reset_queries(); [i.client.name for i in Invoice.objects.all()]; len(connection.queries)
-     reset_queries(); [i.client.name for i in Invoice.objects.select_related("client")]; len(connection.queries)
-     ```
-
-  **確認:** クエリ数が 6 → 1 になった。
-questions:
-  - id: be-l03-1
-    difficulty: 1
-    question: "モデルにフィールドを追加した。DB に反映する手順は?"
-    choices:
-      - "runserver すれば自動で反映される"
-      - "makemigrations でマイグレーションファイルを作り、migrate で適用する"
-      - "SQL を手で書いて ALTER TABLE する"
-      - "DB を作り直す"
-    answer: 1
-    explanation: "マイグレーションファイルは Git に入れる。他の環境でも migrate するだけで同じスキーマになる。"
-  - id: be-l03-2
-    difficulty: 1
-    question: "`Member.objects.filter(active=True)` が返すものは?"
-    choices:
-      - "条件に合う最初の 1 件"
-      - "遅延評価される QuerySet (この時点では SQL は発行されない)"
-      - "件数"
-      - "list"
-    answer: 1
-    explanation: "QuerySet は for で回す・list() する・count() するなど、必要になった時点で SQL が発行される。filter は連鎖できる。"
-  - id: be-l03-3
-    difficulty: 2
-    question: "次のコードの問題は?\n\n```python\nfor invoice in Invoice.objects.all():\n    print(invoice.client.name)\n```"
-    choices:
-      - "問題ない"
-      - "請求書 1 件ごとに client を取る SQL が飛ぶ (N+1 問題)"
-      - "client は取れない"
-      - "all() は使えない"
-    answer: 1
-    explanation: "外部キー先は必要になった時に 1 件ずつ取りに行く。`Invoice.objects.select_related(\"client\")` で JOIN して 1 回にする。"
-  - id: be-l03-4
-    difficulty: 2
-    question: "`get()` で該当が無いときと、2 件以上あるときはそれぞれどうなる?"
-    choices:
-      - "None を返す / 最初の 1 件"
-      - "DoesNotExist 例外 / MultipleObjectsReturned 例外"
-      - "空リスト / リスト"
-      - "エラーにならない"
-    answer: 1
-    explanation: "get は「ちょうど 1 件」を期待する。無いかもしれないなら `filter(...).first()` (無ければ None)。ビューでは `get_object_or_404`。"
 ---
 ## モデル = テーブルの定義
 
@@ -174,3 +109,29 @@ with transaction.atomic():
 - 変更は makemigrations → migrate。マイグレーションは Git に
 - QuerySet は遅延評価。`get` は 1 件、無いかもなら `first()`
 - 関連をループで触るなら `select_related` / `prefetch_related`
+
+## やってみる
+
+**ゴール:** モデルを作り、マイグレーションと N+1 を見る。
+
+1. `members/models.py`:
+   ```python
+   from django.db import models
+   class Client(models.Model):
+       name = models.CharField(max_length=100)
+   class Invoice(models.Model):
+       client = models.ForeignKey(Client, on_delete=models.PROTECT)
+       amount = models.IntegerField()
+   ```
+2. `uv run python manage.py makemigrations && uv run python manage.py migrate`。生成されたファイルを開く
+3. `uv run python manage.py shell`:
+   ```python
+   from members.models import *
+   c = Client.objects.create(name="A"); [Invoice.objects.create(client=c, amount=i) for i in range(5)]
+   from django.db import connection, reset_queries
+   from django.conf import settings; settings.DEBUG = True
+   reset_queries(); [i.client.name for i in Invoice.objects.all()]; len(connection.queries)
+   reset_queries(); [i.client.name for i in Invoice.objects.select_related("client")]; len(connection.queries)
+   ```
+
+**確認:** クエリ数が 6 → 1 になった。

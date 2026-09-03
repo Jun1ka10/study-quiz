@@ -3,61 +3,6 @@ id: sec-06
 title: 最小権限
 summary: IAM ロール、サービスアカウント、DB ユーザー、コンテナの実行ユーザー。「必要なものだけ」を各層で徹底する
 minutes: 10
-exercise: |
-  **ゴール:** DB ユーザーを分けて、app ユーザーでは DROP できないことを見る。
-
-  1. RLS の課題の PostgreSQL コンテナで postgres として:
-     ```sql
-     create role migrator login password 'm'; alter table orders owner to migrator;
-     create role app2 login password 'a';
-     grant select, insert, update, delete on orders to app2;
-     ```
-  2. `psql -U app2` で `drop table orders;` → 権限エラー。`alter table orders add column x int;` → エラー
-  3. `psql -U migrator` で `alter table orders add column x int;` → 成功
-  4. 手元のクラウドの IAM を開き、自分のアカウントに付いているロールを一覧し、「Owner / Editor / Admin」があればメモする
-
-  **確認:** アプリ用の権限で DDL が通らない。自分の IAM に基本ロールがあるか確認した。
-questions:
-  - id: sec-l06-1
-    difficulty: 1
-    question: "最小権限の原則とは?"
-    choices:
-      - "管理者は 1 人にする"
-      - "人・プログラムには、その仕事に必要な権限だけを与え、それ以上は与えない"
-      - "権限は全部拒否する"
-      - "パスワードを短くする"
-    answer: 1
-    explanation: "侵害されたときの被害範囲 (blast radius) を小さくするため。便利だから Owner / Admin、を避ける。"
-  - id: sec-l06-2
-    difficulty: 2
-    question: "Cloud Run のサービスに既定のサービスアカウント (Editor 相当) を使い続けると何が問題か?"
-    choices:
-      - "問題ない"
-      - "アプリが乗っ取られると、プロジェクト内のほぼ全リソースを操作できてしまう"
-      - "遅くなる"
-      - "課金が増える"
-    answer: 1
-    explanation: "サービスごとに専用のサービスアカウントを作り、必要なロール (secretAccessor、cloudsql.client など) だけ付ける。"
-  - id: sec-l06-3
-    difficulty: 2
-    question: "アプリの DB 接続ユーザーに与える権限として適切なのは?"
-    choices:
-      - "スーパーユーザー"
-      - "テーブル所有者"
-      - "必要なテーブルへの SELECT / INSERT / UPDATE / DELETE だけ。DDL (CREATE / DROP) は migration 用の別ユーザー"
-      - "全 DB への全権限"
-    answer: 2
-    explanation: "SQL インジェクションを食らっても DROP TABLE できない。RLS も所有者でなければ効く。"
-  - id: sec-l06-4
-    difficulty: 2
-    question: "IAM で権限を人ではなくグループに付ける理由は?"
-    choices:
-      - "速いから"
-      - "入退社や異動でメンバーを出し入れするだけで済み、個別付与の消し忘れ (権限の堆積) を防げる"
-      - "グループの方が権限が強い"
-      - "理由は無い"
-    answer: 1
-    explanation: "「開発者」「運用」「閲覧のみ」のようなグループに役割を付ける。個人に直接付けた権限は棚卸しで見落とされる。"
 ---
 ## 考え方
 
@@ -148,3 +93,19 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE O
 - 人はグループ経由で事前定義ロール。プログラムは専用アカウントに必要なものだけ
 - DB は migration 用と app 用と readonly を分ける
 - 権限は堆積する。定期的に棚卸しする
+
+## やってみる
+
+**ゴール:** DB ユーザーを分けて、app ユーザーでは DROP できないことを見る。
+
+1. RLS の課題の PostgreSQL コンテナで postgres として:
+   ```sql
+   create role migrator login password 'm'; alter table orders owner to migrator;
+   create role app2 login password 'a';
+   grant select, insert, update, delete on orders to app2;
+   ```
+2. `psql -U app2` で `drop table orders;` → 権限エラー。`alter table orders add column x int;` → エラー
+3. `psql -U migrator` で `alter table orders add column x int;` → 成功
+4. 手元のクラウドの IAM を開き、自分のアカウントに付いているロールを一覧し、「Owner / Editor / Admin」があればメモする
+
+**確認:** アプリ用の権限で DDL が通らない。自分の IAM に基本ロールがあるか確認した。

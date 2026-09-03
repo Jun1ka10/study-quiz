@@ -1,0 +1,53 @@
+# 「AWS の全体像と IAM の最初の一歩」の確認問題。lesson は隣の 01-overview-and-iam.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: aws-01
+questions:
+- id: aws-l01-1
+  difficulty: 1
+  question: AZ (アベイラビリティゾーン) とは?
+  choices:
+  - 国単位の区分
+  - リージョン内で物理的に分離された 1 つ以上のデータセンター群
+  - VPC のサブネット
+  - 課金の単位
+  answer: 1
+  explanation: 'リージョン (例: 東京) の中に複数の AZ があり、AZ をまたいで配置すると 1 つのデータセンター障害に耐えられる。'
+- id: aws-l01-2
+  difficulty: 1
+  question: ルートユーザーの扱いとして正しいのは?
+  choices:
+  - 日常作業に使う
+  - MFA を有効化し、日常作業には使わない
+  - アクセスキーを発行して CI に使う
+  - 削除する
+  answer: 1
+  explanation: ルートは全権限を持ち制限できない。MFA を付けて封印し、作業は IAM ユーザー / IAM Identity Center で行う。
+- id: aws-l01-3
+  difficulty: 2
+  question: EC2 上のアプリから S3 にアクセスさせたい。推奨される方法は?
+  choices:
+  - IAM ユーザーのアクセスキーをコードに埋め込む
+  - IAM ロールを作って EC2 にアタッチする
+  - ルートユーザーのキーを環境変数に置く
+  - S3 バケットを公開する
+  answer: 1
+  explanation: ロールは一時クレデンシャルを自動で配るので、キーの漏洩やローテーションの問題が無い。AWS 上のリソースには常にロールを使う。
+- id: aws-l01-4
+  difficulty: 2
+  question: IAM ポリシーで、明示的な Deny と Allow が両方当たるときの結果は?
+  choices:
+  - Allow が勝つ
+  - Deny が勝つ
+  - 後に書いた方が勝つ
+  - エラーになる
+  answer: 1
+  explanation: 評価順は「明示的 Deny > 明示的 Allow > 暗黙の Deny」。何も書かれていなければ拒否。
+- id: aws-002
+  difficulty: 1
+  question: IAM の「ロール」の説明として正しいものは?
+  choices:
+  - 長期的なアクセスキーを持つ人間用のアイデンティティ
+  - 一時的な認証情報を得るために引き受ける (AssumeRole) アイデンティティ
+  - 複数ユーザーをまとめる入れ物
+  - S3 バケットに直接付けるアクセス制御
+  answer: 1
+  explanation: ロールは EC2 / Lambda / 他アカウントなどが引き受けて一時クレデンシャルを得る仕組み。人間用はユーザー、まとめる入れ物はグループ。

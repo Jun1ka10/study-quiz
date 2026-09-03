@@ -3,56 +3,6 @@ id: sec-05
 title: 秘密情報の管理
 summary: API キー・DB パスワード・署名鍵をどこに置き、どう配り、漏れたらどうするか。.env から Secret Manager まで
 minutes: 12
-exercise: |
-  **ゴール:** 秘密がどこに漏れるかを実際に見て、検出ツールを入れる。
-
-  1. 新しい git リポジトリで `.env` に `API_KEY=sk_live_dummy123` を書き、`git add -A && git commit -m x`。`git log -p | grep sk_live` で履歴に残るのを見る
-  2. `.gitignore` に `.env` を足しても履歴からは消えないことを `git log -p` で確認
-  3. `pip install gitleaks` は無いので `docker run --rm -v $(pwd):/repo zricethezav/gitleaks:latest detect -s /repo` で検出される
-  4. `.env.example` を作り、値を空にしてコミットする
-
-  **確認:** コミットした時点で漏れている、と実感した。検出ツールの出力を読んだ。
-questions:
-  - id: sec-l05-1
-    difficulty: 1
-    question: "API キーを誤って Git にコミットして push してしまった。最初にすべきことは?"
-    choices:
-      - "コミットを消して force push する"
-      - "そのキーを無効化 (ローテーション) する。履歴の削除はその後"
-      - "リポジトリを private にする"
-      - "何もしない"
-    answer: 1
-    explanation: "push した時点で漏れたとみなす。GitHub には秘密情報を探索するボットが常時いる。履歴を消しても既に取得されている前提で動く。"
-  - id: sec-l05-2
-    difficulty: 1
-    question: "`.env` ファイルの正しい扱いは?"
-    choices:
-      - "Git にコミットして共有する"
-      - ".gitignore に入れ、雛形は `.env.example` (値なし) として共有する"
-      - "Slack に貼って共有する"
-      - "コードに直書きした方が安全"
-    answer: 1
-    explanation: ".env は各環境のローカルにだけ置く。何のキーが要るかは値を空にした .env.example で伝える。"
-  - id: sec-l05-3
-    difficulty: 2
-    question: "Cloud Run で DB パスワードをアプリに渡す推奨の方法は?"
-    choices:
-      - "Dockerfile の ENV に書く"
-      - "イメージ内のファイルに置く"
-      - "Secret Manager に保存し、Cloud Run の環境変数 / ボリュームとして参照させる (実行時に注入)"
-      - "ソースコードに書く"
-    answer: 2
-    explanation: "イメージに焼くと、イメージを pull できる人全員に漏れる。実行時注入なら、誰が読めるかを IAM で制御でき、ローテーションもイメージ再ビルド無しでできる。"
-  - id: sec-l05-4
-    difficulty: 2
-    question: "ログに秘密情報が出ないようにする対策として不適切なものは?"
-    choices:
-      - "リクエストヘッダーを丸ごとログに出さない (Authorization / Cookie を除外)"
-      - "例外のスタックトレースに含まれる環境変数をマスクする"
-      - "デバッグのために一時的に print(settings) する"
-      - "秘密を持つオブジェクトの `__repr__` で値を出さない"
-    answer: 2
-    explanation: "「一時的」なデバッグ出力はログ基盤に残り、検索可能になる。ログは秘密が入らない前提で設計する。"
 ---
 ## 何が「秘密」か
 
@@ -129,3 +79,14 @@ gcloud run deploy api --set-secrets="DATABASE_PASSWORD=db-password:latest"
 - ローカルは .env、CI は Secrets、本番は Secret Manager
 - イメージ・フロント・ログ・チャットには置かない
 - 漏れたら履歴削除より先にローテーション。長期の鍵は作らない
+
+## やってみる
+
+**ゴール:** 秘密がどこに漏れるかを実際に見て、検出ツールを入れる。
+
+1. 新しい git リポジトリで `.env` に `API_KEY=sk_live_dummy123` を書き、`git add -A && git commit -m x`。`git log -p | grep sk_live` で履歴に残るのを見る
+2. `.gitignore` に `.env` を足しても履歴からは消えないことを `git log -p` で確認
+3. `pip install gitleaks` は無いので `docker run --rm -v $(pwd):/repo zricethezav/gitleaks:latest detect -s /repo` で検出される
+4. `.env.example` を作り、値を空にしてコミットする
+
+**確認:** コミットした時点で漏れている、と実感した。検出ツールの出力を読んだ。

@@ -4,8 +4,9 @@
 
 入力:
   content/categories.yaml        カテゴリの並び・説明・今後書く予定のレッスン名
-  content/<category>/NN-*.md     レッスン。frontmatter (id/title/summary/exercise/questions) + 本文 Markdown。NN が順番
-  questions/<category>.yaml      レッスンに紐づかない問題プール (ランダム演習・復習用)
+  content/<category>/NN-*.md     レッスン。frontmatter (id/title/summary/minutes) + 本文 Markdown。
+                                 本文末尾の「## やってみる」節が課題 (必須)。NN が順番
+  content/<category>/NN-*.yaml   同名 md の確認問題。lesson: が md の id と一致すること (必須)
   content/project/project.yaml   プロジェクトトラック (1 つのアプリを最初から最後まで作る道筋) の題名と説明
   content/project/NN-*.md        プロジェクトのステップ。frontmatter (id/title/summary/phase/prereqs/minutes) + 本文
 """
@@ -23,13 +24,13 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTENT_DIR = ROOT / "content"
-QUESTIONS_DIR = ROOT / "questions"
 SITE_DIR = ROOT / "site"
 # Service Worker がキャッシュするファイル (site/ からの相対パス)
 APP_SHELL = ["./", "index.html", "app.js", "style.css", "manifest.json", "data.json", "icon.svg"]
 
 FRONTMATTER_RE = re.compile(r"\A---\n(.*?)\n---\n(.*)\Z", re.S)
 LESSON_FILE_RE = re.compile(r"^(\d{2})-[a-z0-9-]+\.md$")
+EXERCISE_HEADING = "\n## やってみる\n"
 
 SW_TEMPLATE = """// 自動生成: scripts/build.py が書き出す。直接編集しない。
 const VERSION = "__VERSION__";
@@ -141,6 +142,9 @@ def load_lessons(categories: list[dict], seen_qids: set[str]) -> list[dict]:
         cdir = CONTENT_DIR / cat["id"]
         if not cdir.is_dir():
             continue
+        orphans = {y.name for y in cdir.glob("*.yaml")} - {m.with_suffix(".yaml").name for m in cdir.glob("*.md")}
+        if orphans:
+            raise ContentError(f"{cdir}: 対応する md の無い確認問題ファイル: {sorted(orphans)}")
         orders: set[str] = set()
         for path in sorted(cdir.glob("*.md")):
             m = LESSON_FILE_RE.match(path.name)
@@ -164,10 +168,26 @@ def load_lessons(categories: list[dict], seen_qids: set[str]) -> list[dict]:
                 raise ContentError(f"{path}: frontmatter に title がありません")
             if not body:
                 raise ContentError(f"{path}: 本文が空です")
+            # 本文末尾の「## やってみる」節を課題として切り出す
+            if EXERCISE_HEADING not in body:
+                raise ContentError(f"{path}: 「## やってみる」節がありません (課題は必須)")
+            main_md, exercise_md = body.split(EXERCISE_HEADING, 1)
+            if not exercise_md.strip():
+                raise ContentError(f"{path}: 「## やってみる」節が空です")
+            body = main_md.rstrip()
+            # 隣の yaml = 確認問題
+            qpath = path.with_suffix(".yaml")
+            if not qpath.exists():
+                raise ContentError(f"{path}: 確認問題 {qpath.name} がありません")
+            qdata = yaml.safe_load(qpath.read_text(encoding="utf-8")) or {}
+            if qdata.get("lesson") != lid:
+                raise ContentError(f"{qpath}: lesson ({qdata.get('lesson')}) が {path.name} の id ({lid}) と一致しません")
             questions = []
-            for q in meta.get("questions") or []:
-                _validate_question(q, f"{path.name}", seen_qids)
+            for q in qdata.get("questions") or []:
+                _validate_question(q, qpath.name, seen_qids)
                 questions.append(_question_payload(q, cat["id"], titles[cat["id"]], lid))
+            if len(questions) < 3:
+                raise ContentError(f"{qpath}: 確認問題は 3 問以上必要です")
             lessons.append(
                 {
                     "id": lid,
@@ -177,29 +197,11 @@ def load_lessons(categories: list[dict], seen_qids: set[str]) -> list[dict]:
                     "summary": meta.get("summary", ""),
                     "minutes": meta.get("minutes", 5),
                     "html": _md(body),
-                    "exerciseHtml": _md(meta["exercise"]) if meta.get("exercise") else "",
+                    "exerciseHtml": _md(exercise_md.strip()),
                     "questions": questions,
                 }
             )
     return lessons
-
-
-def load_pool(categories: list[dict], seen_qids: set[str], lesson_ids: set[str]) -> list[dict]:
-    """questions/*.yaml (レッスンに紐づかない問題プール)。lesson: を書けば紐づけもできる。"""
-    titles = {c["id"]: c["title"] for c in categories}
-    out: list[dict] = []
-    for path in sorted(QUESTIONS_DIR.glob("*.yaml")):
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
-        category = data["category"]
-        if category not in titles:
-            raise ContentError(f"{path.name}: カテゴリ {category} が content/categories.yaml にありません")
-        for q in data["questions"]:
-            _validate_question(q, path.name, seen_qids)
-            lesson = q.get("lesson")
-            if lesson and lesson not in lesson_ids:
-                raise ContentError(f"{path.name}: {q['id']} の lesson {lesson} が存在しません")
-            out.append(_question_payload(q, category, titles[category], lesson))
-    return out
 
 
 def load_project(lesson_ids: set[str]) -> dict:
@@ -252,9 +254,8 @@ def load_all() -> dict:
     categories = load_categories()
     seen_qids: set[str] = set()
     lessons = load_lessons(categories, seen_qids)
-    pool = load_pool(categories, seen_qids, {ls["id"] for ls in lessons})
-    # レッスン内の問題 + プールを 1 本のリストに (クライアントは lesson フィールドで引く)
-    questions = [q for ls in lessons for q in ls["questions"]] + pool
+    # 問題は必ずレッスンに属する。クライアントは lesson フィールドで引く
+    questions = [q for ls in lessons for q in ls["questions"]]
     lessons_out = [{k: v for k, v in ls.items() if k != "questions"} for ls in lessons]
     cats_out = []
     for c in categories:

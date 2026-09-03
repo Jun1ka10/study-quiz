@@ -1,0 +1,53 @@
+# 「変数と基本の型」の確認問題。lesson は隣の 01-variables-and-types.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: py-01
+questions:
+- id: py-l01-1
+  difficulty: 1
+  question: '`x = 7 / 2` のあと、`x` の型は?'
+  choices:
+  - int
+  - float
+  - str
+  - bool
+  answer: 1
+  explanation: '`/` は常に float を返す。整数の商が欲しいときは `//`。'
+- id: py-l01-2
+  difficulty: 1
+  question: '`int("12") + 3` の結果は?'
+  choices:
+  - '"123"'
+  - '15'
+  - エラー
+  - '"15"'
+  answer: 1
+  explanation: '`int("12")` で文字列を整数 12 に変換してから足すので 15。変換しないと `"12" + 3` は TypeError。'
+- id: py-l01-3
+  difficulty: 1
+  question: '`name = "Kato"` のとき `f"Hello, {name}!"` は?'
+  choices:
+  - Hello, name!
+  - Hello, {name}!
+  - Hello, Kato!
+  - エラー
+  answer: 2
+  explanation: f-string は `{}` の中を式として評価して埋め込む。
+- id: py-l01-4
+  difficulty: 2
+  question: 次のうち `False` になるものは?
+  choices:
+  - bool("False")
+  - bool(1)
+  - bool("")
+  - bool([0])
+  answer: 2
+  explanation: 空文字列・空リスト・0・None は偽。`"False"` は空でない文字列なので真。`[0]` も要素が 1 つあるので真。
+- id: py-003
+  difficulty: 1
+  question: '`print(type(3 / 2))` の出力は?'
+  choices:
+  - <class 'int'>
+  - <class 'float'>
+  - <class 'decimal'>
+  - エラー
+  answer: 1
+  explanation: Python 3 では `/` は常に float を返す。整数除算は `//`。

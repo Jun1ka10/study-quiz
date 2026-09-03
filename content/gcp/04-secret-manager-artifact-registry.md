@@ -1,61 +1,8 @@
 ---
 id: gcp-04
-title: "Secret Manager と Artifact Registry"
-summary: "秘密の保管とアクセス制御、Cloud Run への注入。コンテナイメージの保管、タグ運用、脆弱性スキャン"
+title: Secret Manager と Artifact Registry
+summary: 秘密の保管とアクセス制御、Cloud Run への注入。コンテナイメージの保管、タグ運用、脆弱性スキャン
 minutes: 12
-exercise: |
-  **ゴール:** 秘密を Secret Manager に入れて Cloud Run から読む。イメージを Artifact Registry に push する。
-
-  1. `echo -n "s3cret-demo" | gcloud secrets create demo-secret --data-file=-`
-  2. `gcloud secrets versions access latest --secret=demo-secret` で読める。別のサービスアカウントで試すと読めない:
-     `gcloud iam service-accounts create demo-sa` → `gcloud secrets add-iam-policy-binding demo-secret --member=serviceAccount:demo-sa@$(gcloud config get project).iam.gserviceaccount.com --role=roles/secretmanager.secretAccessor`
-  3. `gcloud artifacts repositories create demo --repository-format=docker --location=asia-northeast1` → `gcloud auth configure-docker asia-northeast1-docker.pkg.dev`
-  4. dk-02 のイメージを `docker tag a asia-northeast1-docker.pkg.dev/$(gcloud config get project)/demo/app:v1 && docker push ...`
-  5. `gcloud run deploy demo --image ... --region asia-northeast1 --service-account demo-sa@... --set-secrets=SECRET=demo-secret:latest --allow-unauthenticated` (app.py は `os.environ["SECRET"]` の長さを返すように)
-  6. `gcloud secrets versions list demo-secret`、`gcloud artifacts docker images list ...`。終わったら service / secret / repository を削除
-
-  **確認:** 秘密がコンテナに環境変数として入り、IAM で読める人が制御されている。イメージにタグとダイジェストがある。
-questions:
-  - id: gcp-l04-1
-    difficulty: 1
-    question: "Secret Manager に入れるべきものは?"
-    choices:
-      - "全部の環境変数"
-      - "DB パスワード、API キー、署名鍵など「持っていれば何かができる」もの。リージョン名やログレベルは普通の環境変数"
-      - "ソースコード"
-      - "ログ"
-    answer: 1
-    explanation: "秘密でないものまで入れると管理が煩雑になる。境界は「漏れたら困るか」。"
-  - id: gcp-l04-2
-    difficulty: 2
-    question: "Cloud Run で `--set-secrets=DB_PASSWORD=db-password:latest` とする効果は?"
-    choices:
-      - "イメージに秘密が焼き込まれる"
-      - "起動時に Secret Manager から値を取り、環境変数として注入する。イメージには入らず、読めるのはそのサービスアカウントだけ"
-      - "ログに出る"
-      - "何も起きない"
-    answer: 1
-    explanation: "`latest` はデプロイ時に解決される。値を更新したら新しいリビジョンをデプロイして反映する (またはバージョン番号を固定して意図的に上げる)。"
-  - id: gcp-l04-3
-    difficulty: 2
-    question: "本番のデプロイでイメージを `:latest` タグで指定する問題は?"
-    choices:
-      - "問題ない"
-      - "同じタグが別の中身を指し得るので、「今動いているものが何か」「ロールバック先」が分からない。commit SHA のタグかダイジェスト (@sha256:...) で指定する"
-      - "遅い"
-      - "課金が増える"
-    answer: 1
-    explanation: "タグは動く名前、ダイジェストは中身のハッシュ。再現性が要る場所はダイジェスト。"
-  - id: gcp-l04-4
-    difficulty: 1
-    question: "Artifact Registry の脆弱性スキャンで High が出た。まず見るのは?"
-    choices:
-      - "無視"
-      - "ベースイメージ (python:3.13-slim など) の更新で直るか。多くは OS パッケージ由来なので、ベースを最新にして再ビルドする"
-      - "アプリのコード"
-      - "Cloud Run の設定"
-    answer: 1
-    explanation: "定期的に再ビルドする (依存を変えていなくても) ことで OS の修正を取り込める。CI に週次ビルドを入れる手もある。"
 ---
 ## Secret Manager
 
@@ -136,3 +83,17 @@ CI では commit SHA でタグを付けて push し、デプロイはそのタ�
 - 秘密は Secret Manager。秘密ごとに読める SA を絞り、`--set-secrets` で注入。値は Terraform に書かない
 - イメージは Artifact Registry。タグは commit SHA、本番はダイジェスト
 - スキャン結果はベースイメージ更新で対処。古いイメージは自動削除
+
+## やってみる
+
+**ゴール:** 秘密を Secret Manager に入れて Cloud Run から読む。イメージを Artifact Registry に push する。
+
+1. `echo -n "s3cret-demo" | gcloud secrets create demo-secret --data-file=-`
+2. `gcloud secrets versions access latest --secret=demo-secret` で読める。別のサービスアカウントで試すと読めない:
+   `gcloud iam service-accounts create demo-sa` → `gcloud secrets add-iam-policy-binding demo-secret --member=serviceAccount:demo-sa@$(gcloud config get project).iam.gserviceaccount.com --role=roles/secretmanager.secretAccessor`
+3. `gcloud artifacts repositories create demo --repository-format=docker --location=asia-northeast1` → `gcloud auth configure-docker asia-northeast1-docker.pkg.dev`
+4. dk-02 のイメージを `docker tag a asia-northeast1-docker.pkg.dev/$(gcloud config get project)/demo/app:v1 && docker push ...`
+5. `gcloud run deploy demo --image ... --region asia-northeast1 --service-account demo-sa@... --set-secrets=SECRET=demo-secret:latest --allow-unauthenticated` (app.py は `os.environ["SECRET"]` の長さを返すように)
+6. `gcloud secrets versions list demo-secret`、`gcloud artifacts docker images list ...`。終わったら service / secret / repository を削除
+
+**確認:** 秘密がコンテナに環境変数として入り、IAM で読める人が制御されている。イメージにタグとダイジェストがある。

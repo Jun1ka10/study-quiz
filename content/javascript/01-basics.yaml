@@ -1,0 +1,53 @@
+# 「JavaScript の基本」の確認問題。lesson は隣の 01-basics.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: js-01
+questions:
+- id: js-l01-1
+  difficulty: 1
+  question: 現代の JavaScript で、再代入しない変数の宣言に使うのは?
+  choices:
+  - var
+  - let
+  - const
+  - def
+  answer: 2
+  explanation: 基本は const。再代入が要るときだけ let。var は関数スコープで巻き上げがあるので使わない。
+- id: js-l01-2
+  difficulty: 1
+  question: '`"1" == 1` と `"1" === 1` の結果は?'
+  choices:
+  - 両方 true
+  - 両方 false
+  - == は true、=== は false
+  - == は false、=== は true
+  answer: 2
+  explanation: == は型変換してから比較するので true。=== は型も見るので false。常に === を使う。
+- id: js-l01-3
+  difficulty: 2
+  question: '`[1, 2, 3].map(x => x * 2)` の結果は?'
+  choices:
+  - '[2, 4, 6]'
+  - '6'
+  - '[1, 2, 3]'
+  - undefined
+  answer: 0
+  explanation: map は各要素に関数を適用した新しい配列を返す。Python の `[x * 2 for x in xs]` に相当。
+- id: js-l01-4
+  difficulty: 2
+  question: '`const { name, age } = user;` は何をしている?'
+  choices:
+  - user に name と age を追加
+  - user の name と age プロパティを同名の変数に取り出す (分割代入)
+  - user を name と age で比較
+  - 文法エラー
+  answer: 1
+  explanation: 分割代入 (destructuring)。配列なら `const [a, b] = arr;`。React の props でも多用される。
+- id: js-l01-5
+  difficulty: 2
+  question: '`const nums = [1, 2]; nums.push(3);` はエラーになる?'
+  choices:
+  - なる。const は変更できない
+  - ならない。const は再代入を禁じるだけで、中身の変更はできる
+  - なる。push は const 配列に使えない
+  - ならないが警告が出る
+  answer: 1
+  explanation: const は「変数が指す先」を固定する。配列やオブジェクトの中身は変えられる。`nums = [4]` は TypeError。

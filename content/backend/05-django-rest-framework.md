@@ -3,69 +3,6 @@ id: be-05
 title: Django REST framework
 summary: APIView とシリアライザ、認証と権限。API をどう守るか
 minutes: 12
-exercise: |
-  **ゴール:** DRF で API を 1 本立て、400 と 201 を見る。
-
-  1. `uv add djangorestframework`、`INSTALLED_APPS` に `"rest_framework"`
-  2. `members/api.py`:
-     ```python
-     from rest_framework import serializers, status
-     from rest_framework.response import Response
-     from rest_framework.views import APIView
-     from .models import Client
-     class ClientSerializer(serializers.ModelSerializer):
-         class Meta: model = Client; fields = ["id", "name"]
-     class ClientList(APIView):
-         def get(self, request): return Response(ClientSerializer(Client.objects.all(), many=True).data)
-         def post(self, request):
-             s = ClientSerializer(data=request.data); s.is_valid(raise_exception=True); s.save()
-             return Response(s.data, status=status.HTTP_201_CREATED)
-     ```
-  3. `urls.py` に `path("api/clients/", ClientList.as_view())`
-  4. `curl -i -X POST -H "Content-Type: application/json" -d '{}' http://localhost:8000/api/clients/` → 400 の本文を読む。`{"name":"B"}` で 201
-
-  **確認:** バリデーションエラーがフィールド名付きで返る。
-questions:
-  - id: be-l05-1
-    difficulty: 1
-    question: "DRF のシリアライザの役割は?"
-    choices:
-      - "DB 接続"
-      - "モデル ↔ JSON の変換と、入力のバリデーション"
-      - "URL のルーティング"
-      - "テンプレートの描画"
-    answer: 1
-    explanation: "出力時は model → dict → JSON、入力時は JSON → 検証 → model。`ModelSerializer` ならフィールド定義をモデルから拾える。"
-  - id: be-l05-2
-    difficulty: 2
-    question: "`APIView` の `get` / `post` メソッドが返すべきものは?"
-    choices:
-      - "dict"
-      - "`Response(data, status=...)`"
-      - "render(...)"
-      - "文字列"
-    answer: 1
-    explanation: "`from rest_framework.response import Response`。dict を渡せば JSON になる。ステータスは `status.HTTP_201_CREATED` などの定数で。"
-  - id: be-l05-3
-    difficulty: 2
-    question: "`authentication_classes` と `permission_classes` の違いは?"
-    choices:
-      - "同じ"
-      - "authentication は「誰か」を特定する、permission は「その人にこの操作を許すか」を決める"
-      - "permission が先に動く"
-      - "authentication は管理画面専用"
-    answer: 1
-    explanation: "認証 (セッション / トークン / API キー) で request.user が決まり、その後に権限 (IsAuthenticated / 自作) が判定する。"
-  - id: be-l05-4
-    difficulty: 2
-    question: "`serializer.is_valid()` が False のとき、正しい対応は?"
-    choices:
-      - "無視して save() する"
-      - "`serializer.errors` を 400 で返す (または `is_valid(raise_exception=True)`)"
-      - "500 を返す"
-      - "空の JSON を返す"
-    answer: 1
-    explanation: "入力不正はクライアント側の問題なので 400。errors にはフィールドごとの理由が入る。"
 ---
 ## DRF が足すもの
 
@@ -173,3 +110,27 @@ class ApiKeyAuthentication(authentication.BaseAuthentication):
 - APIView の get / post は `Response` を返す
 - 認証で「誰か」、権限で「許すか」。外部連携は専用の認証クラス
 - 入力不正は 400、作成は 201
+
+## やってみる
+
+**ゴール:** DRF で API を 1 本立て、400 と 201 を見る。
+
+1. `uv add djangorestframework`、`INSTALLED_APPS` に `"rest_framework"`
+2. `members/api.py`:
+   ```python
+   from rest_framework import serializers, status
+   from rest_framework.response import Response
+   from rest_framework.views import APIView
+   from .models import Client
+   class ClientSerializer(serializers.ModelSerializer):
+       class Meta: model = Client; fields = ["id", "name"]
+   class ClientList(APIView):
+       def get(self, request): return Response(ClientSerializer(Client.objects.all(), many=True).data)
+       def post(self, request):
+           s = ClientSerializer(data=request.data); s.is_valid(raise_exception=True); s.save()
+           return Response(s.data, status=status.HTTP_201_CREATED)
+   ```
+3. `urls.py` に `path("api/clients/", ClientList.as_view())`
+4. `curl -i -X POST -H "Content-Type: application/json" -d '{}' http://localhost:8000/api/clients/` → 400 の本文を読む。`{"name":"B"}` で 201
+
+**確認:** バリデーションエラーがフィールド名付きで返る。

@@ -3,57 +3,6 @@ id: py-06
 title: モジュール・パッケージ・仮想環境
 summary: import の仕組み、パッケージの作り方、venv / poetry / uv、ロックファイルで環境を再現する
 minutes: 12
-exercise: |
-  **ゴール:** uv (無ければ venv) でプロジェクトを作り、ロックファイルを見る。
-
-  1. `mkdir uvdemo && cd uvdemo && uv init` (uv が無ければ `python -m venv .venv && source .venv/bin/activate`)
-  2. `uv add requests` して `pyproject.toml` と `uv.lock` を開き、requests 以外に何が入っているか数える
-  3. `uv add --dev pytest` して dev グループに入ることを確認
-  4. `uv run python -c "import requests; print(requests.__version__)"`
-  5. `cat .gitignore` に `.venv` があるか確認
-
-  **確認:** pyproject には requests だけ、lock には推移的依存 (certifi, urllib3 など) も入っている。
-questions:
-  - id: py-l06-1
-    difficulty: 1
-    question: "仮想環境を使う理由は?"
-    choices:
-      - "速くなる"
-      - "プロジェクトごとに依存ライブラリとそのバージョンを分離し、他のプロジェクトや OS の Python を汚さない"
-      - "セキュリティ"
-      - "使わなくてよい"
-    answer: 1
-    explanation: "A では Django 4、B では Django 5、を同じマシンで共存させる。グローバルに pip install するとどちらかが壊れる。"
-  - id: py-l06-2
-    difficulty: 1
-    question: "`pyproject.toml` と ロックファイル (`poetry.lock` / `uv.lock`) の役割の違いは?"
-    choices:
-      - "同じ"
-      - "pyproject は「欲しいもの」の宣言 (範囲指定)、ロックは実際に解決された全パッケージの厳密なバージョン"
-      - "ロックは不要"
-      - "pyproject はテスト用"
-    answer: 1
-    explanation: "ロックファイルをコミットすると、他の人や CI でも同じバージョンが入る。ロックが無いと日によって違うものが入り「自分の環境では動く」が起きる。"
-  - id: py-l06-3
-    difficulty: 2
-    question: "`from myapp.services import billing` が `ModuleNotFoundError` になる。最も多い原因は?"
-    choices:
-      - "ファイルが大きい"
-      - "実行時のカレントディレクトリ / sys.path に myapp の親が無い、または仮想環境が有効になっていない"
-      - "Python のバージョン"
-      - "コメントの問題"
-    answer: 1
-    explanation: "import はカレントと sys.path から探す。`python -m myapp.main` のようにプロジェクトルートから -m で起動する、あるいは pip install -e . でパッケージとして入れる。"
-  - id: py-l06-4
-    difficulty: 2
-    question: "本番のイメージに開発用パッケージ (pytest / ruff) を入れないための仕組みは?"
-    choices:
-      - "手で消す"
-      - "依存をグループに分け (dev グループ)、本番では `--no-dev` / `--only main` 相当でインストールする"
-      - "全部入れる"
-      - "requirements.txt には書けない"
-    answer: 1
-    explanation: "poetry の `[tool.poetry.group.dev.dependencies]`、uv / PEP 735 の `[dependency-groups] dev`。イメージが小さくなり攻撃面も減る。"
 ---
 ## モジュールとパッケージ
 
@@ -157,3 +106,15 @@ uv lock --upgrade                    # 全部
 - 仮想環境で分離。`.venv` はコミットしない
 - pyproject は範囲、ロックは固定。ロックは必ずコミット
 - dev 依存は分けて本番に入れない
+
+## やってみる
+
+**ゴール:** uv (無ければ venv) でプロジェクトを作り、ロックファイルを見る。
+
+1. `mkdir uvdemo && cd uvdemo && uv init` (uv が無ければ `python -m venv .venv && source .venv/bin/activate`)
+2. `uv add requests` して `pyproject.toml` と `uv.lock` を開き、requests 以外に何が入っているか数える
+3. `uv add --dev pytest` して dev グループに入ることを確認
+4. `uv run python -c "import requests; print(requests.__version__)"`
+5. `cat .gitignore` に `.venv` があるか確認
+
+**確認:** pyproject には requests だけ、lock には推移的依存 (certifi, urllib3 など) も入っている。

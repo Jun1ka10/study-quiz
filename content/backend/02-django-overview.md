@@ -3,57 +3,6 @@ id: be-02
 title: Django の全体像
 summary: プロジェクトとアプリ、settings、manage.py、リクエストが流れる順番。Django プロジェクトの構造を読めるようになる
 minutes: 12
-exercise: |
-  **ゴール:** Django プロジェクトを 0 から起動し、管理画面を出す。
-
-  1. `uv init djdemo && cd djdemo && uv add django && uv run django-admin startproject config . && uv run python manage.py startapp members`
-  2. `config/settings.py` の `INSTALLED_APPS` に `"members"` を足す
-  3. `uv run python manage.py migrate && uv run python manage.py createsuperuser`
-  4. `uv run python manage.py runserver` → `http://localhost:8000/admin/` にログイン
-  5. `settings.py` の `DEBUG` と `ALLOWED_HOSTS` を眺め、`SECRET_KEY` が直書きされているのを見つける
-
-  **確認:** プロジェクト (config) とアプリ (members) の違いをディレクトリで指せる。
-questions:
-  - id: be-l02-1
-    difficulty: 1
-    question: "Django の「プロジェクト」と「アプリ」の関係は?"
-    choices:
-      - "同じもの"
-      - "プロジェクトは設定と URL の入口を持つ全体、アプリは機能単位 (members / invoices など) の部品"
-      - "アプリの中に複数のプロジェクトがある"
-      - "アプリは外部ライブラリのことだけを指す"
-    answer: 1
-    explanation: "`config/` (settings.py, urls.py) がプロジェクト、`members/` `invoices/` `expenses/` がアプリ。アプリは INSTALLED_APPS に登録して有効化する。"
-  - id: be-l02-2
-    difficulty: 1
-    question: "リクエストが処理される順序として正しいのは?"
-    choices:
-      - "テンプレート → ビュー → URL"
-      - "URLconf でビューを決める → ビューが処理 (必要なら モデル / テンプレート) → レスポンス"
-      - "モデル → URL → テンプレート"
-      - "ビュー → URL → モデル"
-    answer: 1
-    explanation: "urls.py の path() がパスとビュー関数を対応付ける。ビューがモデルで DB を触り、テンプレートで HTML を作って返す (MTV)。"
-  - id: be-l02-3
-    difficulty: 2
-    question: "settings.py に DB パスワードを直書きせず、`env(\"DATABASE_PASSWORD\")` のように読む理由は?"
-    choices:
-      - "速いから"
-      - "秘密情報を Git に入れず、環境 (dev / staging / 本番) ごとに値を変えられるから"
-      - "Django が直書きを禁止しているから"
-      - "理由は無い"
-    answer: 1
-    explanation: "django-environ で `.env` から読む。`.env` は .gitignore に入れ、本番は環境変数や Secret Manager から渡す。"
-  - id: be-l02-4
-    difficulty: 2
-    question: "本番で `DEBUG = True` のままにすると何が起きる?"
-    choices:
-      - "何も起きない"
-      - "エラー画面に settings や変数の中身がそのまま表示され、情報漏洩になる"
-      - "速くなる"
-      - "静的ファイルが配信されなくなる"
-    answer: 1
-    explanation: "DEBUG=True のエラーページはソースや環境変数を表示する。本番は必ず False にし、ALLOWED_HOSTS を設定する。"
 ---
 ## プロジェクトとアプリ
 
@@ -151,3 +100,15 @@ admin.site.register(Member)
 - URL → View → Model / Template → レスポンス
 - 操作は `manage.py`。DB 変更は makemigrations → migrate
 - 秘密情報は `.env` から。DEBUG は本番 False
+
+## やってみる
+
+**ゴール:** Django プロジェクトを 0 から起動し、管理画面を出す。
+
+1. `uv init djdemo && cd djdemo && uv add django && uv run django-admin startproject config . && uv run python manage.py startapp members`
+2. `config/settings.py` の `INSTALLED_APPS` に `"members"` を足す
+3. `uv run python manage.py migrate && uv run python manage.py createsuperuser`
+4. `uv run python manage.py runserver` → `http://localhost:8000/admin/` にログイン
+5. `settings.py` の `DEBUG` と `ALLOWED_HOSTS` を眺め、`SECRET_KEY` が直書きされているのを見つける
+
+**確認:** プロジェクト (config) とアプリ (members) の違いをディレクトリで指せる。

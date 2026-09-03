@@ -1,0 +1,43 @@
+# 「GitHub Actions」の確認問題。lesson は隣の 06-github-actions.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: infra-06
+questions:
+- id: infra-l06-1
+  difficulty: 1
+  question: workflow ファイルを置く場所は?
+  choices:
+  - .github/workflows/*.yml
+  - actions/*.yml
+  - ルートの workflow.yml
+  - .ci/
+  answer: 0
+  explanation: リポジトリの `.github/workflows/` 以下の YAML が自動で認識される。1 ファイル 1 workflow。
+- id: infra-l06-2
+  difficulty: 1
+  question: '`on: pull_request` と `on: push: branches: [main]` の使い分けは?'
+  choices:
+  - 同じ
+  - pull_request は PR ごとの検証 (lint / test)、push to main はマージ後のデプロイ
+  - push は使わない
+  - pull_request はデプロイ用
+  answer: 1
+  explanation: CI は PR で回して壊れた変更を main に入れない。CD は main に入ってから動かす。
+- id: infra-l06-3
+  difficulty: 2
+  question: API キーを workflow で使いたい。正しい方法は?
+  choices:
+  - YAML に直書き
+  - リポジトリの Settings → Secrets に登録し `${{ secrets.API_KEY }}` で参照
+  - コミットした .env を読む
+  - echo で表示して確認
+  answer: 1
+  explanation: secrets はログでマスクされる。直書きや .env のコミットは公開リポジトリでは即漏洩。
+- id: infra-l06-4
+  difficulty: 2
+  question: GitHub Actions から GCP / AWS に鍵ファイル無しで認証する仕組みは?
+  choices:
+  - できない
+  - OIDC (Workload Identity Federation / IAM OIDC provider)。GitHub が発行する短命トークンをクラウド側が信頼する
+  - パスワード認証
+  - SSH
+  answer: 1
+  explanation: サービスアカウントの JSON 鍵やアクセスキーを secrets に置く方法は漏洩とローテーションの問題がある。OIDC なら鍵が存在しない。

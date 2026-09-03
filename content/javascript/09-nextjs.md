@@ -1,62 +1,8 @@
 ---
 id: js-09
-title: "Next.js (App Router)"
-summary: "ファイルベースのルーティング、サーバーコンポーネントとクライアントコンポーネント、データ取得、rewrites で API をつなぐ"
+title: Next.js (App Router)
+summary: ファイルベースのルーティング、サーバーコンポーネントとクライアントコンポーネント、データ取得、rewrites で API をつなぐ
 minutes: 14
-exercise: |
-  **ゴール:** Next.js でサーバー / クライアントの境界を体感する。
-
-  1. `npx create-next-app@latest nxdemo --typescript --app --tailwind --eslint --src-dir` → `cd nxdemo && npm run dev`
-  2. `src/app/lessons/page.tsx` (サーバーコンポーネント):
-     ```tsx
-     export default async function Page() {
-       const res = await fetch("https://jun1ka10.github.io/study-quiz/data.json", { cache: "no-store" });
-       const data = await res.json();
-       return <ul>{data.lessons.map((l: { id: string; title: string }) => <li key={l.id}>{l.title}</li>)}</ul>;
-     }
-     ```
-     `http://localhost:3000/lessons` を開く。ブラウザの Network に data.json への要求が **無い** (サーバーで取った) ことを確認
-  3. `src/app/lessons/Counter.tsx` を `"use client"` で作り `useState` のボタンを置く。`page.tsx` から `<Counter />` を使う
-  4. `Counter.tsx` の `"use client"` を消してエラーを読む
-
-  **確認:** サーバーコンポーネントでは fetch がブラウザに出ない。hooks を使うには "use client" が要る。
-questions:
-  - id: js-l09-1
-    difficulty: 1
-    question: "App Router で `/lessons/py-01` に対応するファイルは?"
-    choices: ["pages/lessons.tsx", "app/lessons/[id]/page.tsx", "routes/lessons.ts", "app/lessons.tsx"]
-    answer: 1
-    explanation: "`app/` 以下のディレクトリがそのまま URL。`[id]` が動的セグメントで、`params.id` で受け取る。`layout.tsx` は共通の枠。"
-  - id: js-l09-2
-    difficulty: 2
-    question: "サーバーコンポーネントとクライアントコンポーネントの違いは?"
-    choices:
-      - "同じ"
-      - "サーバーコンポーネントはサーバーで描画され、DB や秘密に直接触れるが hooks やイベントは使えない。クライアントコンポーネント (\"use client\") はブラウザで動き、state とイベントを持てる"
-      - "クライアントコンポーネントは SEO に強い"
-      - "サーバーコンポーネントは useState が使える"
-    answer: 1
-    explanation: "既定はサーバー。対話が要る部分だけ \"use client\" で切り出す。境界を小さくするほど JS が減る。"
-  - id: js-l09-3
-    difficulty: 2
-    question: "ブラウザから `/api/*` を叩くと別ドメインの API に転送したい。CORS を避ける Next.js の方法は?"
-    choices:
-      - "できない"
-      - "`next.config` の `rewrites` で `/api/:path*` → `${API_URL}/:path*` に書き換え、同一オリジンとして扱わせる"
-      - "CORS を `*` にする"
-      - "iframe を使う"
-    answer: 1
-    explanation: "ブラウザから見ると同じオリジンなので CORS が発生しない。API_URL は実行時の環境変数で切り替えられる。"
-  - id: js-l09-4
-    difficulty: 2
-    question: "`NEXT_PUBLIC_` で始まる環境変数の扱いは?"
-    choices:
-      - "サーバーだけで使える"
-      - "ビルド時にクライアントの JS に埋め込まれ、誰でも見える。秘密を入れてはいけない"
-      - "暗号化される"
-      - "無視される"
-    answer: 1
-    explanation: "API キーなど秘密はサーバーコンポーネントや Route Handler で使い、プレフィックス無しの環境変数から読む。"
 ---
 ## Next.js とは
 
@@ -161,3 +107,22 @@ npm start            # 本番サーバー
 - 既定はサーバーコンポーネント。対話部分だけ "use client"
 - API は rewrites で同一オリジンに。`NEXT_PUBLIC_` は公開
 - 認証は HttpOnly Cookie + middleware
+
+## やってみる
+
+**ゴール:** Next.js でサーバー / クライアントの境界を体感する。
+
+1. `npx create-next-app@latest nxdemo --typescript --app --tailwind --eslint --src-dir` → `cd nxdemo && npm run dev`
+2. `src/app/lessons/page.tsx` (サーバーコンポーネント):
+   ```tsx
+   export default async function Page() {
+     const res = await fetch("https://jun1ka10.github.io/study-quiz/data.json", { cache: "no-store" });
+     const data = await res.json();
+     return <ul>{data.lessons.map((l: { id: string; title: string }) => <li key={l.id}>{l.title}</li>)}</ul>;
+   }
+   ```
+   `http://localhost:3000/lessons` を開く。ブラウザの Network に data.json への要求が **無い** (サーバーで取った) ことを確認
+3. `src/app/lessons/Counter.tsx` を `"use client"` で作り `useState` のボタンを置く。`page.tsx` から `<Counter />` を使う
+4. `Counter.tsx` の `"use client"` を消してエラーを読む
+
+**確認:** サーバーコンポーネントでは fetch がブラウザに出ない。hooks を使うには "use client" が要る。

@@ -3,63 +3,6 @@ id: dk-02
 title: Dockerfile を書く
 summary: FROM / COPY / RUN / CMD の意味、キャッシュが効く順序、マルチステージビルド
 minutes: 12
-exercise: |
-  **ゴール:** キャッシュ順の効果とマルチステージのサイズ差を見る。
-
-  1. `app.py` (`print("hi")`) と `requirements.txt` (`requests`) を作り、Dockerfile A:
-     ```dockerfile
-     FROM python:3.12-slim
-     WORKDIR /app
-     COPY . .
-     RUN pip install -r requirements.txt
-     CMD ["python", "app.py"]
-     ```
-  2. `docker build -t a .` を 2 回。`app.py` を 1 文字変えて 3 回目 → pip install が再実行されるのを見る
-  3. `COPY requirements.txt .` → `RUN pip install` → `COPY . .` の順に直して同じ実験。install がキャッシュされる
-  4. `docker images` でサイズを見て、`FROM python:3.12` (slim 無し) に変えたときのサイズと比べる
-
-  **確認:** 順序だけでビルド時間が変わる。slim で数百 MB 減る。
-questions:
-  - id: dk-l02-1
-    difficulty: 1
-    question: "`RUN` と `CMD` の違いは?"
-    choices:
-      - "RUN はビルド時に実行してレイヤーを作る。CMD はコンテナ起動時に実行するコマンド"
-      - "同じ"
-      - "CMD はビルド時、RUN は起動時"
-      - "RUN は 1 回しか書けない"
-    answer: 0
-    explanation: "RUN は `pip install` など。CMD は `uvicorn main:app` などのメインプロセス。CMD は最後の 1 つだけ有効。"
-  - id: dk-l02-2
-    difficulty: 2
-    question: "ビルドを速くするために、`COPY . .` より前に書くべきものは?"
-    choices:
-      - "何も無い。COPY は最初に書く"
-      - "依存定義ファイル (requirements.txt / package.json) の COPY と install"
-      - "CMD"
-      - "EXPOSE"
-    answer: 1
-    explanation: "ソースを変えるたびに依存を入れ直さないように、依存ファイルだけ先に COPY して install する。ソース変更ではそのレイヤーのキャッシュが効く。"
-  - id: dk-l02-3
-    difficulty: 2
-    question: "マルチステージビルドの主な目的は?"
-    choices:
-      - "複数のイメージを同時に作る"
-      - "ビルド用ツールを最終イメージに含めず、小さく安全にする"
-      - "ビルドを並列にして速くする"
-      - "複数の OS に対応する"
-    answer: 1
-    explanation: "build ステージで npm ci / npm run build し、runtime ステージには成果物だけ COPY --from する。node_modules の開発依存やコンパイラが本番に入らない。"
-  - id: dk-l02-4
-    difficulty: 2
-    question: "本番イメージで `USER` を非 root にする理由は?"
-    choices:
-      - "速くなる"
-      - "コンテナから抜け出された場合の被害を小さくする"
-      - "ログが見やすくなる"
-      - "必須ではないので理由は無い"
-    answer: 1
-    explanation: "root で動くプロセスが乗っ取られるとホスト側への影響が大きくなる。専用ユーザーを作って USER で切り替える。"
 ---
 ## 最小の Dockerfile
 
@@ -138,3 +81,21 @@ CMD ["node", "server.js"]
 - 依存を先に、ソースを後に COPY
 - ビルドと実行を分けるならマルチステージ
 - slim ベース、非 root、JSON 形式の CMD
+
+## やってみる
+
+**ゴール:** キャッシュ順の効果とマルチステージのサイズ差を見る。
+
+1. `app.py` (`print("hi")`) と `requirements.txt` (`requests`) を作り、Dockerfile A:
+   ```dockerfile
+   FROM python:3.12-slim
+   WORKDIR /app
+   COPY . .
+   RUN pip install -r requirements.txt
+   CMD ["python", "app.py"]
+   ```
+2. `docker build -t a .` を 2 回。`app.py` を 1 文字変えて 3 回目 → pip install が再実行されるのを見る
+3. `COPY requirements.txt .` → `RUN pip install` → `COPY . .` の順に直して同じ実験。install がキャッシュされる
+4. `docker images` でサイズを見て、`FROM python:3.12` (slim 無し) に変えたときのサイズと比べる
+
+**確認:** 順序だけでビルド時間が変わる。slim で数百 MB 減る。

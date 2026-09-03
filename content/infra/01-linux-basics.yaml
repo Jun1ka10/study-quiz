@@ -1,0 +1,53 @@
+# 「Linux の基本操作」の確認問題。lesson は隣の 01-linux-basics.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: infra-01
+questions:
+- id: infra-l01-1
+  difficulty: 1
+  question: ディスクの空き容量を確認するコマンドは?
+  choices:
+  - du
+  - df -h
+  - free -h
+  - top
+  answer: 1
+  explanation: df はファイルシステム単位の空き容量。du はディレクトリの使用量。free はメモリ。
+- id: infra-l01-2
+  difficulty: 1
+  question: '`chmod 644 file` の意味は?'
+  choices:
+  - '所有者: 読み書き / グループ: 読み / その他: 読み'
+  - '全員: 読み書き実行'
+  - 所有者のみ読み書き実行
+  - '所有者: 読み / グループ: 読み書き / その他: なし'
+  answer: 0
+  explanation: r=4, w=2, x=1。6=rw-, 4=r--, 4=r--。秘密鍵は 600 (所有者だけ rw)。
+- id: infra-l01-3
+  difficulty: 2
+  question: systemd で nginx を「今すぐ起動し、OS 再起動後も自動起動する」には?
+  choices:
+  - systemctl start nginx
+  - systemctl enable --now nginx
+  - systemctl restart nginx
+  - service nginx boot
+  answer: 1
+  explanation: start は今だけ、enable は起動時の自動起動。`enable --now` で両方。
+- id: infra-l01-4
+  difficulty: 2
+  question: ログファイルの末尾を追いかけながら表示するには?
+  choices:
+  - cat -f app.log
+  - tail -f app.log
+  - head -f app.log
+  - less app.log
+  answer: 1
+  explanation: '`tail -f` で追記を待ち続ける。systemd のサービスなら `journalctl -u nginx -f`。'
+- id: infra-001
+  difficulty: 1
+  question: Linux で実行中プロセスの一覧を表示するコマンドは?
+  choices:
+  - ls
+  - ps
+  - df
+  - du
+  answer: 1
+  explanation: 'ps (例: `ps aux`) がプロセス一覧。df はディスク空き容量、du はディレクトリ使用量。'

@@ -3,45 +3,6 @@ id: dk-01
 title: イメージとコンテナ
 summary: Docker が解く問題、イメージとコンテナの関係、日常で使うコマンド
 minutes: 10
-exercise: |
-  **ゴール:** コンテナの使い捨てとポート・ボリュームを体感する。
-
-  1. `docker run -d --name web -p 8080:80 nginx:alpine` → `curl localhost:8080`
-  2. `docker exec -it web sh` で `echo hi > /usr/share/nginx/html/index.html` → `curl localhost:8080` で hi
-  3. `docker rm -f web` して同じ `run` をやり直し、`curl` が元の HTML に戻るのを見る
-  4. `docker run -d --name web2 -p 8081:80 -v $(pwd):/usr/share/nginx/html nginx:alpine`、カレントに `index.html` を作って `curl localhost:8081`
-  5. `docker logs web2` と `docker ps` を見て、`docker rm -f web2`
-
-  **確認:** コンテナ内の変更は消える。マウントした方は残る。
-questions:
-  - id: dk-l01-1
-    difficulty: 1
-    question: "Docker イメージとコンテナの関係として正しいのは?"
-    choices:
-      - "イメージは実行中のプロセス、コンテナはその設計図"
-      - "イメージは読み取り専用のテンプレート、コンテナはそこから起動した実行インスタンス"
-      - "同じもの"
-      - "コンテナを保存したものがイメージで、1 対 1"
-    answer: 1
-    explanation: "1 つのイメージから何個でもコンテナを起動できる。コンテナは上に書き込み可能なレイヤーを持つ。"
-  - id: dk-l01-2
-    difficulty: 1
-    question: "コンテナの中でファイルを書き換えた。`docker rm` で消したあと、そのファイルは?"
-    choices: ["イメージに残る", "消える", "ホストに残る", "次のコンテナに引き継がれる"]
-    answer: 1
-    explanation: "コンテナの書き込みレイヤーはコンテナと一緒に消える。残したいものはボリュームか外部ストレージに置く。"
-  - id: dk-l01-3
-    difficulty: 1
-    question: "ホストの 8000 番をコンテナの 8080 番につなぐオプションは?"
-    choices: ["-p 8080:8000", "-p 8000:8080", "--port 8000", "-e PORT=8000"]
-    answer: 1
-    explanation: "`-p ホスト:コンテナ`。左がホスト側。"
-  - id: dk-l01-4
-    difficulty: 2
-    question: "動いているコンテナの中に入ってシェルを使いたい。"
-    choices: ["docker run -it app bash", "docker exec -it <container> bash", "docker attach app", "docker shell app"]
-    answer: 1
-    explanation: "exec は実行中のコンテナで追加のプロセスを起動する。run は新しいコンテナを作ってしまう。"
 ---
 ## Docker が解く問題
 
@@ -104,3 +65,15 @@ docker run -v pgdata:/var/lib/postgresql/data postgres:16   # 名前付きボリ
 - レイヤーはキャッシュされる。変わりにくいものを先に書く
 - 残したいデータはボリュームへ
 - `build` → `run -p` → `logs` → `exec` が基本の 4 つ
+
+## やってみる
+
+**ゴール:** コンテナの使い捨てとポート・ボリュームを体感する。
+
+1. `docker run -d --name web -p 8080:80 nginx:alpine` → `curl localhost:8080`
+2. `docker exec -it web sh` で `echo hi > /usr/share/nginx/html/index.html` → `curl localhost:8080` で hi
+3. `docker rm -f web` して同じ `run` をやり直し、`curl` が元の HTML に戻るのを見る
+4. `docker run -d --name web2 -p 8081:80 -v $(pwd):/usr/share/nginx/html nginx:alpine`、カレントに `index.html` を作って `curl localhost:8081`
+5. `docker logs web2` と `docker ps` を見て、`docker rm -f web2`
+
+**確認:** コンテナ内の変更は消える。マウントした方は残る。

@@ -1,56 +1,8 @@
 ---
 id: gcp-05
-title: "Cloud Run Jobs と Cloud Scheduler"
-summary: "HTTP を待たずに実行して終わるバッチの器と、それを定期起動する仕組み。migration・日次集計・リマインダーの置き場"
+title: Cloud Run Jobs と Cloud Scheduler
+summary: HTTP を待たずに実行して終わるバッチの器と、それを定期起動する仕組み。migration・日次集計・リマインダーの置き場
 minutes: 10
-exercise: |
-  **ゴール:** Job を作って手動実行し、Scheduler で 5 分おきに起動する (確認後に消す)。
-
-  1. `job.py` に `import os, datetime; print("digest", datetime.datetime.now(), os.environ.get("MODE"))` を書き、dk-02 の形でイメージ化して Artifact Registry へ push
-  2. `gcloud run jobs create demo-job --image ... --region asia-northeast1 --set-env-vars MODE=manual --max-retries 1 --task-timeout 5m`
-  3. `gcloud run jobs execute demo-job --region asia-northeast1 --wait` → `gcloud logging read 'resource.type="cloud_run_job"' --limit 5`
-  4. Scheduler 用の SA を作り `roles/run.invoker` を Job に付与: `gcloud run jobs add-iam-policy-binding demo-job --member=serviceAccount:sched@... --role=roles/run.invoker --region asia-northeast1`
-  5. `gcloud scheduler jobs create http demo-sched --schedule="*/5 * * * *" --time-zone=Asia/Tokyo --uri="https://asia-northeast1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/$(gcloud config get project)/jobs/demo-job:run" --http-method=POST --oauth-service-account-email=sched@...`
-  6. 10 分待ってログに 2 回出るのを確認 → scheduler / job を削除
-
-  **確認:** Job は実行して終了する (常駐しない)。Scheduler は OAuth で Job を叩いた。
-questions:
-  - id: gcp-l05-1
-    difficulty: 1
-    question: "Cloud Run Service と Job の違いは?"
-    choices:
-      - "同じ"
-      - "Service は HTTP を待ち受けて常駐 (0 台にスケールイン可)、Job は起動して処理を終えたら終了する。バッチは Job"
-      - "Job の方が速い"
-      - "Service はバッチ専用"
-    answer: 1
-    explanation: "「HTTP を受けたら重い処理をする Service」は タイムアウト (最大 60 分) と課金の面で不利。処理して終わるものは Job にする。"
-  - id: gcp-l05-2
-    difficulty: 2
-    question: "Job のタスクが途中で失敗して再実行された。安全に設計するには?"
-    choices:
-      - "再実行しない設定にする"
-      - "処理を冪等にする (同じ入力で 2 回走っても結果が変わらない)。UPSERT、処理済みフラグ、client_id"
-      - "失敗しないように祈る"
-      - "手動で確認する"
-    answer: 1
-    explanation: "`--max-retries` があるため再実行は前提。「日次集計を 2 回走らせたら 2 倍になる」設計は事故になる。"
-  - id: gcp-l05-3
-    difficulty: 2
-    question: "Cloud Scheduler から Job を起動するときの認証は?"
-    choices:
-      - "不要"
-      - "Scheduler に専用サービスアカウントを持たせ、Job に run.invoker を付与し、OAuth トークンで Cloud Run Admin API を叩く"
-      - "API キー"
-      - "パスワード"
-    answer: 1
-    explanation: "誰でも Job を起動できる状態にしない。Scheduler → Job も IAM で守る。"
-  - id: gcp-l05-4
-    difficulty: 1
-    question: "cron 式 `0 8 * * *` を `--time-zone=Asia/Tokyo` で登録した。いつ動く?"
-    choices: ["UTC 8:00", "日本時間 毎日 8:00", "毎時 0 分", "月初"]
-    answer: 1
-    explanation: "分 時 日 月 曜日。time-zone を省略すると UTC になり 17:00 JST に動く、が典型的な事故。"
 ---
 ## Service と Job
 
@@ -148,3 +100,16 @@ CI/CD では「イメージ push → `jobs update migrate --image` → `execute 
 - 再試行前提で冪等に。migration は retries 0
 - 定期起動は Scheduler。time-zone と invoker を忘れない
 - CI では migration Job の成功を待ってから Service を更新
+
+## やってみる
+
+**ゴール:** Job を作って手動実行し、Scheduler で 5 分おきに起動する (確認後に消す)。
+
+1. `job.py` に `import os, datetime; print("digest", datetime.datetime.now(), os.environ.get("MODE"))` を書き、dk-02 の形でイメージ化して Artifact Registry へ push
+2. `gcloud run jobs create demo-job --image ... --region asia-northeast1 --set-env-vars MODE=manual --max-retries 1 --task-timeout 5m`
+3. `gcloud run jobs execute demo-job --region asia-northeast1 --wait` → `gcloud logging read 'resource.type="cloud_run_job"' --limit 5`
+4. Scheduler 用の SA を作り `roles/run.invoker` を Job に付与: `gcloud run jobs add-iam-policy-binding demo-job --member=serviceAccount:sched@... --role=roles/run.invoker --region asia-northeast1`
+5. `gcloud scheduler jobs create http demo-sched --schedule="*/5 * * * *" --time-zone=Asia/Tokyo --uri="https://asia-northeast1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/$(gcloud config get project)/jobs/demo-job:run" --http-method=POST --oauth-service-account-email=sched@...`
+6. 10 分待ってログに 2 回出るのを確認 → scheduler / job を削除
+
+**確認:** Job は実行して終了する (常駐しない)。Scheduler は OAuth で Job を叩いた。

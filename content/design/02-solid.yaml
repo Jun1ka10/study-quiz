@@ -1,0 +1,64 @@
+# 「SOLID 原則」の確認問題。lesson は隣の 02-solid.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: de-02
+questions:
+- id: de-l02-1
+  difficulty: 1
+  question: 単一責任の原則 (SRP) の正しい言い方は?
+  choices:
+  - クラスは 1 つのメソッドだけ持つ
+  - クラスを変更する理由は 1 つだけであるべき
+  - 1 ファイル 1 クラス
+  - 関数は 10 行以内
+  answer: 1
+  explanation: 責務 = 変更理由。複数の理由で変更されるクラスは分ける。
+- id: de-l02-2
+  difficulty: 2
+  question: オープン・クローズドの原則 (OCP) を満たしているのは?
+  choices:
+  - 新しい通知手段を足すたびに if 分岐を追加する
+  - Notifier インターフェースを定義し、新しい通知手段は実装クラスを追加するだけにする
+  - 全通知処理を 1 つの関数にまとめる
+  - 通知手段を増やさない
+  answer: 1
+  explanation: 既存コードを変更せず (closed)、新しいクラスを足すことで拡張 (open) できる形。
+- id: de-l02-3
+  difficulty: 2
+  question: 依存性逆転の原則 (DIP) で、ビジネスロジックが依存すべきものは?
+  choices:
+  - 具体的な DB ライブラリ
+  - 抽象 (インターフェース)
+  - HTTP フレームワーク
+  - 設定ファイル
+  answer: 1
+  explanation: 上位 (ロジック) も下位 (DB 等) も抽象に依存する。実装は外から差し込む。
+- id: de-l02-4
+  difficulty: 3
+  question: インターフェース分離の原則 (ISP) に違反しているのは?
+  choices:
+  - 巨大な Storage インターフェースを実装するために、使わないメソッドまで空実装している
+  - Reader と Writer を別インターフェースに分けている
+  - 1 つのクラスが 2 つの小さいインターフェースを実装している
+  - インターフェースにメソッドが 1 つしかない
+  answer: 0
+  explanation: 使わないメソッドを強制されるのが ISP 違反。利用側ごとに小さいインターフェースに分ける。
+- id: de-005
+  difficulty: 2
+  question: |-
+    次のコードで問題になっている設計の匂い (code smell) は?
+
+    ```python
+    def process(order, mode):
+        if mode == 'email':
+            ...
+        elif mode == 'slack':
+            ...
+        elif mode == 'sms':
+            ...
+    ```
+  choices:
+  - フラグ引数による分岐。振る舞いごとに型 (Strategy) に分けるのが定石
+  - 関数名が短すぎる
+  - 引数が 2 つある
+  - 問題はない
+  answer: 0
+  explanation: mode で分岐する関数は mode が増えるたびに肥大化する (OCP 違反)。Notifier インターフェース + EmailNotifier / SlackNotifier のように分けると追加が局所化する。

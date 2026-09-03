@@ -3,49 +3,6 @@ id: gcp-01
 title: GCP の全体像とプロジェクト・IAM
 summary: 組織 / フォルダ / プロジェクトの階層、IAM ロールの種類、サービスアカウントの使い方
 minutes: 10
-exercise: |
-  **ゴール:** プロジェクトの IAM とサービスアカウントを CLI で読む。
-
-  1. `gcloud auth login && gcloud config set project <id>`
-  2. `gcloud projects get-iam-policy $(gcloud config get project) --format=json | head -60` で誰に何のロールがあるか読む。`roles/owner` `roles/editor` を数える
-  3. `gcloud iam service-accounts list` でサービスアカウントを一覧。既定の `*-compute@` があるか
-  4. `gcloud services list --enabled | head` で有効な API を見る
-  5. `gcloud iam service-accounts keys list --iam-account=<どれか>` で鍵が発行されているか確認
-
-  **確認:** 基本ロールが付いているメンバーと、鍵が存在するサービスアカウントを把握した。
-questions:
-  - id: gcp-l01-1
-    difficulty: 1
-    question: "GCP でリソース (VM, バケットなど) が直接属する単位は?"
-    choices: ["組織", "フォルダ", "プロジェクト", "リージョン"]
-    answer: 2
-    explanation: "すべてのリソースはプロジェクトに属し、課金・API 有効化・IAM もプロジェクト単位が基本。"
-  - id: gcp-l01-2
-    difficulty: 1
-    question: "IAM ポリシーの継承として正しいのは?"
-    choices:
-      - "プロジェクトの権限が組織に継承される"
-      - "組織 / フォルダで付けた権限は配下のプロジェクトに継承される"
-      - "継承はされない"
-      - "フォルダの権限だけ継承される"
-    answer: 1
-    explanation: "上位で付けた権限は下位に伝わる。逆は無い。上位で広い権限を付けると全プロジェクトに効くので注意。"
-  - id: gcp-l01-3
-    difficulty: 2
-    question: "本番で避けるべき IAM ロールの種類は?"
-    choices: ["事前定義ロール", "カスタムロール", "基本ロール (Owner / Editor / Viewer)", "どれも問題ない"]
-    answer: 2
-    explanation: "基本ロールは粗すぎて最小権限にならない。事前定義ロール (例: roles/storage.objectViewer) を探し、無ければカスタムロール。"
-  - id: gcp-l01-4
-    difficulty: 2
-    question: "Cloud Run 上のアプリから Cloud Storage を読ませたい。推奨は?"
-    choices:
-      - "サービスアカウントの JSON 鍵をダウンロードしてコンテナに同梱"
-      - "Cloud Run にサービスアカウントをアタッチし、そこにロールを付与する (鍵なし)"
-      - "個人のユーザー認証情報を環境変数に置く"
-      - "バケットを allUsers に公開する"
-    answer: 1
-    explanation: "GCP 上で動くものにはサービスアカウントをアタッチすれば鍵なしで認証できる。JSON 鍵は漏洩リスクが高く、GCP 外から使う場合の最後の手段。"
 ---
 ## リソース階層
 
@@ -102,3 +59,15 @@ gcloud services enable run.googleapis.com   # API は使う前に有効化が要
 - IAM は上から下へ継承。基本ロールは避けて事前定義ロールを使う
 - GCP 上のワークロードにはサービスアカウントをアタッチ。鍵は作らない
 - API は使う前に有効化
+
+## やってみる
+
+**ゴール:** プロジェクトの IAM とサービスアカウントを CLI で読む。
+
+1. `gcloud auth login && gcloud config set project <id>`
+2. `gcloud projects get-iam-policy $(gcloud config get project) --format=json | head -60` で誰に何のロールがあるか読む。`roles/owner` `roles/editor` を数える
+3. `gcloud iam service-accounts list` でサービスアカウントを一覧。既定の `*-compute@` があるか
+4. `gcloud services list --enabled | head` で有効な API を見る
+5. `gcloud iam service-accounts keys list --iam-account=<どれか>` で鍵が発行されているか確認
+
+**確認:** 基本ロールが付いているメンバーと、鍵が存在するサービスアカウントを把握した。

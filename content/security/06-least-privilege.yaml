@@ -1,0 +1,43 @@
+# 「最小権限」の確認問題。lesson は隣の 06-least-privilege.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: sec-06
+questions:
+- id: sec-l06-1
+  difficulty: 1
+  question: 最小権限の原則とは?
+  choices:
+  - 管理者は 1 人にする
+  - 人・プログラムには、その仕事に必要な権限だけを与え、それ以上は与えない
+  - 権限は全部拒否する
+  - パスワードを短くする
+  answer: 1
+  explanation: 侵害されたときの被害範囲 (blast radius) を小さくするため。便利だから Owner / Admin、を避ける。
+- id: sec-l06-2
+  difficulty: 2
+  question: Cloud Run のサービスに既定のサービスアカウント (Editor 相当) を使い続けると何が問題か?
+  choices:
+  - 問題ない
+  - アプリが乗っ取られると、プロジェクト内のほぼ全リソースを操作できてしまう
+  - 遅くなる
+  - 課金が増える
+  answer: 1
+  explanation: サービスごとに専用のサービスアカウントを作り、必要なロール (secretAccessor、cloudsql.client など) だけ付ける。
+- id: sec-l06-3
+  difficulty: 2
+  question: アプリの DB 接続ユーザーに与える権限として適切なのは?
+  choices:
+  - スーパーユーザー
+  - テーブル所有者
+  - 必要なテーブルへの SELECT / INSERT / UPDATE / DELETE だけ。DDL (CREATE / DROP) は migration 用の別ユーザー
+  - 全 DB への全権限
+  answer: 2
+  explanation: SQL インジェクションを食らっても DROP TABLE できない。RLS も所有者でなければ効く。
+- id: sec-l06-4
+  difficulty: 2
+  question: IAM で権限を人ではなくグループに付ける理由は?
+  choices:
+  - 速いから
+  - 入退社や異動でメンバーを出し入れするだけで済み、個別付与の消し忘れ (権限の堆積) を防げる
+  - グループの方が権限が強い
+  - 理由は無い
+  answer: 1
+  explanation: 「開発者」「運用」「閲覧のみ」のようなグループに役割を付ける。個人に直接付けた権限は棚卸しで見落とされる。

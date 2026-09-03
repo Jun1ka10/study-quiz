@@ -3,62 +3,6 @@ id: infra-06
 title: GitHub Actions
 summary: workflow の構造、トリガー、secrets、CI (lint / test) と CD (デプロイ) の型
 minutes: 12
-exercise: |
-  **ゴール:** GitHub Actions を 1 本書いて PR で動かす。
-
-  1. 任意の自分のリポジトリに `.github/workflows/ci.yml`:
-     ```yaml
-     name: CI
-     on: [pull_request, workflow_dispatch]
-     jobs:
-       check:
-         runs-on: ubuntu-latest
-         steps:
-           - uses: actions/checkout@v4
-           - run: echo "secret is ${{ secrets.DEMO }}"
-           - run: test -f README.md
-     ```
-  2. Settings → Secrets に `DEMO` を登録し、ブランチを切って PR を作る。Actions タブでログを開き、secret が `***` になっているのを見る
-  3. `test -f NOPE.md` に変えて push し、失敗して PR に赤が付くのを見る
-
-  **確認:** PR で自動実行され、secret がマスクされ、失敗が PR に表示された。
-questions:
-  - id: infra-l06-1
-    difficulty: 1
-    question: "workflow ファイルを置く場所は?"
-    choices: [".github/workflows/*.yml", "actions/*.yml", "ルートの workflow.yml", ".ci/"]
-    answer: 0
-    explanation: "リポジトリの `.github/workflows/` 以下の YAML が自動で認識される。1 ファイル 1 workflow。"
-  - id: infra-l06-2
-    difficulty: 1
-    question: "`on: pull_request` と `on: push: branches: [main]` の使い分けは?"
-    choices:
-      - "同じ"
-      - "pull_request は PR ごとの検証 (lint / test)、push to main はマージ後のデプロイ"
-      - "push は使わない"
-      - "pull_request はデプロイ用"
-    answer: 1
-    explanation: "CI は PR で回して壊れた変更を main に入れない。CD は main に入ってから動かす。"
-  - id: infra-l06-3
-    difficulty: 2
-    question: "API キーを workflow で使いたい。正しい方法は?"
-    choices:
-      - "YAML に直書き"
-      - "リポジトリの Settings → Secrets に登録し `${{ secrets.API_KEY }}` で参照"
-      - "コミットした .env を読む"
-      - "echo で表示して確認"
-    answer: 1
-    explanation: "secrets はログでマスクされる。直書きや .env のコミットは公開リポジトリでは即漏洩。"
-  - id: infra-l06-4
-    difficulty: 2
-    question: "GitHub Actions から GCP / AWS に鍵ファイル無しで認証する仕組みは?"
-    choices:
-      - "できない"
-      - "OIDC (Workload Identity Federation / IAM OIDC provider)。GitHub が発行する短命トークンをクラウド側が信頼する"
-      - "パスワード認証"
-      - "SSH"
-    answer: 1
-    explanation: "サービスアカウントの JSON 鍵やアクセスキーを secrets に置く方法は漏洩とローテーションの問題がある。OIDC なら鍵が存在しない。"
 ---
 ## workflow の構造
 
@@ -172,3 +116,24 @@ jobs:
 - PR で CI、main で CD、schedule で定期
 - 秘密は secrets。クラウド認証は OIDC で鍵を持たない
 - ビルド → push → デプロイの 3 段が CD の型
+
+## やってみる
+
+**ゴール:** GitHub Actions を 1 本書いて PR で動かす。
+
+1. 任意の自分のリポジトリに `.github/workflows/ci.yml`:
+   ```yaml
+   name: CI
+   on: [pull_request, workflow_dispatch]
+   jobs:
+     check:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v4
+         - run: echo "secret is ${{ secrets.DEMO }}"
+         - run: test -f README.md
+   ```
+2. Settings → Secrets に `DEMO` を登録し、ブランチを切って PR を作る。Actions タブでログを開き、secret が `***` になっているのを見る
+3. `test -f NOPE.md` に変えて push し、失敗して PR に赤が付くのを見る
+
+**確認:** PR で自動実行され、secret がマスクされ、失敗が PR に表示された。

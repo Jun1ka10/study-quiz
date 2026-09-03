@@ -3,59 +3,6 @@ id: py-05
 title: クラスと dataclass
 summary: class の基本、self、__init__、dataclass で楽をする、継承より委譲
 minutes: 12
-exercise: |
-  **ゴール:** dataclass を書いて default_factory の必要性を見る。
-
-  1. `model.py`:
-     ```python
-     from dataclasses import dataclass, field
-     @dataclass
-     class Invoice:
-         id: int
-         amount: int
-         tags: list[str] = field(default_factory=list)
-         @property
-         def total(self): return int(self.amount * 1.1)
-     a = Invoice(1, 1000); b = Invoice(2, 500)
-     a.tags.append("x"); print(a, b, a.total)
-     ```
-  2. `field(default_factory=list)` を `[]` に変えて実行し、エラーを読む
-  3. `@dataclass(frozen=True)` にして `a.amount = 1` を試す
-
-  **確認:** `b.tags` が空のまま。frozen で代入がエラーになる。
-questions:
-  - id: py-l05-1
-    difficulty: 1
-    question: "メソッドの第 1 引数 `self` は何か?"
-    choices: ["クラス自身", "そのメソッドを呼び出したインスタンス", "予約語で省略できる", "親クラス"]
-    answer: 1
-    explanation: "`obj.method(x)` は `Class.method(obj, x)` と同じ。self は慣習名で、インスタンスの属性に `self.name` でアクセスする。"
-  - id: py-l05-2
-    difficulty: 1
-    question: "`@dataclass` を付けると自動生成されるものは?"
-    choices: ["__init__ / __repr__ / __eq__", "DB テーブル", "JSON 変換", "スレッド"]
-    answer: 0
-    explanation: "フィールド定義からコンストラクタ・表示・比較が生える。定型コードが消え、フィールドの追加漏れも減る。"
-  - id: py-l05-3
-    difficulty: 2
-    question: "次の dataclass の問題は?\n\n```python\n@dataclass\nclass Order:\n    items: list = []\n```"
-    choices:
-      - "問題ない"
-      - "ミュータブルなデフォルト値はエラーになる。`field(default_factory=list)` を使う"
-      - "list は使えない"
-      - "型ヒントが要らない"
-    answer: 1
-    explanation: "関数のデフォルト引数と同じ罠を防ぐため、dataclass は ValueError を出す。default_factory はインスタンスごとに新しい list を作る。"
-  - id: py-l05-4
-    difficulty: 2
-    question: "「継承より委譲 (composition)」が勧められる理由は?"
-    choices:
-      - "継承は遅い"
-      - "継承は親の実装に強く結合し、変更が子に波及する。必要な機能を持つオブジェクトを属性として持つ方が疎結合"
-      - "Python は継承できない"
-      - "委譲の方が短い"
-    answer: 1
-    explanation: "`class Report(Emailer)` より `class Report: def __init__(self, emailer)`。is-a が本当に成り立つときだけ継承する。"
 ---
 ## クラスの基本
 
@@ -181,3 +128,25 @@ class Report:
 - データの入れ物は `@dataclass`。ミュータブルは `default_factory`
 - 計算値は `@property`、別の作り方は `@classmethod`
 - 継承は is-a のときだけ。機能を借りるなら委譲、型は `Protocol`
+
+## やってみる
+
+**ゴール:** dataclass を書いて default_factory の必要性を見る。
+
+1. `model.py`:
+   ```python
+   from dataclasses import dataclass, field
+   @dataclass
+   class Invoice:
+       id: int
+       amount: int
+       tags: list[str] = field(default_factory=list)
+       @property
+       def total(self): return int(self.amount * 1.1)
+   a = Invoice(1, 1000); b = Invoice(2, 500)
+   a.tags.append("x"); print(a, b, a.total)
+   ```
+2. `field(default_factory=list)` を `[]` に変えて実行し、エラーを読む
+3. `@dataclass(frozen=True)` にして `a.amount = 1` を試す
+
+**確認:** `b.tags` が空のまま。frozen で代入がエラーになる。

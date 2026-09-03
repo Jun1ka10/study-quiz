@@ -1,0 +1,43 @@
+# 「レートリミットと総当たり対策」の確認問題。lesson は隣の 09-rate-limiting.md の id と一致させる。answer は choices の添字 (0 始まり)
+lesson: sec-09
+questions:
+- id: sec-l09-1
+  difficulty: 1
+  question: ログインにレートリミットを付ける主な目的は?
+  choices:
+  - サーバー負荷
+  - パスワードの総当たり・辞書攻撃・漏洩リストの使い回し (クレデンシャルスタッフィング) を現実的でなくする
+  - 見た目
+  - 目的は無い
+  answer: 1
+  explanation: 1 分 5 回なら 1 日 7,200 回。無制限なら秒間数千回試せる。
+- id: sec-l09-2
+  difficulty: 2
+  question: ログインの制限キーを IP アドレスだけにする弱点は?
+  choices:
+  - 弱点は無い
+  - 攻撃者は多数の IP を使える (分散)。逆に社内 NAT では正規ユーザーが道連れになる。IP と アカウント (メール) の両方でキーを持つ
+  - IP は取れない
+  - 遅くなる
+  answer: 1
+  explanation: アカウント単位の制限は、そのアカウントへの総当たりを止める。IP 単位は広範囲の乱射を止める。両方。
+- id: sec-l09-3
+  difficulty: 2
+  question: 制限を超えたときの適切な応答は?
+  choices:
+  - '500'
+  - 429 Too Many Requests と `Retry-After` ヘッダー。ログに記録し、繰り返す送信元は監視
+  - 200 で無視
+  - 接続を切る
+  answer: 1
+  explanation: クライアントが再試行のタイミングを知れる。ログ・メトリクスにすると攻撃の兆候が見える。
+- id: sec-l09-4
+  difficulty: 2
+  question: 複数インスタンスで動く API でレートリミットのカウンタをどこに持つ?
+  choices:
+  - 各プロセスのメモリ
+  - Redis のような共有ストア (インスタンスが増えても合計で数える)。または LB / API Gateway / Cloud Armor 側で制限
+  - DB のテーブル
+  - ファイル
+  answer: 1
+  explanation: メモリだと 3 台なら実質 3 倍まで通る。Cloud Run は 0〜N 台に変動するので特に。

@@ -3,56 +3,6 @@ id: sec-07
 title: HTTPS・CORS・セキュリティヘッダー
 summary: 通信を守る HTTPS、ブラウザの同一オリジンポリシーと CORS の正しい理解、付けておくべきレスポンスヘッダー
 minutes: 12
-exercise: |
-  **ゴール:** CORS をブラウザで起こし、ヘッダーで直す。
-
-  1. `python3 -m http.server 8000` (オリジン A) と、別ターミナルで FastAPI (`uv run uvicorn main:app --port 8001`、be-06 の main.py で可)
-  2. `http://localhost:8000/` のコンソールで `await (await fetch("http://localhost:8001/items/x")).json()` → CORS エラー。Network タブでリクエストは届いて 404 が返っているのを見る
-  3. FastAPI に `CORSMiddleware(allow_origins=["http://localhost:8000"])` を足して再実行 → 通る
-  4. `curl -I https://github.com | grep -i "strict-transport\|content-security\|x-frame"` で実サイトのヘッダーを見る
-
-  **確認:** CORS は「ブラウザが読ませない」だけで、サーバーには届いていた。
-questions:
-  - id: sec-l07-1
-    difficulty: 1
-    question: "HTTPS が守るものとして正しいのは?"
-    choices:
-      - "サーバー内のデータ"
-      - "通信の盗聴・改ざんと、接続先が本物のサーバーであること"
-      - "SQL インジェクション"
-      - "パスワードの強度"
-    answer: 1
-    explanation: "経路上の攻撃 (盗聴・改ざん・なりすまし) を防ぐ。サーバー側の脆弱性やアプリのバグは別の話。"
-  - id: sec-l07-2
-    difficulty: 2
-    question: "CORS エラーが出た。これは誰の判断で何を止めている?"
-    choices:
-      - "サーバーがリクエストを拒否している"
-      - "ブラウザが、別オリジンからの JS によるレスポンスの読み取りを止めている (リクエスト自体はサーバーに届いていることが多い)"
-      - "DNS の失敗"
-      - "証明書の失敗"
-    answer: 1
-    explanation: "同一オリジンポリシーはブラウザの機能。サーバーが `Access-Control-Allow-Origin` で許可したオリジンにだけ、ブラウザが JS に結果を渡す。curl には CORS は無い。"
-  - id: sec-l07-3
-    difficulty: 2
-    question: "`Access-Control-Allow-Origin: *` と `Access-Control-Allow-Credentials: true` を同時に返すと?"
-    choices:
-      - "全オリジンから Cookie 付きで呼べる"
-      - "ブラウザが拒否する (仕様で禁止)。Cookie を使うなら具体的なオリジンを返す"
-      - "速くなる"
-      - "問題なく動く"
-    answer: 1
-    explanation: "認証情報付きのクロスオリジン要求を全世界に許可するのは危険なので仕様で禁止されている。許可するオリジンは明示のリストにする。"
-  - id: sec-l07-4
-    difficulty: 2
-    question: "`Strict-Transport-Security` (HSTS) ヘッダーの効果は?"
-    choices:
-      - "レスポンスを圧縮する"
-      - "以後このドメインにはブラウザが必ず HTTPS で接続し、http:// を書いても自動で切り替える"
-      - "Cookie を暗号化する"
-      - "CORS を許可する"
-    answer: 1
-    explanation: "最初の http アクセスを乗っ取る攻撃 (SSL stripping) を防ぐ。`max-age` を長くし、`includeSubDomains` を付ける。"
 ---
 ## HTTPS
 
@@ -138,3 +88,14 @@ Set-Cookie: sessionid=...; HttpOnly; Secure; SameSite=Lax; Path=/
 - CORS はブラウザの読み取り制限をサーバーが緩める仕組み。認可ではない。`*` と Cookie は両立しない
 - CSP・nosniff・frame-ancestors・Referrer-Policy を付ける
 - Cookie は HttpOnly + Secure + SameSite
+
+## やってみる
+
+**ゴール:** CORS をブラウザで起こし、ヘッダーで直す。
+
+1. `python3 -m http.server 8000` (オリジン A) と、別ターミナルで FastAPI (`uv run uvicorn main:app --port 8001`、be-06 の main.py で可)
+2. `http://localhost:8000/` のコンソールで `await (await fetch("http://localhost:8001/items/x")).json()` → CORS エラー。Network タブでリクエストは届いて 404 が返っているのを見る
+3. FastAPI に `CORSMiddleware(allow_origins=["http://localhost:8000"])` を足して再実行 → 通る
+4. `curl -I https://github.com | grep -i "strict-transport\|content-security\|x-frame"` で実サイトのヘッダーを見る
+
+**確認:** CORS は「ブラウザが読ませない」だけで、サーバーには届いていた。

@@ -132,10 +132,10 @@ function nextLesson(lessonId) {
   const list = lessonsOf(l.category);
   return list[list.findIndex((x) => x.id === lessonId) + 1] || null;
 }
-// 学習済み = 合格したレッスンの問題 + レッスンに紐づかないプール問題
+// 学習済み = 合格したレッスンの問題 (問題は必ずレッスンに属する)
 function learnedPool(state, catId) {
   return DATA.questions.filter((q) =>
-    (catId === "all" || q.category === catId) && (!q.lesson || state.lessons[q.lesson]?.done));
+    (catId === "all" || q.category === catId) && state.lessons[q.lesson]?.done);
 }
 
 // ---------- 画面 ----------

@@ -1,65 +1,8 @@
 ---
 id: py-10
-title: "logging と構造化ログ"
-summary: "print をやめて logging を使う。レベル、フォーマット、JSON 出力、リクエスト ID。運用で検索できるログにする"
+title: logging と構造化ログ
+summary: print をやめて logging を使う。レベル、フォーマット、JSON 出力、リクエスト ID。運用で検索できるログにする
 minutes: 10
-exercise: |
-  **ゴール:** JSON の構造化ログを出し、フィールドで絞れる形にする。
-
-  1. `log.py`:
-     ```python
-     import json, logging, sys, time
-     class JsonFormatter(logging.Formatter):
-         def format(self, r):
-             d = {"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "severity": r.levelname, "logger": r.name, "message": r.getMessage()}
-             d.update(getattr(r, "extra_fields", {}))
-             if r.exc_info: d["exception"] = self.formatException(r.exc_info)
-             return json.dumps(d, ensure_ascii=False)
-     h = logging.StreamHandler(sys.stdout); h.setFormatter(JsonFormatter())
-     logging.basicConfig(level=logging.INFO, handlers=[h])
-     log = logging.getLogger("app")
-     log.info("request done", extra={"extra_fields": {"request_id": "abc", "user_id": 42, "latency_ms": 12}})
-     try: 1 / 0
-     except ZeroDivisionError: log.exception("failed")
-     log.debug("not shown")
-     ```
-  2. `python3 log.py | jq .` (jq が無ければそのまま) で 2 行の JSON を見る
-  3. `level=logging.DEBUG` に変えて 3 行になるのを確認
-
-  **確認:** 1 行 1 JSON、severity と request_id がフィールドとして出ている。exception にスタックトレースが入った。
-questions:
-  - id: py-l10-1
-    difficulty: 1
-    question: "print ではなく logging を使う主な理由は?"
-    choices:
-      - "速いから"
-      - "レベル (DEBUG / INFO / WARNING / ERROR) で出し分けでき、出力先と形式を設定で変えられ、モジュール名や時刻が自動で付く"
-      - "print は本番で禁止されている"
-      - "違いは無い"
-    answer: 1
-    explanation: "本番では INFO 以上だけ、開発では DEBUG も、をコードを変えずに切り替えられる。"
-  - id: py-l10-2
-    difficulty: 2
-    question: "例外を捕まえた場所でスタックトレース付きで記録するには?"
-    choices: ["log.error(str(e))", "log.exception(\"failed\")  (except 節の中で)", "print(e)", "raise"]
-    answer: 1
-    explanation: "`log.exception` は ERROR レベルで `exc_info` を自動で付ける。`log.error(..., exc_info=True)` と同じ。"
-  - id: py-l10-3
-    difficulty: 2
-    question: "構造化ログ (1 行 1 JSON) にする利点は?"
-    choices:
-      - "人間が読みやすい"
-      - "ログ基盤 (Cloud Logging など) がフィールドとして解釈し、`user_id=42` のような条件で検索・集計できる"
-      - "ファイルが小さくなる"
-      - "利点は無い"
-    answer: 1
-    explanation: "文字列に埋め込むと正規表現で探すことになる。フィールドなら request_id で 1 リクエスト分を一発で絞れる。"
-  - id: py-l10-4
-    difficulty: 2
-    question: "ログに入れてはいけないものは?"
-    choices: ["リクエスト ID", "パス と ステータス", "Authorization ヘッダー、パスワード、トークン、個人情報の本文", "レイテンシ"]
-    answer: 2
-    explanation: "ログは長期保存され、多くの人が読める。秘密情報は入る前にマスクするか、そもそも出さない設計にする。"
 ---
 ## logging の基本
 
@@ -139,3 +82,29 @@ async def access_log(request, call_next):
 - `logging.getLogger(__name__)`、レベルで出し分け、例外は `log.exception`
 - リクエスト ID と「誰が・何を・結果・時間」。秘密は入れない
 - 1 行 1 JSON で stdout へ。検索できるログが運用を楽にする
+
+## やってみる
+
+**ゴール:** JSON の構造化ログを出し、フィールドで絞れる形にする。
+
+1. `log.py`:
+   ```python
+   import json, logging, sys, time
+   class JsonFormatter(logging.Formatter):
+       def format(self, r):
+           d = {"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "severity": r.levelname, "logger": r.name, "message": r.getMessage()}
+           d.update(getattr(r, "extra_fields", {}))
+           if r.exc_info: d["exception"] = self.formatException(r.exc_info)
+           return json.dumps(d, ensure_ascii=False)
+   h = logging.StreamHandler(sys.stdout); h.setFormatter(JsonFormatter())
+   logging.basicConfig(level=logging.INFO, handlers=[h])
+   log = logging.getLogger("app")
+   log.info("request done", extra={"extra_fields": {"request_id": "abc", "user_id": 42, "latency_ms": 12}})
+   try: 1 / 0
+   except ZeroDivisionError: log.exception("failed")
+   log.debug("not shown")
+   ```
+2. `python3 log.py | jq .` (jq が無ければそのまま) で 2 行の JSON を見る
+3. `level=logging.DEBUG` に変えて 3 行になるのを確認
+
+**確認:** 1 行 1 JSON、severity と request_id がフィールドとして出ている。exception にスタックトレースが入った。

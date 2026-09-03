@@ -3,60 +3,6 @@ id: js-03
 title: DOM 操作とイベント
 summary: 要素の取得・書き換え・追加と、クリックや送信への反応。フレームワーク無しで画面を動かす基本
 minutes: 10
-exercise: |
-  **ゴール:** 素の HTML + JS で、追加した行にもイベント委譲でクリックを効かせる。
-
-  1. `dom.html`:
-     ```html
-     <input id="t"><button id="add">追加</button>
-     <ul id="list"></ul>
-     <script>
-       const list = document.querySelector("#list");
-       document.querySelector("#add").addEventListener("click", () => {
-         const li = document.createElement("li");
-         li.textContent = document.querySelector("#t").value;   // innerHTML にしない
-         list.appendChild(li);
-       });
-       list.addEventListener("click", (e) => { if (e.target.closest("li")) e.target.remove(); });
-     </script>
-     ```
-  2. ブラウザで開き、追加した行をクリックして消えることを確認
-  3. 入力に `<b>x</b>` を入れて追加。太字にならないことを確認。`textContent` を `innerHTML` に変えて違いを見る
-
-  **確認:** 後から追加した li にもクリックが効く。innerHTML だとタグが解釈される。
-questions:
-  - id: js-l03-1
-    difficulty: 1
-    question: "CSS セレクタで最初に一致する要素を 1 つ取得するメソッドは?"
-    choices: ["document.getElement(\".btn\")", "document.querySelector(\".btn\")", "document.find(\".btn\")", "document.select(\".btn\")"]
-    answer: 1
-    explanation: "querySelector は 1 つ、querySelectorAll は一致する全部 (NodeList)。id なら getElementById もある。"
-  - id: js-l03-2
-    difficulty: 2
-    question: "ユーザーが入力した文字列を画面に出すとき、`el.innerHTML = text` が危険な理由は?"
-    choices:
-      - "遅いから"
-      - "text に `<script>` や `<img onerror=...>` が含まれると実行される (XSS)"
-      - "改行が消えるから"
-      - "危険ではない"
-    answer: 1
-    explanation: "文字列として出すなら `textContent` を使う。innerHTML は自分で組み立てた安全な HTML にだけ使う。"
-  - id: js-l03-3
-    difficulty: 1
-    question: "フォーム送信時にページ遷移を止めて JS で処理したい。イベントハンドラで呼ぶものは?"
-    choices: ["event.stop()", "event.preventDefault()", "return true", "event.cancel()"]
-    answer: 1
-    explanation: "submit イベントの既定動作 (ページ遷移) を止めるのが preventDefault。リンクのクリックでも同じ。"
-  - id: js-l03-4
-    difficulty: 2
-    question: "あとから動的に追加される行にもクリック処理を効かせたい。良い方法は?"
-    choices:
-      - "追加するたびに addEventListener を付け直す"
-      - "親要素に 1 つリスナーを付け、event.target で押された要素を判定する (イベント委譲)"
-      - "setInterval で監視する"
-      - "不可能"
-    answer: 1
-    explanation: "イベントは親へ伝播 (バブリング) するので、親で受ければ後から増えた子にも効く。`event.target.closest('.row')` で対象を特定する。"
 ---
 ## DOM とは
 
@@ -150,3 +96,26 @@ table.addEventListener("click", (e) => {
 - 反応は `addEventListener`。フォームは `preventDefault`
 - 増える要素には親でイベント委譲
 - script は `defer` か body の最後
+
+## やってみる
+
+**ゴール:** 素の HTML + JS で、追加した行にもイベント委譲でクリックを効かせる。
+
+1. `dom.html`:
+   ```html
+   <input id="t"><button id="add">追加</button>
+   <ul id="list"></ul>
+   <script>
+     const list = document.querySelector("#list");
+     document.querySelector("#add").addEventListener("click", () => {
+       const li = document.createElement("li");
+       li.textContent = document.querySelector("#t").value;   // innerHTML にしない
+       list.appendChild(li);
+     });
+     list.addEventListener("click", (e) => { if (e.target.closest("li")) e.target.remove(); });
+   </script>
+   ```
+2. ブラウザで開き、追加した行をクリックして消えることを確認
+3. 入力に `<b>x</b>` を入れて追加。太字にならないことを確認。`textContent` を `innerHTML` に変えて違いを見る
+
+**確認:** 後から追加した li にもクリックが効く。innerHTML だとタグが解釈される。

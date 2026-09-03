@@ -28,8 +28,8 @@ Python / 設計 / AWS / GCP / インフラを、このアプリだけでゼロ�
 content/categories.yaml   カテゴリの並び・説明・これから書くレッスン名 (準備中として表示)
 content/project/project.yaml    プロジェクトトラックの題名と説明
 content/project/NN-slug.md      プロジェクトのステップ。frontmatter (id/title/summary/phase/prereqs/minutes) + 本文 (「できたか確認」の節が必須)
-content/<category>/NN-slug.md   レッスン。frontmatter に id/title/summary/questions、本文は Markdown
-questions/<category>.yaml       レッスンに紐づかない問題プール (ランダム演習・復習用)
+content/<category>/NN-slug.md   レッスン本文 (Markdown)。frontmatter は id/title/summary/minutes。末尾に「## やってみる」節 (必須)
+content/<category>/NN-slug.yaml 同名レッスンの確認問題。先頭の lesson: が md の id と一致 (必須)。問題は必ずレッスンに属する
 scripts/build.py          上記を site/data.json に変換し、site/sw.js を生成
 site/                     配信する静的ファイル (index.html / app.js / style.css / manifest.json)
 tests/                    レッスンと問題の整合性テスト

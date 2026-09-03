@@ -1,61 +1,8 @@
 ---
 id: gcp-03
-title: "Cloud SQL と Private IP"
-summary: "マネージド PostgreSQL の作り方、Private IP で VPC 内からだけ繋ぐ、Cloud Run からの接続、バックアップと PITR"
+title: Cloud SQL と Private IP
+summary: マネージド PostgreSQL の作り方、Private IP で VPC 内からだけ繋ぐ、Cloud Run からの接続、バックアップと PITR
 minutes: 12
-exercise: |
-  **ゴール:** Cloud SQL を最小構成で作り、Cloud Run から Private IP で繋ぐ (作ったら消す。数十円程度)。
-
-  1. `gcloud services enable sqladmin.googleapis.com servicenetworking.googleapis.com vpcaccess.googleapis.com`
-  2. Private サービスアクセスの準備 (初回のみ): `gcloud compute addresses create google-managed-services-default --global --purpose=VPC_PEERING --prefix-length=16 --network=default` → `gcloud services vpc-peerings connect --service=servicenetworking.googleapis.com --ranges=google-managed-services-default --network=default`
-  3. `gcloud sql instances create demo-pg --database-version=POSTGRES_16 --tier=db-f1-micro --region=asia-northeast1 --network=default --no-assign-ip --edition=ENTERPRISE`
-  4. `gcloud sql users set-password postgres --instance=demo-pg --password=<強いもの>`、`gcloud sql databases create study --instance=demo-pg`
-  5. `gcloud sql instances describe demo-pg --format="value(ipAddresses)"` で Private IP しか無いことを確認
-  6. Cloud Run (gcp-02 の demo) を `--network=default --subnet=default --vpc-egress=private-ranges-only` で再デプロイし、環境変数 `DATABASE_URL` に Private IP を入れて `/healthz` で DB に `select 1` するように改造して確認
-  7. `gcloud sql instances delete demo-pg`
-
-  **確認:** パブリック IP が無い状態で Cloud Run から接続できた。
-questions:
-  - id: gcp-l03-1
-    difficulty: 1
-    question: "Cloud SQL を使う理由として正しいのは?"
-    choices:
-      - "無料だから"
-      - "バックアップ・パッチ・フェイルオーバー・監視を Google が面倒を見る。自分で VM に PostgreSQL を入れて運用するより安全"
-      - "速いから"
-      - "SQL が不要になる"
-    answer: 1
-    explanation: "運用の手間を買う。代わりにインスタンス課金が常時発生する (最小構成でも月数千円)。"
-  - id: gcp-l03-2
-    difficulty: 2
-    question: "Private IP のみで作る理由は?"
-    choices:
-      - "速い"
-      - "インターネットから到達できず、VPC 内 (Cloud Run / VM) からしか繋げない。パスワード総当たりの入口が消える"
-      - "安い"
-      - "必須だから"
-    answer: 1
-    explanation: "パブリック IP を付けるなら承認済みネットワークか Cloud SQL Auth Proxy 経由に限定する。"
-  - id: gcp-l03-3
-    difficulty: 2
-    question: "Cloud Run から Private IP の Cloud SQL に繋ぐために必要なのは?"
-    choices:
-      - "何も要らない"
-      - "Cloud Run を VPC に接続する (Direct VPC egress か Serverless VPC Access コネクタ) と、サービスアカウントに cloudsql.client"
-      - "パブリック IP"
-      - "SSH トンネル"
-    answer: 1
-    explanation: "Cloud Run は既定では VPC の外。VPC egress の設定で内側に出られるようにする。Terraform では `vpc_access` ブロック。"
-  - id: gcp-l03-4
-    difficulty: 2
-    question: "PITR (ポイントインタイムリカバリ) が有効だと何ができる?"
-    choices:
-      - "レプリカが増える"
-      - "「昨日の 14:03 の状態」のように任意の時点に復元 (別インスタンスとして) できる。誤った DELETE の救済"
-      - "自動でスケールする"
-      - "何もできない"
-    answer: 1
-    explanation: "日次バックアップだけだと最大 1 日分失う。PITR はトランザクションログを保持して秒単位で戻せる。"
 ---
 ## Cloud SQL とは
 
@@ -160,3 +107,17 @@ resource "google_sql_database_instance" "main" {
 - Private IP のみ + Cloud Run の VPC egress + cloudsql.client
 - アプリ用ロールは別。migration は owner
 - バックアップ + PITR は本番必須。一度は復元を試す
+
+## やってみる
+
+**ゴール:** Cloud SQL を最小構成で作り、Cloud Run から Private IP で繋ぐ (作ったら消す。数十円程度)。
+
+1. `gcloud services enable sqladmin.googleapis.com servicenetworking.googleapis.com vpcaccess.googleapis.com`
+2. Private サービスアクセスの準備 (初回のみ): `gcloud compute addresses create google-managed-services-default --global --purpose=VPC_PEERING --prefix-length=16 --network=default` → `gcloud services vpc-peerings connect --service=servicenetworking.googleapis.com --ranges=google-managed-services-default --network=default`
+3. `gcloud sql instances create demo-pg --database-version=POSTGRES_16 --tier=db-f1-micro --region=asia-northeast1 --network=default --no-assign-ip --edition=ENTERPRISE`
+4. `gcloud sql users set-password postgres --instance=demo-pg --password=<強いもの>`、`gcloud sql databases create study --instance=demo-pg`
+5. `gcloud sql instances describe demo-pg --format="value(ipAddresses)"` で Private IP しか無いことを確認
+6. Cloud Run (gcp-02 の demo) を `--network=default --subnet=default --vpc-egress=private-ranges-only` で再デプロイし、環境変数 `DATABASE_URL` に Private IP を入れて `/healthz` で DB に `select 1` するように改造して確認
+7. `gcloud sql instances delete demo-pg`
+
+**確認:** パブリック IP が無い状態で Cloud Run から接続できた。

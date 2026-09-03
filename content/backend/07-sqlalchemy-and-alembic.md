@@ -3,62 +3,6 @@ id: be-07
 title: SQLAlchemy 2 と Alembic
 summary: Mapped 記法のモデル、Session と select、リレーション、Alembic でのマイグレーション運用
 minutes: 14
-exercise: |
-  **ゴール:** SQLAlchemy でモデルを作り、Alembic のマイグレーションを 1 本生成して読む。
-
-  1. `uv add sqlalchemy alembic` (DB は SQLite で可)
-  2. `models.py`:
-     ```python
-     from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-     class Base(DeclarativeBase): pass
-     class Client(Base):
-         __tablename__ = "clients"
-         id: Mapped[int] = mapped_column(primary_key=True)
-         name: Mapped[str]
-         note: Mapped[str | None]
-     ```
-  3. `uv run alembic init alembic`。`alembic.ini` の `sqlalchemy.url = sqlite:///app.db`、`alembic/env.py` で `from models import Base; target_metadata = Base.metadata`
-  4. `uv run alembic revision --autogenerate -m "clients" && uv run alembic upgrade head`。生成された versions/ のファイルを読む
-  5. `note` 列を消して再度 autogenerate し、`drop_column` が出るのを見る (apply はしなくてよい)
-
-  **確認:** `Mapped[str | None]` が nullable=True になっている。列削除がそのまま反映されると分かった。
-questions:
-  - id: be-l07-1
-    difficulty: 1
-    question: "SQLAlchemy 2 のモデル定義で、列を宣言する書き方は?"
-    choices:
-      - "name = Column(String)"
-      - "name: Mapped[str] = mapped_column(String(200), nullable=False)"
-      - "name = models.CharField()"
-      - "name: str"
-    answer: 1
-    explanation: "2.0 スタイルは型ヒント `Mapped[型]` + `mapped_column()`。`Mapped[str | None]` なら NULL 許可の意味も型に乗る。"
-  - id: be-l07-2
-    difficulty: 2
-    question: "`db.add(obj)` しただけでは DB に書かれない。確定させるには?"
-    choices: ["db.save()", "db.commit()", "db.flush() だけで十分", "自動で書かれる"]
-    answer: 1
-    explanation: "Session は変更をためておき commit で 1 トランザクションとして確定する。途中で例外なら rollback。flush は SQL を送るが確定ではない。"
-  - id: be-l07-3
-    difficulty: 2
-    question: "SQLAlchemy 2 で「id が 5 の Actor を 1 件取る」現代的な書き方は?"
-    choices:
-      - "db.query(Actor).get(5)"
-      - "db.get(Actor, 5)  または  db.execute(select(Actor).where(Actor.id == 5)).scalar_one_or_none()"
-      - "Actor.objects.get(id=5)"
-      - "SELECT * FROM actor"
-    answer: 1
-    explanation: "主キーなら `db.get`。条件付きは `select()` を `db.execute()` に渡し `scalars()` / `scalar_one_or_none()` で取り出す。`db.query()` は旧スタイル。"
-  - id: be-l07-4
-    difficulty: 2
-    question: "モデルに列を足した。Alembic での手順は?"
-    choices:
-      - "alembic upgrade head だけ"
-      - "alembic revision --autogenerate -m \"add column\" で差分ファイルを作り、中身を確認してから alembic upgrade head"
-      - "DB を作り直す"
-      - "SQL を手で流す"
-    answer: 1
-    explanation: "autogenerate は完璧ではない (型変更や rename を見落とす) ので必ず生成ファイルを読む。長く運用すると 100 本を超えるリビジョンが積み上がる。"
 ---
 ## 役割分担
 
@@ -191,3 +135,24 @@ def downgrade():
 - モデルは `Mapped[型] = mapped_column()`。`| None` で NULL 可
 - 読むのは `select()` + `db.execute()`、書くのは `add` → `commit`
 - マイグレーションは `revision --autogenerate` → 中身を読む → `upgrade head`
+
+## やってみる
+
+**ゴール:** SQLAlchemy でモデルを作り、Alembic のマイグレーションを 1 本生成して読む。
+
+1. `uv add sqlalchemy alembic` (DB は SQLite で可)
+2. `models.py`:
+   ```python
+   from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+   class Base(DeclarativeBase): pass
+   class Client(Base):
+       __tablename__ = "clients"
+       id: Mapped[int] = mapped_column(primary_key=True)
+       name: Mapped[str]
+       note: Mapped[str | None]
+   ```
+3. `uv run alembic init alembic`。`alembic.ini` の `sqlalchemy.url = sqlite:///app.db`、`alembic/env.py` で `from models import Base; target_metadata = Base.metadata`
+4. `uv run alembic revision --autogenerate -m "clients" && uv run alembic upgrade head`。生成された versions/ のファイルを読む
+5. `note` 列を消して再度 autogenerate し、`drop_column` が出るのを見る (apply はしなくてよい)
+
+**確認:** `Mapped[str | None]` が nullable=True になっている。列削除がそのまま反映されると分かった。

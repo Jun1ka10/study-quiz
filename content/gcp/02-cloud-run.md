@@ -3,53 +3,6 @@ id: gcp-02
 title: Cloud Run でアプリを動かす
 summary: コンテナを渡すだけで HTTPS 公開・自動スケールする。サーバーレスの基本形
 minutes: 10
-exercise: |
-  **ゴール:** Cloud Run にコンテナを 1 つデプロイし、0 台スケールと認証を見る (無料枠内)。
-
-  1. be-06 の FastAPI に `Dockerfile` (dk-02 の形、`--port 8080`) を用意
-  2. `gcloud run deploy demo --source . --region asia-northeast1 --allow-unauthenticated` → 出た URL に curl
-  3. `gcloud run services describe demo --region asia-northeast1 --format="value(spec.template.spec.containers[0].image)"` でイメージ名を見る
-  4. `gcloud run services update demo --region asia-northeast1 --no-allow-unauthenticated` → curl で 403。`curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" URL` で通る
-  5. 終わったら `gcloud run services delete demo --region asia-northeast1`
-
-  **確認:** 認証必須にすると ID トークンが要る。数分放置して初回アクセスが遅い (コールドスタート) のを体感。
-questions:
-  - id: gcp-l02-1
-    difficulty: 1
-    question: "Cloud Run にデプロイするために必要なものは?"
-    choices: ["VM のイメージ", "HTTP を待ち受けるコンテナイメージ", "Kubernetes マニフェスト", "Java の WAR ファイル"]
-    answer: 1
-    explanation: "コンテナが $PORT で HTTP を待ち受けていればよい。言語は問わない。"
-  - id: gcp-l02-2
-    difficulty: 2
-    question: "Cloud Run でリクエストが無いとき、既定ではどうなる?"
-    choices:
-      - "インスタンスは 1 つ動き続ける"
-      - "インスタンスは 0 までスケールインし、課金も止まる"
-      - "エラーになる"
-      - "自動で削除される"
-    answer: 1
-    explanation: "既定は min-instances=0 でゼロスケール。初回リクエストにコールドスタートの遅延が乗るので、気になるなら min-instances を設定する。"
-  - id: gcp-l02-3
-    difficulty: 2
-    question: "Cloud Run のコンテナ内にファイルを書き込んで保存した。次のリクエストで読める?"
-    choices:
-      - "常に読める"
-      - "同じインスタンスに当たれば読めるが保証されない。永続化は Cloud Storage や DB に"
-      - "読めるが遅い"
-      - "書き込み自体ができない"
-    answer: 1
-    explanation: "インスタンスは増減・破棄される。ローカルディスクは一時的 (しかもメモリ上)。状態は外部に持つ。"
-  - id: gcp-l02-4
-    difficulty: 2
-    question: "Cloud Run サービスを社内からだけ呼べるようにしたい。最も簡単なのは?"
-    choices:
-      - "--allow-unauthenticated を付ける"
-      - "認証を必須にし、呼び出し側に roles/run.invoker を付与する"
-      - "URL を秘密にする"
-      - "ポート番号を変える"
-    answer: 1
-    explanation: "未認証を許可しなければ IAM で保護される。呼び出す側 (人・サービスアカウント) に run.invoker を付け、ID トークンを付けて呼ぶ。"
 ---
 ## Cloud Run とは
 
@@ -107,3 +60,15 @@ gcloud run deploy my-app --image asia-northeast1-docker.pkg.dev/PROJECT/repo/my-
 - 0 台までスケールイン。コールドスタートが気になれば min-instances
 - 状態は外に持つ
 - 公開するか IAM で守るかは `--allow-unauthenticated` の有無
+
+## やってみる
+
+**ゴール:** Cloud Run にコンテナを 1 つデプロイし、0 台スケールと認証を見る (無料枠内)。
+
+1. be-06 の FastAPI に `Dockerfile` (dk-02 の形、`--port 8080`) を用意
+2. `gcloud run deploy demo --source . --region asia-northeast1 --allow-unauthenticated` → 出た URL に curl
+3. `gcloud run services describe demo --region asia-northeast1 --format="value(spec.template.spec.containers[0].image)"` でイメージ名を見る
+4. `gcloud run services update demo --region asia-northeast1 --no-allow-unauthenticated` → curl で 403。`curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" URL` で通る
+5. 終わったら `gcloud run services delete demo --region asia-northeast1`
+
+**確認:** 認証必須にすると ID トークンが要る。数分放置して初回アクセスが遅い (コールドスタート) のを体感。

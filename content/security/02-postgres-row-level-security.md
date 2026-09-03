@@ -3,75 +3,6 @@ id: sec-02
 title: PostgreSQL の Row Level Security
 summary: アプリの WHERE 句に頼らず、DB 側で「見える行」を強制する。マルチテナントの最後の砦
 minutes: 14
-exercise: |
-  **ゴール:** PostgreSQL で RLS を有効にし、別ユーザーで行が消えるのを見る。
-
-  1. `docker run -d --name pg -e POSTGRES_PASSWORD=pw -p 5432:5432 postgres:16` → `docker exec -it pg psql -U postgres`
-  2. 次を実行する
-     ```sql
-     create table orders(id serial, org_id int, note text);
-     insert into orders(org_id, note) values (1,'a'),(1,'b'),(2,'c');
-     create role app login password 'app'; grant select, insert on orders to app;
-     alter table orders enable row level security;
-     create policy org_iso on orders using (org_id = current_setting('app.org_id', true)::int)
-       with check (org_id = current_setting('app.org_id', true)::int);
-     ```
-  3. 別ターミナルで `docker exec -it pg psql -U app -d postgres`:
-     ```sql
-     select count(*) from orders;                       -- 0
-     begin; set local app.org_id = '1'; select * from orders; commit;   -- 2 件
-     begin; set local app.org_id = '1'; insert into orders(org_id, note) values (2,'x'); commit;   -- エラー
-     ```
-  4. postgres (owner) で `select count(*) from orders` → 3 件 (RLS が効かない)
-
-  **確認:** 設定なしで 0 件、org 1 で 2 件、他 org の insert が拒否、owner は素通り。
-questions:
-  - id: sec-l02-1
-    difficulty: 1
-    question: "Row Level Security (RLS) が解く問題は?"
-    choices:
-      - "テーブルごとのアクセス権"
-      - "同じテーブルの中で「この接続 (ユーザー / テナント) はどの行を読み書きできるか」を DB 側で強制する"
-      - "通信の暗号化"
-      - "バックアップ"
-    answer: 1
-    explanation: "アプリが WHERE org_id = ? を書き忘れても、DB が他組織の行を返さない。"
-  - id: sec-l02-2
-    difficulty: 2
-    question: "`ALTER TABLE orders ENABLE ROW LEVEL SECURITY;` だけ実行し、ポリシーを 1 つも作らなかった。一般ユーザーから orders はどう見える?"
-    choices: ["全部見える", "1 行も見えない (既定は拒否)", "エラーになる", "所有者の行だけ見える"]
-    answer: 1
-    explanation: "RLS を有効にするとポリシーに一致しない行は無いものとして扱われる。ポリシーを足して初めて見える。"
-  - id: sec-l02-3
-    difficulty: 2
-    question: "RLS ポリシーの中で「今の接続はどの組織か」を参照する典型的な方法は?"
-    choices:
-      - "アプリが毎回 WHERE を書く"
-      - "接続 (トランザクション) 開始時に `SET LOCAL app.org_id = '...'` し、ポリシーで `current_setting('app.org_id')` を使う"
-      - "テーブル名に組織 ID を含める"
-      - "できない"
-    answer: 1
-    explanation: "セッション変数にテナントを入れ、ポリシーは `USING (org_id = current_setting('app.org_id')::int)` のように書く。SET LOCAL ならトランザクション終了で消える。"
-  - id: sec-l02-4
-    difficulty: 2
-    question: "テーブルの所有者 (owner) やスーパーユーザーで接続すると RLS は?"
-    choices:
-      - "常に適用される"
-      - "既定では適用されない (バイパスされる)。アプリは所有者でない専用ロールで接続する"
-      - "エラーになる"
-      - "読み取りだけ適用される"
-    answer: 1
-    explanation: "owner は FORCE ROW LEVEL SECURITY を付けない限り素通りする。マイグレーション用 (owner) と アプリ用 (制限付き) でロールを分けるのが定石。"
-  - id: sec-l02-5
-    difficulty: 3
-    question: "`USING` と `WITH CHECK` の違いは?"
-    choices:
-      - "同じ"
-      - "USING は既存行の可視性 (SELECT / UPDATE / DELETE の対象)、WITH CHECK は新しく書く行の条件 (INSERT / UPDATE 後の値)"
-      - "WITH CHECK は SELECT 用"
-      - "USING は INSERT 用"
-    answer: 1
-    explanation: "WITH CHECK が無いと、他組織の org_id を持つ行を INSERT できてしまう (自分では見えないが作れる)。両方書く。"
 ---
 ## なぜ RLS か
 
@@ -167,3 +98,27 @@ SELECT count(*) FROM orders;     -- org 2 の件数だけ
 - `USING` (読める) と `WITH CHECK` (書ける) を両方
 - テナントは `SET LOCAL` のセッション変数で渡す
 - owner には効かない。migration 用とアプリ用でロールを分ける
+
+## やってみる
+
+**ゴール:** PostgreSQL で RLS を有効にし、別ユーザーで行が消えるのを見る。
+
+1. `docker run -d --name pg -e POSTGRES_PASSWORD=pw -p 5432:5432 postgres:16` → `docker exec -it pg psql -U postgres`
+2. 次を実行する
+   ```sql
+   create table orders(id serial, org_id int, note text);
+   insert into orders(org_id, note) values (1,'a'),(1,'b'),(2,'c');
+   create role app login password 'app'; grant select, insert on orders to app;
+   alter table orders enable row level security;
+   create policy org_iso on orders using (org_id = current_setting('app.org_id', true)::int)
+     with check (org_id = current_setting('app.org_id', true)::int);
+   ```
+3. 別ターミナルで `docker exec -it pg psql -U app -d postgres`:
+   ```sql
+   select count(*) from orders;                       -- 0
+   begin; set local app.org_id = '1'; select * from orders; commit;   -- 2 件
+   begin; set local app.org_id = '1'; insert into orders(org_id, note) values (2,'x'); commit;   -- エラー
+   ```
+4. postgres (owner) で `select count(*) from orders` → 3 件 (RLS が効かない)
+
+**確認:** 設定なしで 0 件、org 1 で 2 件、他 org の insert が拒否、owner は素通り。

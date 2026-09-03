@@ -1,67 +1,8 @@
 ---
 id: js-11
-title: "Web Push 通知"
-summary: "購読、VAPID 鍵、push イベント、サーバーからの送信。「毎朝、今日の復習が N 問あります」を届ける仕組み"
+title: Web Push 通知
+summary: 購読、VAPID 鍵、push イベント、サーバーからの送信。「毎朝、今日の復習が N 問あります」を届ける仕組み
 minutes: 12
-exercise: |
-  **ゴール:** ローカルで自分に 1 通 push を送る。
-
-  1. `uv add pywebpush` → `python3 -c "from py_vapid import Vapid; v=Vapid(); v.generate_keys(); v.save_key('vapid.pem'); print(v.public_key.public_bytes(__import__('cryptography').hazmat.primitives.serialization.Encoding.X962, __import__('cryptography').hazmat.primitives.serialization.PublicFormat.UncompressedPoint).hex())"` で公開鍵を控える (面倒なら `npx web-push generate-vapid-keys` でも可)
-  2. js-07 の PWA の `sw.js` に足す:
-     ```javascript
-     self.addEventListener("push", (e) => { const d = e.data?.json() || {}; e.waitUntil(self.registration.showNotification(d.title || "Study Quiz", { body: d.body })); });
-     self.addEventListener("notificationclick", (e) => { e.notification.close(); e.waitUntil(clients.openWindow("./")); });
-     ```
-  3. ページのコンソールで (公開鍵を base64url → Uint8Array にする関数は自分で書く):
-     ```javascript
-     const reg = await navigator.serviceWorker.ready;
-     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toUint8(PUBLIC_KEY) });
-     JSON.stringify(sub)
-     ```
-  4. Python で `webpush(subscription_info=<貼り付け>, data='{"title":"復習","body":"今日は 3 問"}', vapid_private_key="vapid.pem", vapid_claims={"sub":"mailto:you@example.com"})`
-
-  **確認:** ページを閉じていても通知が出た。購読情報の endpoint がブラウザベンダーの URL になっている。
-questions:
-  - id: js-l11-1
-    difficulty: 1
-    question: "Web Push で、アプリを閉じていても通知が届く仕組みは?"
-    choices:
-      - "ページが常に開いている"
-      - "ブラウザベンダーの push サービスが端末に届け、Service Worker の push イベントが起動して通知を表示する"
-      - "サーバーが端末に直接接続する"
-      - "メールで送る"
-    answer: 1
-    explanation: "サーバー → push サービス (endpoint URL) → ブラウザ → SW。サーバーは端末を知らず、購読情報 (endpoint + 鍵) だけを持つ。"
-  - id: js-l11-2
-    difficulty: 2
-    question: "VAPID 鍵の役割は?"
-    choices:
-      - "通知本文の暗号化"
-      - "「この送信者はこの購読を作ったアプリ本人だ」と push サービスに示す署名。公開鍵は購読時にブラウザへ、秘密鍵はサーバーに"
-      - "ユーザーの認証"
-      - "不要"
-    answer: 1
-    explanation: "秘密鍵が漏れると他人がそのアプリの名前で通知を送れる。Secret Manager に置く。"
-  - id: js-l11-3
-    difficulty: 2
-    question: "iPhone で Web Push を受け取る条件は?"
-    choices:
-      - "条件なし"
-      - "iOS 16.4 以降で、ホーム画面に追加した PWA から、ユーザー操作をきっかけに許可を得ること"
-      - "Safari のタブで開いていればよい"
-      - "iPhone では不可能"
-    answer: 1
-    explanation: "Safari のタブからは購読できない。「インストールしてから通知を有効化」の導線が要る。"
-  - id: js-l11-4
-    difficulty: 2
-    question: "送信時に push サービスが 404 / 410 を返した。適切な処理は?"
-    choices:
-      - "リトライし続ける"
-      - "購読が失効している (ユーザーが解除、ブラウザが削除)。DB からその購読を消す"
-      - "無視"
-      - "ユーザーにメールする"
-    answer: 1
-    explanation: "失効した購読に送り続けると無駄で、push サービスから制限されることもある。送信結果で掃除する。"
 ---
 ## 登場人物
 
@@ -158,3 +99,23 @@ def send(sub: PushSubscription, payload: dict) -> None:
 - フロントで subscribe → サーバーに保存 → SW の push で表示
 - 送信は pywebpush / web-push。失効は 404 / 410 で消す
 - iPhone は PWA インストールが前提。許可はボタンから
+
+## やってみる
+
+**ゴール:** ローカルで自分に 1 通 push を送る。
+
+1. `uv add pywebpush` → `python3 -c "from py_vapid import Vapid; v=Vapid(); v.generate_keys(); v.save_key('vapid.pem'); print(v.public_key.public_bytes(__import__('cryptography').hazmat.primitives.serialization.Encoding.X962, __import__('cryptography').hazmat.primitives.serialization.PublicFormat.UncompressedPoint).hex())"` で公開鍵を控える (面倒なら `npx web-push generate-vapid-keys` でも可)
+2. js-07 の PWA の `sw.js` に足す:
+   ```javascript
+   self.addEventListener("push", (e) => { const d = e.data?.json() || {}; e.waitUntil(self.registration.showNotification(d.title || "Study Quiz", { body: d.body })); });
+   self.addEventListener("notificationclick", (e) => { e.notification.close(); e.waitUntil(clients.openWindow("./")); });
+   ```
+3. ページのコンソールで (公開鍵を base64url → Uint8Array にする関数は自分で書く):
+   ```javascript
+   const reg = await navigator.serviceWorker.ready;
+   const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toUint8(PUBLIC_KEY) });
+   JSON.stringify(sub)
+   ```
+4. Python で `webpush(subscription_info=<貼り付け>, data='{"title":"復習","body":"今日は 3 問"}', vapid_private_key="vapid.pem", vapid_claims={"sub":"mailto:you@example.com"})`
+
+**確認:** ページを閉じていても通知が出た。購読情報の endpoint がブラウザベンダーの URL になっている。

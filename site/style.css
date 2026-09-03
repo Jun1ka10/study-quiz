@@ -50,6 +50,18 @@ select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid 
 .course-card .bar { grid-column: 1 / span 2; height: 4px; background: var(--card); border-radius: 2px; overflow: hidden; margin-top: 6px; }
 .course-card .bar > div { height: 100%; background: var(--accent); }
 
+/* プロジェクト */
+.project-card { width: 100%; border-color: var(--accent); }
+.phase-head { font-size: 14px; color: var(--muted); margin: 18px 0 6px; }
+.step-row { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: center; padding: 10px 12px; width: 100%; margin-bottom: 6px; }
+.step-row .icon { text-align: center; color: var(--muted); }
+.step-row.done .icon { color: var(--ok); }
+.step-row.next { border-color: var(--accent); }
+.step-row.next .icon { color: var(--accent); }
+.step-row .sub { display: block; font-size: 13px; color: var(--muted); }
+.step-row .mins { font-size: 12px; color: var(--muted); }
+button.big.done { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+
 /* コース画面 */
 .course { border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
 .course-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }

@@ -7,6 +7,12 @@ Python / 設計 / AWS / GCP / インフラを、このアプリだけでゼロ�
 
 ## 学習の流れ
 
+**コース** (知識の地図) と **プロジェクト** (1 本の筋) の 2 本立て。
+
+- コース: カテゴリごとのレッスンを順に読み、確認問題で合格して進む
+- プロジェクト: 「Study Quiz を本格版にする」を 15 ステップで最初から最後まで作る。各ステップは先に読むレッスンを指す。
+  単発の課題では身につかない「前の成果物が次の前提になる」経験を、ここで積む
+
 1. **レッスンを読む** (1 本 5〜14 分の教科書ページ)
 2. **やってみる** (約 15 分)。ターミナルで手を動かす課題。読んだだけでは身につかないので、必ず付いている
 3. **確認問題** を解く。8 割で合格、落ちたら読み直し
@@ -20,6 +26,8 @@ Python / 設計 / AWS / GCP / インフラを、このアプリだけでゼロ�
 
 ```
 content/categories.yaml   カテゴリの並び・説明・これから書くレッスン名 (準備中として表示)
+content/project/project.yaml    プロジェクトトラックの題名と説明
+content/project/NN-slug.md      プロジェクトのステップ。frontmatter (id/title/summary/phase/prereqs/minutes) + 本文 (「できたか確認」の節が必須)
 content/<category>/NN-slug.md   レッスン。frontmatter に id/title/summary/questions、本文は Markdown
 questions/<category>.yaml       レッスンに紐づかない問題プール (ランダム演習・復習用)
 scripts/build.py          上記を site/data.json に変換し、site/sw.js を生成

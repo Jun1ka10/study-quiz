@@ -1,0 +1,5 @@
+title: Study Quiz を本格版にする
+description: >
+  いま使っているこの学習アプリを、ログインして進捗がサーバーに同期され、問題を Web から編集でき、
+  Cloud Run で動き、Terraform と GitHub Actions で再現できる「本物のサービス」に育てる。
+  コースで得た知識を、順番に 1 つのコードベースへ積み上げていく。

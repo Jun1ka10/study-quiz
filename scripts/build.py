@@ -6,6 +6,8 @@
   content/categories.yaml        カテゴリの並び・説明・今後書く予定のレッスン名
   content/<category>/NN-*.md     レッスン。frontmatter (id/title/summary/exercise/questions) + 本文 Markdown。NN が順番
   questions/<category>.yaml      レッスンに紐づかない問題プール (ランダム演習・復習用)
+  content/project/project.yaml   プロジェクトトラック (1 つのアプリを最初から最後まで作る道筋) の題名と説明
+  content/project/NN-*.md        プロジェクトのステップ。frontmatter (id/title/summary/phase/prereqs/minutes) + 本文
 """
 
 from __future__ import annotations
@@ -200,6 +202,52 @@ def load_pool(categories: list[dict], seen_qids: set[str], lesson_ids: set[str])
     return out
 
 
+def load_project(lesson_ids: set[str]) -> dict:
+    """content/project/ のステップを順番付きで読む。prereqs は存在するレッスン id でなければならない。"""
+    pdir = CONTENT_DIR / "project"
+    meta_path = pdir / "project.yaml"
+    if not meta_path.exists():
+        return {"title": "", "description": "", "steps": []}
+    meta = yaml.safe_load(meta_path.read_text(encoding="utf-8"))
+    steps: list[dict] = []
+    seen: set[str] = set()
+    for path in sorted(pdir.glob("*.md")):
+        m = LESSON_FILE_RE.match(path.name)
+        if not m:
+            raise ContentError(f"{path}: ファイル名は NN-slug.md 形式にしてください")
+        fm = FRONTMATTER_RE.match(path.read_text(encoding="utf-8"))
+        if not fm:
+            raise ContentError(f"{path}: frontmatter がありません")
+        st = yaml.safe_load(fm.group(1)) or {}
+        body = fm.group(2).strip()
+        sid = st.get("id")
+        if not sid or sid in seen:
+            raise ContentError(f"{path}: id が無いか重複しています")
+        seen.add(sid)
+        for key in ("title", "summary", "phase"):
+            if not st.get(key):
+                raise ContentError(f"{path}: frontmatter に {key} がありません")
+        prereqs = st.get("prereqs") or []
+        for lid in prereqs:
+            if lid not in lesson_ids:
+                raise ContentError(f"{path}: prereqs のレッスン {lid} が存在しません")
+        if not body:
+            raise ContentError(f"{path}: 本文が空です")
+        steps.append(
+            {
+                "id": sid,
+                "order": int(m.group(1)),
+                "title": st["title"],
+                "summary": st["summary"],
+                "phase": st["phase"],
+                "prereqs": prereqs,
+                "minutes": st.get("minutes", 60),
+                "html": _md(body),
+            }
+        )
+    return {"title": meta["title"], "description": meta.get("description", ""), "steps": steps}
+
+
 def load_all() -> dict:
     categories = load_categories()
     seen_qids: set[str] = set()
@@ -221,7 +269,8 @@ def load_all() -> dict:
                 "questionCount": sum(1 for q in questions if q["category"] == c["id"]),
             }
         )
-    return {"categories": cats_out, "lessons": lessons_out, "questions": questions}
+    project = load_project({ls["id"] for ls in lessons})
+    return {"categories": cats_out, "lessons": lessons_out, "questions": questions, "project": project}
 
 
 def build() -> dict:
@@ -244,6 +293,7 @@ def build() -> dict:
     sw = SW_TEMPLATE.replace("__VERSION__", version).replace("__ASSETS__", json.dumps(APP_SHELL))
     (SITE_DIR / "sw.js").write_text(sw, encoding="utf-8")
     return {
+        "steps": len(data["project"]["steps"]),
         "lessons": len(data["lessons"]),
         "questions": len(data["questions"]),
         "categories": len(data["categories"]),
@@ -254,6 +304,7 @@ def build() -> dict:
 if __name__ == "__main__":
     info = build()
     print(
-        f"data.json: {info['lessons']} レッスン / {info['questions']} 問 / {info['categories']} カテゴリ, "
+        f"data.json: {info['lessons']} レッスン / {info['questions']} 問 / {info['categories']} カテゴリ / "
+        f"プロジェクト {info['steps']} ステップ, "
         f"sw version={info['version']}"
     )

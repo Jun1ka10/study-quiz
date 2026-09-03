@@ -23,11 +23,11 @@ const app = $("#app");
 function loadState() {
   try {
     const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (s && s.history) return s;
+    if (s && s.history) { s.project ||= {}; return s; }
   } catch { /* 壊れていたら作り直す */ }
   let history = {};
   try { history = JSON.parse(localStorage.getItem(LEGACY_KEY)) || {}; } catch { /* なし */ }
-  return { history, lessons: {} };
+  return { history, lessons: {}, project: {} };
 }
 function saveState(s) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch { /* 容量超過などは無視 */ }
@@ -52,6 +52,14 @@ function record(qid, ok) {
   e.lastCorrect = ok === true;
   s.history[qid] = e;
   saveState(s);
+}
+
+function toggleStepDone(stepId) {
+  const s = loadState();
+  const prev = s.project[stepId] || { done: false };
+  s.project[stepId] = { done: !prev.done, at: Date.now() };
+  saveState(s);
+  return s.project[stepId].done;
 }
 
 function togglePracticed(lessonId) {
@@ -153,6 +161,22 @@ function showHome() {
   $("#btn-review").disabled = !due.length;
   $("#btn-review").onclick = () => startQuiz(due.slice(0, REVIEW_MAX), { mode: "review" });
 
+  // プロジェクト (1 本の筋)
+  {
+    const P = DATA.project;
+    const card = $("#project-card");
+    if (!P.steps.length) { card.hidden = true; }
+    else {
+      const done = P.steps.filter((st) => s.project[st.id]?.done).length;
+      const next = P.steps.find((st) => !s.project[st.id]?.done);
+      card.innerHTML = `<span class="title">${escapeHtml(P.title)}</span>
+        <span class="pct ${done === P.steps.length ? "done" : done ? "started" : ""}">${done} / ${P.steps.length}</span>
+        <span class="sub">${next ? "次: " + escapeHtml(next.title) : "すべて完了"}</span>
+        <span class="bar"><div style="width:${(100 * done) / P.steps.length}%"></div></span>`;
+      card.onclick = () => showProject();
+    }
+  }
+
   // コース一覧 (コンパクト)。タップでコース画面へ
   const courses = $("#courses");
   for (const c of DATA.categories) {
@@ -211,6 +235,78 @@ function renderStats(s) {
   $("#stats").innerHTML = `<table class="stats"><tr><th>カテゴリ</th><th>解いた</th><th>正答率</th></tr>` +
     rows.map((r) => `<tr><td>${escapeHtml(r.title)}</td><td class="num">${r.seen} / ${r.n}</td><td class="num">${r.rate === null ? "-" : r.rate + "%"}</td></tr>`).join("") +
     `</table>`;
+}
+
+function showProject() {
+  const P = DATA.project;
+  const s = loadState();
+  const done = P.steps.filter((st) => s.project[st.id]?.done).length;
+  const next = P.steps.find((st) => !s.project[st.id]?.done) || null;
+  mount("tpl-project");
+  $("#project-title").textContent = P.title;
+  $("#project-desc").textContent = P.description;
+  $("#project-progress").textContent = `${done} / ${P.steps.length} ステップ完了`;
+  $("#project-bar").style.width = `${(100 * done) / P.steps.length}%`;
+  if (next) {
+    const b = $("#btn-project-continue");
+    b.hidden = false;
+    b.textContent = done ? `続きから: ${next.title}` : `始める: ${next.title}`;
+    b.onclick = () => showStep(next.id);
+  }
+  const wrap = $("#project-steps");
+  let phase = null;
+  P.steps.forEach((st, i) => {
+    if (st.phase !== phase) {
+      phase = st.phase;
+      const h = document.createElement("div");
+      h.className = "phase-head"; h.textContent = phase;
+      wrap.appendChild(h);
+    }
+    const state_ = s.project[st.id]?.done ? "done" : next && next.id === st.id ? "next" : "todo";
+    const b = document.createElement("button");
+    b.className = `step-row ${state_}`;
+    b.innerHTML = `<span class="icon">${state_ === "done" ? "✓" : state_ === "next" ? "▶" : "○"}</span>
+      <span>${i + 1}. ${escapeHtml(st.title)}<span class="sub">${escapeHtml(st.summary)}</span></span>
+      <span class="mins">${st.minutes} 分</span>`;
+    b.onclick = () => showStep(st.id);
+    wrap.appendChild(b);
+  });
+  $("#btn-project-back").onclick = showHome;
+}
+
+function showStep(stepId) {
+  const P = DATA.project;
+  const s = loadState();
+  const idx = P.steps.findIndex((x) => x.id === stepId);
+  const st = P.steps[idx];
+  mount("tpl-step");
+  $("#step-phase").textContent = st.phase;
+  $("#step-position").textContent = `${idx + 1} / ${P.steps.length}`;
+  $("#step-minutes").textContent = st.minutes;
+  $("#step-title").textContent = st.title;
+  $("#step-summary").textContent = st.summary;
+  const pre = $("#step-prereqs");
+  for (const lid of st.prereqs) {
+    const l = DATA.lessons.find((x) => x.id === lid);
+    const passed = !!s.lessons[lid]?.done;
+    const b = document.createElement("button");
+    b.className = `lesson-row ${passed ? "done" : "todo"}`;
+    b.innerHTML = `<span class="icon">${passed ? "✓" : "○"}</span><span>${escapeHtml(l.title)}</span><span class="mins">${escapeHtml(l.categoryTitle || DATA.categories.find((c) => c.id === l.category).title)}</span>`;
+    b.onclick = () => showLesson(lid);
+    pre.appendChild(b);
+  }
+  $("#step-body").innerHTML = st.html;
+  const dbtn = $("#btn-step-done");
+  const renderDone = (on) => { dbtn.textContent = on ? "✓ 完了 (取り消す)" : "このステップを完了にする"; dbtn.classList.toggle("done", on); };
+  renderDone(!!s.project[stepId]?.done);
+  dbtn.onclick = () => renderDone(toggleStepDone(stepId));
+  const next = P.steps[idx + 1];
+  if (next) {
+    const nb = $("#btn-step-next");
+    nb.hidden = false; nb.textContent = `次のステップ: ${next.title}`;
+    nb.onclick = () => showStep(next.id);
+  }
+  $("#btn-step-back").onclick = showProject;
 }
 
 function showCourse(catId) {

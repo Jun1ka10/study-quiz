@@ -30,6 +30,9 @@
         <span id="review-note" class="review-note"></span>
       </button>
 
+      <h2>プロジェクト</h2>
+      <button id="project-card" class="course-card project-card"></button>
+
       <h2>コース</h2>
       <div id="courses" class="course-cards"></div>
 
@@ -61,6 +64,34 @@
       <p class="meta">版: <span id="app-version"></span> (<span id="app-built"></span>)</p>
       <button id="btn-check-update" class="link">更新を確認</button>
       <p id="update-status" class="meta"></p>
+    </section>
+  </template>
+
+  <!-- プロジェクト (ステップ一覧) -->
+  <template id="tpl-project">
+    <section>
+      <h1 id="project-title"></h1>
+      <p id="project-desc" class="meta"></p>
+      <p id="project-progress" class="meta"></p>
+      <div class="progress"><div id="project-bar"></div></div>
+      <button id="btn-project-continue" class="primary big" hidden></button>
+      <div id="project-steps"></div>
+      <button id="btn-project-back" class="big">ホームへ</button>
+    </section>
+  </template>
+
+  <!-- プロジェクトのステップ -->
+  <template id="tpl-step">
+    <section>
+      <p class="meta"><span id="step-phase"></span> ・ ステップ <span id="step-position"></span> ・ 約 <span id="step-minutes"></span> 分</p>
+      <h1 id="step-title"></h1>
+      <p id="step-summary" class="meta"></p>
+      <h2>先に読むレッスン</h2>
+      <div id="step-prereqs" class="lesson-list"></div>
+      <article id="step-body" class="lesson-body"></article>
+      <button id="btn-step-done" class="primary big"></button>
+      <button id="btn-step-next" class="big" hidden></button>
+      <button id="btn-step-back" class="big">ステップ一覧へ</button>
     </section>
   </template>
 

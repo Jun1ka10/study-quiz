@@ -32,3 +32,14 @@ def test_each_lesson(lesson):
 def test_each_question(q):
     prefix = next(c["prefix"] for c in DATA["categories"] if c["id"] == q["category"])
     assert q["id"].startswith(prefix + "-"), f"id の接頭辞はカテゴリの prefix ({prefix}-)"
+
+
+def test_project_has_steps():
+    assert DATA["project"]["steps"], "プロジェクトトラックにステップが無い"
+
+
+@pytest.mark.parametrize("step", DATA["project"]["steps"], ids=lambda st: st["id"])
+def test_each_step(step):
+    assert step["prereqs"], "各ステップは先に読むレッスンを 1 つ以上指す"
+    assert "<h1" not in step["html"]
+    assert "できたか確認" in step["html"], "各ステップに「できたか確認」の節を置く"

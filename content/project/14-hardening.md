@@ -3,7 +3,7 @@ id: step-14
 title: "セキュリティを固める (ヘッダー、CORS、依存監査、最小権限の棚卸し)"
 summary: "動いているものを攻撃者の目で見直し、穴を塞ぐ。チェックリストを Terraform とテストに落とす"
 phase: "5. 仕上げ"
-prereqs: [sec-07, sec-06, sec-01]
+prereqs: [sec-07, sec-08, sec-09, sec-06]
 minutes: 90
 ---
 ## ゴール

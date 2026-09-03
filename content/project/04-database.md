@@ -3,7 +3,7 @@ id: step-04
 title: "PostgreSQL と SQLAlchemy で進捗を保存する"
 summary: "users・attempts (回答ログ)・lesson_progress のテーブルを設計し、Alembic でマイグレーションを作る"
 phase: "2. API"
-prereqs: [be-07, dk-01]
+prereqs: [be-07, be-08, be-09, dk-01]
 minutes: 90
 ---
 ## ゴール

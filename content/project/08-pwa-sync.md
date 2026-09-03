@@ -3,7 +3,7 @@ id: step-08
 title: "PWA をログインとサーバー同期に対応させる"
 summary: "この学習アプリにログイン画面を足し、回答を API に送り、オフライン時はローカルに溜めて復帰時に同期する"
 phase: "3. フロント"
-prereqs: [js-02, js-03, sec-07]
+prereqs: [js-07, js-08, js-02, sec-07]
 minutes: 120
 ---
 ## ゴール

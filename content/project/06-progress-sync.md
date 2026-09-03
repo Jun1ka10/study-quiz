@@ -3,7 +3,7 @@ id: step-06
 title: "回答を記録し、間隔反復をサーバー側で計算する"
 summary: "POST /attempts で回答を積み、review_schedule を更新し、GET /review で今日の復習を返す。PWA のロジックを API に移す"
 phase: "2. API"
-prereqs: [be-06, be-07, de-01]
+prereqs: [be-06, be-09, de-01]
 minutes: 90
 ---
 ## ゴール

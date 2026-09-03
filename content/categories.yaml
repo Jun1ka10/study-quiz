@@ -10,7 +10,7 @@ categories:
     description: 文法の基礎から、実務で困らない書き方まで
     planned:
       - asyncio 入門
-      - 標準ライブラリの要点 (pathlib / datetime / json / logging)
+      - 標準ライブラリの要点 (pathlib / datetime / json)
       - requests と外部 API を呼ぶ (Slack / Stripe / Google API)
 
   - id: javascript
@@ -19,8 +19,6 @@ categories:
     description: ブラウザで動く素の JS から、TypeScript・React・Next.js まで
     planned:
       - モジュールと npm
-      - Next.js (App Router・サーバー / クライアントコンポーネント)
-      - Tailwind CSS
       - Playwright で E2E テスト
 
   - id: backend
@@ -29,8 +27,6 @@ categories:
     description: HTTP / REST から、Django・FastAPI・DB・認証まで
     planned:
       - REST API の設計 (リソース・メソッド・ステータス)
-      - SQL と PostgreSQL の基礎
-      - インデックスとトランザクション
       - 認証 (セッション / JWT / OAuth)
       - 環境変数と設定 (.env / django-environ)
       - バッチとスケジューラ (cron / APScheduler / Cloud Run Jobs)
@@ -40,7 +36,6 @@ categories:
     prefix: dk
     description: コンテナの仕組みから、本番用 Dockerfile・Cloud Run へのデプロイまで
     planned:
-      - docker compose で開発環境を作る
       - イメージを小さく安全にする (非 root・.dockerignore・キャッシュ)
       - Artifact Registry / ECR へ push して Cloud Run で動かす
       - コンテナのデバッグ (logs / exec / inspect)
@@ -62,7 +57,6 @@ categories:
     prefix: sec
     description: Web の脆弱性、認証と認可、DB の行レベル制御、秘密情報の扱い。守り方を仕組みで理解する
     planned:
-      - 依存ライブラリの脆弱性と更新
       - 監査ログと不正検知
 
   - id: aws
@@ -83,12 +77,6 @@ categories:
     prefix: gcp
     description: Cloud Run + Cloud SQL で動く API アプリの構成を理解する
     planned:
-      - Cloud Run Jobs と Cloud Scheduler
-      - Cloud SQL (PostgreSQL) と Private IP
-      - Secret Manager
-      - Artifact Registry
-      - Workload Identity Federation (GitHub Actions から鍵なしで認証)
-      - Cloud Logging / Monitoring とアラート
       - Cloud Storage
       - BigQuery
 
@@ -99,7 +87,6 @@ categories:
     planned:
       - SSH と鍵認証
       - cron と systemd timer
-      - Terraform で GCP を組む (Cloud Run / IAM / Cloud SQL)
       - デプロイ戦略 (ローリング / カナリア / ロールバック)
       - 監視と SLO
       - Kubernetes の概要

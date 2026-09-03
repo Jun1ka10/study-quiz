@@ -3,7 +3,7 @@ id: step-15
 title: "運用: ログ・監視・毎日の復習リマインダー"
 summary: "構造化ログ、エラー率のアラート、Cloud Scheduler + Cloud Run Job で「今日の復習が N 問あります」を毎朝通知する"
 phase: "5. 仕上げ"
-prereqs: [gcp-02, infra-01, be-06]
+prereqs: [py-10, gcp-07, gcp-05, js-11]
 minutes: 120
 ---
 ## ゴール

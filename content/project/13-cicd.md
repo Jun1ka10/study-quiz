@@ -3,7 +3,7 @@ id: step-13
 title: "GitHub Actions で CI/CD を組む (OIDC、plan は PR、apply は main)"
 summary: "push でテスト → イメージ build → migration → デプロイまで自動化する。鍵ファイルは作らない"
 phase: "4. 運用"
-prereqs: [infra-06, sec-05]
+prereqs: [infra-06, gcp-06, gcp-05]
 minutes: 120
 ---
 ## ゴール

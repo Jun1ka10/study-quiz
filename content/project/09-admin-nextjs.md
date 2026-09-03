@@ -3,7 +3,7 @@ id: step-09
 title: "問題を編集する管理画面を Next.js + TypeScript で作る"
 summary: "レッスン一覧と問題の追加・編集フォーム。API に書き込みエンドポイントを足し、React の state と fetch を実戦で使う"
 phase: "3. フロント"
-prereqs: [js-04, js-05, js-06]
+prereqs: [js-09, js-10, js-05, js-06]
 minutes: 150
 ---
 ## ゴール

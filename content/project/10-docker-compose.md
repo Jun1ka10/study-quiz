@@ -3,7 +3,7 @@ id: step-10
 title: "Docker 化して compose で一発起動する"
 summary: "API と管理画面の本番用 Dockerfile を書き、docker compose で PostgreSQL ごと立ち上げる"
 phase: "4. 運用"
-prereqs: [dk-01, dk-02]
+prereqs: [dk-02, dk-03]
 minutes: 90
 ---
 ## ゴール

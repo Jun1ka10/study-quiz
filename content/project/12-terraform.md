@@ -3,7 +3,7 @@ id: step-12
 title: "手で作った本番を Terraform に写す"
 summary: "前ステップの構成をコードにし、import で取り込み、plan が差分なしになるまで合わせる"
 phase: "4. 運用"
-prereqs: [infra-05, sec-06]
+prereqs: [infra-05, infra-07, sec-06]
 minutes: 150
 ---
 ## ゴール

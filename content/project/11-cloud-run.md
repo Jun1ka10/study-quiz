@@ -3,7 +3,7 @@ id: step-11
 title: "Cloud Run + Cloud SQL + Secret Manager にデプロイする"
 summary: "手動 (gcloud) で一度本番に載せ、構成を体で覚える。次のステップでこれを Terraform に写す"
 phase: "4. 運用"
-prereqs: [gcp-01, gcp-02, sec-05]
+prereqs: [gcp-02, gcp-03, gcp-04, gcp-05]
 minutes: 120
 ---
 ## ゴール

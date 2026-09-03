@@ -34,17 +34,17 @@ select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid 
 
 /* 今日の復習 */
 .review-card { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 16px; background: var(--accent-soft); border-color: transparent; }
-.review-title { font-weight: 700; }
-.review-count { grid-row: 1 / span 2; align-self: center; font-size: 28px; font-weight: 700; color: var(--accent); }
-.review-note { font-size: 13px; color: var(--muted); }
+.review-title { grid-column: 1; font-weight: 700; }
+.review-count { grid-column: 2; grid-row: 1 / span 2; white-space: nowrap; align-self: center; font-size: 28px; font-weight: 700; color: var(--accent); }
+.review-note { grid-column: 1; font-size: 13px; color: var(--muted); }
 .review-card:disabled { opacity: .7; }
 
 /* コース一覧 (ホーム) */
 .course-cards { display: grid; gap: 8px; }
 .course-card { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; gap: 2px 10px; align-items: center; padding: 12px 14px; }
-.course-card .title { font-weight: 700; font-size: 17px; }
+.course-card .title { grid-column: 1; font-weight: 700; font-size: 17px; }
 .course-card .sub { font-size: 13px; color: var(--muted); grid-column: 1; }
-.course-card .pct { grid-row: 1 / span 2; font-size: 15px; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.course-card .pct { grid-column: 2; grid-row: 1 / span 2; font-size: 15px; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
 .course-card .pct.done { color: var(--ok); }
 .course-card .pct.started { color: var(--accent); }
 .course-card .bar { grid-column: 1 / span 2; height: 4px; background: var(--card); border-radius: 2px; overflow: hidden; margin-top: 6px; }

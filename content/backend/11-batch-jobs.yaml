@@ -1,0 +1,52 @@
+lesson: be-11
+questions:
+- id: be-l11-1
+  difficulty: 1
+  question: "Django で定期バッチを書く定番の場所は?"
+  choices:
+  - "views.py"
+  - "management/commands/ の管理コマンド。cron や Scheduler から `manage.py <command>` で呼ぶ。ロジックは services に置きコマンドは薄く"
+  - "settings.py"
+  - "テンプレート"
+  answer: 1
+  explanation: "Django の設定・ORM・ログ設定がそのまま使え、`--dry-run` などの引数も付けられる。"
+- id: be-l11-2
+  difficulty: 2
+  question: "Cloud Run のようにインスタンス数が変動する環境で APScheduler をアプリ内に置く問題は?"
+  choices:
+  - "問題ない"
+  - "インスタンスが 3 台なら 3 回走り、0 台なら走らない。Cloud Run Job + Scheduler のように外から 1 回起動する形にする"
+  - "速度"
+  - "ログが出ない"
+  answer: 1
+  explanation: "アプリ内スケジューラは「常に 1 プロセス」が前提。"
+- id: be-l11-3
+  difficulty: 2
+  question: "通知バッチで「送ってから送信済みを記録」する順序の問題は?"
+  choices:
+  - "問題ない"
+  - "送った直後に落ちると記録が残らず、再実行で二重送信になる。「送信済みを先に記録 (仮)」→ 送る → 確定、か少なくとも記録を先に"
+  - "遅い"
+  - "記録が増える"
+  answer: 1
+  explanation: "再実行は必ず起きる前提で、どの時点で落ちても壊れない順序にする。"
+- id: be-l11-4
+  difficulty: 2
+  question: "「前日分」を集計するバッチの時刻条件として正しいのは?"
+  choices:
+  - "`DATE(answered_at) = 昨日` (サーバーの TZ 任せ)"
+  - "タイムゾーンを決め (JST)、`answered_at >= 前日 0:00 JST AND < 当日 0:00 JST` の半開区間で書く"
+  - "`BETWEEN 0:00 AND 23:59`"
+  - "時刻は関係ない"
+  answer: 1
+  explanation: "BETWEEN は両端を含み 23:59:30 を落とす。TZ を決めないと UTC と JST で「前日」がずれる。"
+- id: be-l11-5
+  difficulty: 1
+  question: "バッチが失敗したときの終了コードは?"
+  choices:
+  - "常に 0"
+  - "非 0。cron / Job が失敗と認識して通知・再試行できる。例外を握りつぶして 0 で終えない"
+  - "1 以外"
+  - "終了コードは見ない"
+  answer: 1
+  explanation: "「成功したように見えて何もしていない」が最悪。ログと終了コードで観測可能に。"

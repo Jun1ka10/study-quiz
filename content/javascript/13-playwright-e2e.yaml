@@ -1,0 +1,42 @@
+lesson: js-13
+questions:
+- id: js-l13-1
+  difficulty: 1
+  question: "E2E テストでカバーすべきものは?"
+  choices:
+  - "全機能の全分岐"
+  - "登録 → ログイン → 中心機能 のような主要導線を少数 (5〜20 本)。細かい境界値はユニットテストへ"
+  - "CSS の見た目"
+  - "何もカバーしない"
+  answer: 1
+  explanation: "E2E は遅く壊れやすい。テストピラミッドの頂点は薄く。"
+- id: js-l13-2
+  difficulty: 2
+  question: "`page.waitForTimeout(3000)` を避けるべき理由は?"
+  choices:
+  - "構文エラーになる"
+  - "遅く不安定。Playwright は操作と expect で自動的に待つので、条件 (要素が見える、レスポンスが来た) を待つ書き方にする"
+  - "3 秒では短い"
+  - "避ける必要は無い"
+  answer: 1
+  explanation: "flaky なテストの原因の大半は固定待ちと共有データ。"
+- id: js-l13-3
+  difficulty: 2
+  question: "壊れにくいロケータは?"
+  choices:
+  - "`.btn-primary > span:nth-child(2)`"
+  - "`getByRole(\"button\", { name: \"保存\" })` や `getByLabel(\"メールアドレス\")` のようにユーザーが見るもので探す"
+  - "XPath"
+  - "座標クリック"
+  answer: 1
+  explanation: "CSS は見た目の変更で壊れる。ロールとラベルはアクセシビリティも良くする。"
+- id: js-l13-4
+  difficulty: 1
+  question: "E2E テストを本番環境に対して走らせてはいけない理由は?"
+  choices:
+  - "遅い"
+  - "テストの書き込み (登録、回答、決済) が本番データに入る。ステージングかテスト用環境で、データはテストごとに用意する"
+  - "本番は HTTPS だから"
+  - "理由は無い"
+  answer: 1
+  explanation: "読み取りだけの合成監視 (外形監視) は本番でもよいが、E2E とは分ける。"

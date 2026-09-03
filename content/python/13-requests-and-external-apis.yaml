@@ -1,0 +1,42 @@
+lesson: py-13
+questions:
+- id: py-l13-1
+  difficulty: 1
+  question: "`requests.get(url)` に必ず付けるべき引数は?"
+  choices:
+  - "headers"
+  - "timeout。無いと相手が応答しないとき永遠に待ち、ワーカーが詰まる"
+  - "verify=False"
+  - "stream"
+  answer: 1
+  explanation: "`raise_for_status()` も忘れずに。200 以外を黙って進めない。"
+- id: py-l13-2
+  difficulty: 2
+  question: "外部 API の呼び出しをリトライしてよいのは?"
+  choices:
+  - "すべての失敗"
+  - "429 や 5xx、接続エラーなど一時的な失敗。400 / 401 / 404 は再試行しても直らない。POST は冪等キーがあるときだけ"
+  - "400 だけ"
+  - "リトライはしない"
+  answer: 1
+  explanation: "指数バックオフ + ジッターで。Retry-After があれば従う。"
+- id: py-l13-3
+  difficulty: 2
+  question: "Webhook を受けるエンドポイントで最初にすべきことは?"
+  choices:
+  - "本文をそのまま DB に保存"
+  - "署名 (HMAC) を検証する。しないと誰でも「決済完了」を偽装して送れる"
+  - "すぐ処理して 200"
+  - "ログに全部出す"
+  answer: 1
+  explanation: "検証後は即 200 を返して処理はジョブへ。イベント ID で重複を捨て、金額などは API で取り直す。"
+- id: py-l13-4
+  difficulty: 2
+  question: "外部サービスの呼び出しを薄いクライアントクラスに包む利点は?"
+  choices:
+  - "速くなる"
+  - "相手固有のエラー表現を例外に変換でき、Protocol で差し替えてテストでは Fake を使える。仕様変更の影響が 1 か所に閉じる"
+  - "認証が不要になる"
+  - "利点は無い"
+  answer: 1
+  explanation: "設計のレッスンの「境界に抽象を置く」の実例。公式 SDK があってもこの層で包む。"

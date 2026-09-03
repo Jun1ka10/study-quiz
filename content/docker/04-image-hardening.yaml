@@ -1,0 +1,42 @@
+lesson: dk-04
+questions:
+- id: dk-l04-1
+  difficulty: 1
+  question: "イメージを小さくする最初の一手は?"
+  choices:
+  - "コードを短くする"
+  - "ベースを slim / alpine にし、マルチステージで dev 依存とビルドツールを最終イメージから外し、.dockerignore を書く"
+  - "圧縮する"
+  - "レイヤーを増やす"
+  answer: 1
+  explanation: "`docker history` でどのレイヤーが大きいかを見て順に削る。"
+- id: dk-l04-2
+  difficulty: 2
+  question: "`CMD uvicorn main:app` (シェル形式) と `CMD [\"uvicorn\", \"main:app\"]` (exec 形式) の違いは?"
+  choices:
+  - "同じ"
+  - "シェル形式は PID 1 が sh になり SIGTERM がアプリに届かず、停止に 10 秒かかる (強制 kill)。exec 形式はアプリが PID 1 で graceful に止まる"
+  - "exec 形式は環境変数が使えない"
+  - "シェル形式の方が速い"
+  answer: 1
+  explanation: "デプロイのたびに 10 秒余計に待ち、処理中のリクエストが切られる。JSON 配列で書く。"
+- id: dk-l04-3
+  difficulty: 2
+  question: "`ENV API_KEY=xxx` を Dockerfile に書く問題は?"
+  choices:
+  - "問題ない"
+  - "イメージのレイヤーに残り `docker history` や pull した人に見える。秘密は実行時に環境変数で注入する"
+  - "起動が遅くなる"
+  - "文法エラー"
+  answer: 1
+  explanation: "ビルド時だけ要る秘密は `RUN --mount=type=secret`。"
+- id: dk-l04-4
+  difficulty: 1
+  question: "コードを変えていなくてもイメージを定期的に再ビルドする理由は?"
+  choices:
+  - "理由は無い"
+  - "ベースイメージ (OS パッケージ) の脆弱性修正を取り込むため。スキャンの High の大半はこれで消える"
+  - "キャッシュを消すため"
+  - "タグを更新するため"
+  answer: 1
+  explanation: "週 1 の CI ジョブで再ビルド + スキャン。ベースのタグは固定しつつ、パッチは取り込む。"

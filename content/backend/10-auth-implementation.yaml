@@ -1,0 +1,52 @@
+lesson: be-10
+questions:
+- id: be-l10-1
+  difficulty: 1
+  question: "Django でユーザーモデルを拡張したい (会社への所属など)。いつ何をすべき?"
+  choices:
+  - "後からいつでも User に列を足せる"
+  - "最初のマイグレーション前に AbstractUser を継承したカスタムユーザーモデルを作り AUTH_USER_MODEL に設定する。後から変えるのは非常に困難"
+  - "別テーブルで持つしかない"
+  - "auth を使わず自作する"
+  answer: 1
+  explanation: "Django の公式ドキュメントも「新規プロジェクトでは必ずカスタムユーザーモデルから始める」と勧めている。"
+- id: be-l10-2
+  difficulty: 2
+  question: "FastAPI で `jwt.decode(token, secret)` と algorithms を省略して書くリスクは?"
+  choices:
+  - "無い"
+  - "`alg: none` など想定外のアルゴリズムを受け付け、署名検証を迂回される可能性。`algorithms=[\"HS256\"]` を必ず明示する"
+  - "遅くなる"
+  - "期限が無視される"
+  answer: 1
+  explanation: "PyJWT は省略で例外を出すが、他ライブラリや古い版では通る。明示が習慣。"
+- id: be-l10-3
+  difficulty: 2
+  question: "JWT のログアウトを即時に効かせたい。取れる手は?"
+  choices:
+  - "クライアントがトークンを捨てれば即時に無効"
+  - "トークンを短命 (15 分) にしてリフレッシュトークンを DB で管理し失効させる、または deny リストを持つ。JWT 単体は期限まで有効"
+  - "秘密鍵を変える (全員ログアウト)"
+  - "できない"
+  answer: 1
+  explanation: "状態を持たない JWT の弱点。即時失効が最重要ならセッション方式の方が単純。"
+- id: be-l10-4
+  difficulty: 2
+  question: "Google ログインでユーザーを紐づけるキーは?"
+  choices:
+  - "メールアドレス"
+  - "ID トークンの `sub` (不変の識別子)。メールは変更され得る"
+  - "表示名"
+  - "アクセストークンの文字列"
+  answer: 1
+  explanation: "同じメールの既存アカウントと自動統合すると乗っ取り経路になるので慎重に。"
+- id: be-l10-5
+  difficulty: 1
+  question: "認証のテストで最低限網羅すべき失敗は?"
+  choices:
+  - "正常系だけ"
+  - "間違ったパスワード、無いユーザー、トークン無し、改ざん、期限切れ、無効化済み。すべて 401 で理由を区別しない"
+  - "500 が出ないこと"
+  - "速度"
+  answer: 1
+  explanation: "認可側は「他人のリソース → 403/404」「管理 API を一般ユーザー → 403」も。"

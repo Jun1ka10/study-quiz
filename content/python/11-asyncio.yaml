@@ -1,0 +1,42 @@
+lesson: py-11
+questions:
+- id: py-l11-1
+  difficulty: 1
+  question: "asyncio で速くなる処理は?"
+  choices:
+  - "画像のリサイズなど CPU 計算"
+  - "HTTP や DB など待ち時間が主体の I/O 処理を並行させるとき"
+  - "すべての処理"
+  - "何も速くならない"
+  answer: 1
+  explanation: "CPU バウンドは multiprocessing。asyncio は 1 スレッドで待ち時間を重ねる。"
+- id: py-l11-2
+  difficulty: 2
+  question: "`async def` の中で `requests.get()` や `time.sleep()` を呼ぶと?"
+  choices:
+  - "問題なく並行する"
+  - "その間イベントループ全体が止まり、他のタスクも進まない。非同期対応のライブラリ (httpx、asyncio.sleep) を使うか to_thread に逃がす"
+  - "エラーになる"
+  - "自動で非同期になる"
+  answer: 1
+  explanation: "await できるのは非同期対応のものだけ。同期の呼び出しは全体を止める。"
+- id: py-l11-3
+  difficulty: 2
+  question: "100 件の外部 API 呼び出しを gather で一斉に投げる問題と対処は?"
+  choices:
+  - "問題ない"
+  - "相手のレートリミットや自分の接続数を超える。Semaphore で同時実行数を 10 程度に絞る"
+  - "遅くなる"
+  - "gather は 10 件までしか使えない"
+  answer: 1
+  explanation: "`async with sem:` で囲むだけ。タイムアウトと return_exceptions も併用。"
+- id: py-l11-4
+  difficulty: 2
+  question: "FastAPI で同期の DB ドライバ (psycopg + Session) を使うとき、ハンドラは?"
+  choices:
+  - "async def にする"
+  - "def (同期) にする。FastAPI がスレッドプールで動かし、イベントループを止めない"
+  - "どちらでも同じ"
+  - "DB は使えない"
+  answer: 1
+  explanation: "async def の中で同期 DB を呼ぶと全リクエストが止まる。非同期にするなら asyncpg + AsyncSession。"

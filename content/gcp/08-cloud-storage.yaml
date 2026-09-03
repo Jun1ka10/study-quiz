@@ -1,0 +1,42 @@
+lesson: gcp-08
+questions:
+- id: gcp-l08-1
+  difficulty: 1
+  question: "「均一なバケットレベルアクセス」を有効にする理由は?"
+  choices:
+  - "速くなる"
+  - "オブジェクトごとの ACL を無効化し、IAM だけでアクセス制御する。誰が読めるかが一元管理され、うっかり公開が減る"
+  - "容量が増える"
+  - "必須だから"
+  answer: 1
+  explanation: "公開アクセス防止と併用する。公開したいものは署名付き URL か LB + CDN。"
+- id: gcp-l08-2
+  difficulty: 2
+  question: "Cloud Run 上のアプリから Cloud Storage に書き込む認証は?"
+  choices:
+  - "サービスアカウントの JSON 鍵をイメージに入れる"
+  - "Cloud Run にアタッチしたサービスアカウントに storage.objectUser を付け、クライアントライブラリは ADC で自動認証する。鍵は作らない"
+  - "ユーザー名とパスワード"
+  - "バケットを公開する"
+  answer: 1
+  explanation: "ローカルは `gcloud auth application-default login`。コードは同じ `storage.Client()`。"
+- id: gcp-l08-3
+  difficulty: 2
+  question: "ブラウザから 500MB の動画を直接アップロードさせたい。適切な方法は?"
+  choices:
+  - "アプリサーバーが受けてから転送"
+  - "アップロード用の署名付き URL (PUT) を発行し、ブラウザから Cloud Storage に直接送る"
+  - "Base64 で JSON に入れる"
+  - "できない"
+  answer: 1
+  explanation: "アプリサーバーの帯域とメモリを使わない。完了後にオブジェクト名を API に通知する。"
+- id: gcp-l08-4
+  difficulty: 1
+  question: "ライフサイクルルールの用途は?"
+  choices:
+  - "バケットを削除する"
+  - "一定日数後に安いストレージクラスへ移す・削除する・古いバージョンを間引く、を自動化して保管費を下げる"
+  - "アクセス権を変える"
+  - "バックアップ"
+  answer: 1
+  explanation: "ログや古い帳票は 30 日で Nearline、1 年で削除、のような設定が定番。"

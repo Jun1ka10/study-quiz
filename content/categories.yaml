@@ -9,36 +9,24 @@ categories:
     prefix: py
     description: 文法の基礎から、実務で困らない書き方まで
     planned:
-      - asyncio 入門
-      - 標準ライブラリの要点 (pathlib / datetime / json)
-      - requests と外部 API を呼ぶ (Slack / Stripe / Google API)
 
   - id: javascript
     title: JavaScript / TypeScript
     prefix: js
     description: ブラウザで動く素の JS から、TypeScript・React・Next.js まで
     planned:
-      - モジュールと npm
-      - Playwright で E2E テスト
 
   - id: backend
     title: Web バックエンド
     prefix: be
     description: HTTP / REST から、Django・FastAPI・DB・認証まで
     planned:
-      - REST API の設計 (リソース・メソッド・ステータス)
-      - 認証 (セッション / JWT / OAuth)
-      - 環境変数と設定 (.env / django-environ)
-      - バッチとスケジューラ (cron / APScheduler / Cloud Run Jobs)
 
   - id: docker
     title: Docker
     prefix: dk
     description: コンテナの仕組みから、本番用 Dockerfile・Cloud Run へのデプロイまで
     planned:
-      - イメージを小さく安全にする (非 root・.dockerignore・キャッシュ)
-      - Artifact Registry / ECR へ push して Cloud Run で動かす
-      - コンテナのデバッグ (logs / exec / inspect)
 
   - id: design
     title: 設計
@@ -51,7 +39,6 @@ categories:
     prefix: sec
     description: Web の脆弱性、認証と認可、DB の行レベル制御、秘密情報の扱い。守り方を仕組みで理解する
     planned:
-      - 監査ログと不正検知
 
   - id: aws
     title: AWS
@@ -64,8 +51,6 @@ categories:
     prefix: gcp
     description: Cloud Run + Cloud SQL で動く API アプリの構成を理解する
     planned:
-      - Cloud Storage
-      - BigQuery
 
   - id: infra
     title: インフラ

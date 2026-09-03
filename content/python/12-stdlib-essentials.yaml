@@ -1,0 +1,42 @@
+lesson: py-12
+questions:
+- id: py-l12-1
+  difficulty: 2
+  question: "日時の扱いで推奨されるのは?"
+  choices:
+  - "datetime.now() で naive に持つ"
+  - "タイムゾーン付き (aware) で UTC として保存・通信し、表示のときだけ JST に変換する"
+  - "常に JST の naive"
+  - "文字列で持つ"
+  answer: 1
+  explanation: "naive と aware を混ぜると TypeError か黙ったずれ。`datetime.now(timezone.utc)` と ZoneInfo。"
+- id: py-l12-2
+  difficulty: 1
+  question: "`json.dumps({\"名前\": \"加藤\"})` が `\\u540d\\u524d` のようになる。読める形にするには?"
+  choices:
+  - "できない"
+  - "`ensure_ascii=False` を付ける"
+  - "encode する"
+  - "文字列を置換する"
+  answer: 1
+  explanation: "datetime や Decimal は `default=str` か Pydantic で変換する。"
+- id: py-l12-3
+  difficulty: 2
+  question: "`subprocess.run(\"ls \" + user_input, shell=True)` の問題は?"
+  choices:
+  - "遅い"
+  - "user_input に `; rm -rf /` が入ると実行される (コマンドインジェクション)。引数はリストで渡し shell=True を使わない"
+  - "出力が取れない"
+  - "問題ない"
+  answer: 1
+  explanation: "SQL インジェクションと同じ構造。値を命令に混ぜない。"
+- id: py-l12-4
+  difficulty: 1
+  question: "トークンやパスワードの生成に使うモジュールは?"
+  choices:
+  - "random"
+  - "secrets (暗号学的に安全な乱数)"
+  - "uuid"
+  - "hashlib"
+  answer: 1
+  explanation: "random は予測可能。`secrets.token_urlsafe(32)`。"

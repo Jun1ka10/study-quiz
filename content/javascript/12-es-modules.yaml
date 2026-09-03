@@ -1,0 +1,42 @@
+lesson: js-12
+questions:
+- id: js-l12-1
+  difficulty: 1
+  question: "`import x from \"./a.js\"` と `import { x } from \"./a.js\"` の違いは?"
+  choices:
+  - "同じ"
+  - "前者は default export を任意の名前で受ける、後者は名前付き export をその名前で受ける"
+  - "前者は Node 専用"
+  - "後者は 1 つしか受けられない"
+  answer: 1
+  explanation: "default は 1 ファイル 1 つ。名前付きは複数。`import * as ns` で全部。"
+- id: js-l12-2
+  difficulty: 2
+  question: "tree shaking とは?"
+  choices:
+  - "ファイルを圧縮する"
+  - "バンドラが import されていない export を最終成果物から削除すること。名前付き import で効きやすい"
+  - "依存を更新する"
+  - "テストを削る"
+  answer: 1
+  explanation: "`import _ from \"lodash\"` は全部入る。`import { debounce } from \"lodash-es\"` は使う分だけ。"
+- id: js-l12-3
+  difficulty: 1
+  question: "ブラウザで import を使うために必要なのは?"
+  choices:
+  - "バンドラが必須"
+  - "`<script type=\"module\">`。相対パスには拡張子 `.js` が要る"
+  - "Node.js"
+  - "使えない"
+  answer: 1
+  explanation: "小さなアプリならバンドル無しで動く。type=module は自動で defer。"
+- id: js-l12-4
+  difficulty: 2
+  question: "本番ビルドでファイル名に `app.3f1a9c.js` のようなハッシュが付く理由は?"
+  choices:
+  - "見た目"
+  - "内容が変われば名前も変わるので、ブラウザのキャッシュを長期間有効にしても更新が確実に届く"
+  - "セキュリティ"
+  - "圧縮のため"
+  answer: 1
+  explanation: "HTML だけ短いキャッシュにし、JS / CSS は 1 年キャッシュ、という配信ができる。"

@@ -1,0 +1,42 @@
+lesson: dk-05
+questions:
+- id: dk-l05-1
+  difficulty: 1
+  question: "コンテナが起動直後に落ちる。最初に打つコマンドは?"
+  choices:
+  - "docker exec -it <c> sh"
+  - "docker logs <c> と docker inspect で ExitCode / OOMKilled を見る"
+  - "docker build --no-cache"
+  - "docker system prune"
+  answer: 1
+  explanation: "止まったコンテナには exec できない。ログが無いなら PYTHONUNBUFFERED や CMD の誤りを疑う。"
+- id: dk-l05-2
+  difficulty: 2
+  question: "`docker run -p 8000:8000` したのにホストから繋がらない。中から `curl localhost:8000` は通る。原因は?"
+  choices:
+  - "ポートの指定ミス"
+  - "アプリが 127.0.0.1 で待ち受けている。0.0.0.0 にする"
+  - "ファイアウォール"
+  - "イメージが古い"
+  answer: 1
+  explanation: "コンテナの localhost はコンテナ自身。外から届くには全インターフェースで待つ。"
+- id: dk-l05-3
+  difficulty: 2
+  question: "ExitCode 137 の意味と対処は?"
+  choices:
+  - "設定ファイルの誤り"
+  - "SIGKILL、多くはメモリ上限超過 (OOMKilled)。メモリ上限を上げるかアプリのメモリ使用を減らす"
+  - "ポート競合"
+  - "正常終了"
+  answer: 1
+  explanation: "139 はセグフォ、1 はアプリの例外。ExitCode で当たりを付ける。"
+- id: dk-l05-4
+  difficulty: 1
+  question: "本番 (Cloud Run) のコンテナで問題が起きたときの調べ方は?"
+  choices:
+  - "本番コンテナに入って直す"
+  - "同じイメージ (ダイジェスト) と同じ環境変数で手元に再現し、直して同じ手順で確認してから push する"
+  - "本番を再起動し続ける"
+  - "ログは見ない"
+  answer: 1
+  explanation: "本番に入れない設計が正しい。再現できることが修正の第一歩。"

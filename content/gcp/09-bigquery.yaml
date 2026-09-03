@@ -1,0 +1,42 @@
+lesson: gcp-09
+questions:
+- id: gcp-l09-1
+  difficulty: 1
+  question: "BigQuery と Cloud SQL の使い分けは?"
+  choices:
+  - "同じ用途"
+  - "Cloud SQL はアプリの読み書き (1 行の取得・更新、トランザクション)、BigQuery は大量行の集計・分析。役割を混ぜない"
+  - "BigQuery の方が新しいので全部 BigQuery"
+  - "Cloud SQL は分析専用"
+  answer: 1
+  explanation: "BigQuery で 1 行ずつ UPDATE する、Cloud SQL で毎回全件集計する、はどちらも苦手なことをさせている。"
+- id: gcp-l09-2
+  difficulty: 2
+  question: "BigQuery のオンデマンド課金を抑える最も効果的な方法は?"
+  choices:
+  - "クエリを速く書く"
+  - "列を絞り (SELECT * を避け)、日付でパーティションを切って WHERE で範囲を絞る。スキャンしたバイト数で課金されるため"
+  - "インスタンスを小さくする"
+  - "深夜に実行する"
+  answer: 1
+  explanation: "実行前の見積もりを見る癖と、1 日のスキャン上限の設定で事故を防ぐ。"
+- id: gcp-l09-3
+  difficulty: 2
+  question: "ダッシュボードを BigQuery の生テーブルに直結する問題は?"
+  choices:
+  - "問題ない"
+  - "開くたびに全件スキャンして課金され遅い。日次で集計済みテーブルを作り、それを見せる"
+  - "グラフが出ない"
+  - "権限が要る"
+  answer: 1
+  explanation: "集計テーブルはスケジュールクエリか Cloud Run Job で作る。"
+- id: gcp-l09-4
+  difficulty: 1
+  question: "Cloud SQL のデータを BigQuery に入れる最初の一手として妥当なのは?"
+  choices:
+  - "リアルタイム CDC を組む"
+  - "日次バッチで前日分を抽出して GCS に置き、bq load で取り込む。単純で制御しやすい"
+  - "アプリから二重書き込み"
+  - "手でコピー"
+  answer: 1
+  explanation: "即時性が要るようになったら Datastream や Pub/Sub に進む。"

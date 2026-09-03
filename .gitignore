@@ -4,5 +4,5 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 # ビルド生成物
-site/questions.json
+site/data.json
 site/sw.js

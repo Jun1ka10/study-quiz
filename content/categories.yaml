@@ -67,12 +67,7 @@ categories:
     prefix: sec
     description: Web の脆弱性、認証と認可、DB の行レベル制御、秘密情報の扱い。守り方を仕組みで理解する
     planned:
-      - 認証と認可 (セッション / JWT / OAuth の違いと落とし穴)
-      - パスワードとハッシュ (bcrypt / ソルト / ストレッチング)
-      - 秘密情報の管理 (.env / Secret Manager / ローテーション)
-      - 最小権限 (IAM・サービスアカウント・DB ユーザー)
       - 依存ライブラリの脆弱性と更新
-      - HTTPS・CORS・セキュリティヘッダー
       - 監査ログと不正検知
 
   - id: aws

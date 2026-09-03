@@ -1,0 +1,42 @@
+lesson: infra-04
+questions:
+- id: infra-l04-1
+  difficulty: 1
+  question: "cron で `python manage.py x` と書いたら動かない。最も多い原因は?"
+  choices:
+  - "cron が壊れている"
+  - "cron の PATH が最小で、python や仮想環境が見つからない。フルパス (`/home/app/.venv/bin/python`) で書く"
+  - "権限"
+  - "曜日の指定ミス"
+  answer: 1
+  explanation: "環境変数も無いので、必要なら crontab 先頭で定義するかスクリプト内で読む。"
+- id: infra-l04-2
+  difficulty: 2
+  question: "systemd timer が cron より優れている点は?"
+  choices:
+  - "書き方が短い"
+  - "ログが journald に残る、実行ユーザーと環境変数を service に書ける、前回が動いていれば重ならない、Persistent で停止中の分を補える"
+  - "秒単位で動く"
+  - "優れている点は無い"
+  answer: 1
+  explanation: "`systemctl list-timers` で次回と前回結果が一覧できるのも運用で効く。"
+- id: infra-l04-3
+  difficulty: 2
+  question: "cron ジョブが「動かなかった」ことに気づく仕組みは?"
+  choices:
+  - "ログを毎日読む"
+  - "成功時に外部のハートビート (healthchecks.io 等) に ping し、一定時間来なければ通知される仕組みにする"
+  - "失敗時だけ通知する"
+  - "気づけない"
+  answer: 1
+  explanation: "失敗通知は「走って失敗した」しか拾えない。サーバー停止や cron 停止は「走らなかった」なので、来るはずの信号が来ない検知が要る。"
+- id: infra-l04-4
+  difficulty: 1
+  question: "複数台の VM に同じ crontab を置くと何が起きる?"
+  choices:
+  - "負荷分散される"
+  - "同じジョブが台数分同時に走り、二重処理になる。1 台に限定するか分散ロックか、クラウドのスケジューラ + Job に移す"
+  - "何も起きない"
+  - "自動で調整される"
+  answer: 1
+  explanation: "「1 台だけで動かす」は単一障害点。台を増やす段階でスケジューラに移すのが定石。"

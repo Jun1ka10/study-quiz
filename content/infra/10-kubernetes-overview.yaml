@@ -1,0 +1,52 @@
+lesson: infra-10
+questions:
+- id: infra-l10-1
+  difficulty: 1
+  question: "Deployment の役割は?"
+  choices:
+  - "外部からの HTTP を受ける"
+  - "指定した数の Pod を維持し、イメージ更新時にローリングアップデートする"
+  - "秘密を保存する"
+  - "ディスクを提供する"
+  answer: 1
+  explanation: "Pod が消えれば作り直す。`kubectl rollout undo` で前の版に戻せる。"
+- id: infra-l10-2
+  difficulty: 2
+  question: "Service と Pod はどう結び付く?"
+  choices:
+  - "名前が同じ"
+  - "Service の selector と Pod の labels が一致するものに流す。Pod の IP は変わるが Service の名前と IP は安定"
+  - "IP を直接書く"
+  - "自動で全 Pod に流れる"
+  answer: 1
+  explanation: "labels / selector は k8s 全体の結び付けの仕組み。Deployment と Pod も同じ。"
+- id: infra-l10-3
+  difficulty: 2
+  question: "readinessProbe と livenessProbe の違いは?"
+  choices:
+  - "同じ"
+  - "readiness は「トラフィックを受けてよいか」(失敗すると Service から外れる)、liveness は「生きているか」(失敗すると再起動)"
+  - "liveness は起動時だけ"
+  - "readiness は再起動する"
+  answer: 1
+  explanation: "起動に時間がかかるアプリで liveness を厳しくすると再起動ループになる。startupProbe も併用。"
+- id: infra-l10-4
+  difficulty: 2
+  question: "小規模な Web API とバッチで Kubernetes ではなく Cloud Run を選ぶ理由は?"
+  choices:
+  - "Cloud Run の方が高機能"
+  - "k8s は Ingress・証明書・HPA・ログ・Secret 同期・クラスタ更新など運用の仕事が多く、人を割けないなら過剰。Cloud Run は同じ概念を設定だけで得られる"
+  - "k8s はコンテナが動かない"
+  - "理由は無い"
+  answer: 1
+  explanation: "Deployment / probe / resources の概念は Cloud Run の設定にそのまま対応するので、知識は無駄にならない。"
+- id: infra-l10-5
+  difficulty: 1
+  question: "`resources.requests` と `limits` を書かないと何が起きる?"
+  choices:
+  - "何も起きない"
+  - "スケジューラが必要量を知れず配置が偏り、1 つの Pod がノードのメモリを食い尽くして他を巻き込む"
+  - "速くなる"
+  - "起動しない"
+  answer: 1
+  explanation: "requests は確保量、limits は上限。必ず書く。"

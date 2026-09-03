@@ -72,11 +72,6 @@ categories:
     prefix: infra
     description: Linux・ネットワークの基礎から、IaC・CI/CD・監視まで
     planned:
-      - SSH と鍵認証
-      - cron と systemd timer
-      - デプロイ戦略 (ローリング / カナリア / ロールバック)
-      - 監視と SLO
-      - Kubernetes の概要
 
   - id: devtools
     title: 開発ツール

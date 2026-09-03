@@ -1,0 +1,52 @@
+lesson: infra-03
+questions:
+- id: infra-l03-1
+  difficulty: 1
+  question: "公開鍵認証で、サーバーに置くのはどちら?"
+  choices:
+  - "秘密鍵"
+  - "公開鍵 (~/.ssh/authorized_keys)。秘密鍵は手元から出さない"
+  - "両方"
+  - "パスフレーズ"
+  answer: 1
+  explanation: "接続時に秘密鍵で署名し、サーバーが公開鍵で検証する。秘密鍵はネットワークに流れない。"
+- id: infra-l03-2
+  difficulty: 2
+  question: "踏み台経由で奥のサーバーに入るとき、秘密鍵を踏み台にコピーしてはいけない理由と代替は?"
+  choices:
+  - "コピーしてよい"
+  - "踏み台が侵害されると鍵が盗まれる。ProxyJump (または agent forwarding) で手元の鍵のまま通す"
+  - "踏み台には鍵が置けない"
+  - "パスワードにする"
+  answer: 1
+  explanation: "`~/.ssh/config` に `ProxyJump bastion` を書けば `ssh prod-app` 一発で通る。"
+- id: infra-l03-3
+  difficulty: 2
+  question: "プライベートサブネットの DB に手元の psql から繋ぎたい。安全な方法は?"
+  choices:
+  - "DB のセキュリティグループで自分の IP に 5432 を開ける"
+  - "踏み台への SSH ローカルポートフォワード (`ssh -L 5433:db:5432 bastion`) で手元の 5433 に繋ぐ"
+  - "DB にパブリック IP を付ける"
+  - "VNC"
+  answer: 1
+  explanation: "DB は VPC 内に閉じたまま。AWS なら SSM のポートフォワード、GCP なら IAP でも同じ。"
+- id: infra-l03-4
+  difficulty: 1
+  question: "`Permission denied (publickey)` の典型的な原因でないものは?"
+  choices:
+  - "公開鍵が authorized_keys に無い"
+  - "ユーザー名が違う"
+  - "秘密鍵や .ssh のパーミッションが緩い"
+  - "サーバーのディスクが一杯"
+  answer: 3
+  explanation: "`ssh -v` で どの鍵を試し何で拒否されたかが見える。"
+- id: infra-l03-5
+  difficulty: 2
+  question: "クラウドの VM で SSH の 22 番を公開せずに運用する方法は?"
+  choices:
+  - "無い"
+  - "AWS は SSM Session Manager、GCP は IAP TCP forwarding + OS Login。IAM で誰が入れるかを管理し、操作の記録が残る"
+  - "ポート番号を変える"
+  - "パスワードを長くする"
+  answer: 1
+  explanation: "ポート変更は気休め。入口を閉じて IAM 経由にするのが本質。"

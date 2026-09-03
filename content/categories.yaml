@@ -38,12 +38,6 @@ categories:
     description: HTTP / REST から、Django・FastAPI・DB・認証まで
     planned:
       - REST API の設計 (リソース・メソッド・ステータス)
-      - Django の全体像 (MTV・settings・manage.py)
-      - Django モデルと ORM
-      - Django のビュー・URL・テンプレート
-      - Django REST framework
-      - FastAPI と Pydantic
-      - SQLAlchemy 2 と Alembic
       - SQL と PostgreSQL の基礎
       - インデックスとトランザクション
       - 認証 (セッション / JWT / OAuth)

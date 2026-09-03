@@ -9,11 +9,6 @@ categories:
     prefix: py
     description: 文法の基礎から、実務で困らない書き方まで
     planned:
-      - クラスと dataclass
-      - モジュール・パッケージ・仮想環境 (venv / poetry / uv)
-      - 内包表記とジェネレータ
-      - 型ヒントと Pydantic
-      - pytest でテストを書く
       - asyncio 入門
       - 標準ライブラリの要点 (pathlib / datetime / json / logging)
       - requests と外部 API を呼ぶ (Slack / Stripe / Google API)

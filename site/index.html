@@ -31,7 +31,7 @@
       </button>
 
       <h2>コース</h2>
-      <div id="courses"></div>
+      <div id="courses" class="course-cards"></div>
 
       <h2>ランダム演習</h2>
       <div class="row">
@@ -64,6 +64,21 @@
     </section>
   </template>
 
+  <!-- コース (レッスン一覧) -->
+  <template id="tpl-course">
+    <section>
+      <h1 id="course-title"></h1>
+      <p id="course-desc" class="meta"></p>
+      <p id="course-progress" class="meta"></p>
+      <div class="progress"><div id="course-bar"></div></div>
+      <button id="btn-course-continue" class="primary big" hidden></button>
+      <div id="course-lessons" class="lesson-list"></div>
+      <h2 id="course-planned-head" hidden>準備中</h2>
+      <div id="course-planned" class="lesson-list"></div>
+      <button id="btn-course-back" class="big">ホームへ</button>
+    </section>
+  </template>
+
   <!-- レッスン (教科書ページ) -->
   <template id="tpl-lesson">
     <section>
@@ -72,7 +87,7 @@
       <p id="lesson-status" class="meta" hidden></p>
       <article id="lesson-body" class="lesson-body"></article>
       <button id="btn-lesson-quiz" class="primary big"></button>
-      <button id="btn-lesson-back" class="big">コース一覧へ</button>
+      <button id="btn-lesson-back" class="big">コースへ</button>
     </section>
   </template>
 

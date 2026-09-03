@@ -145,44 +145,22 @@ function showHome() {
   $("#btn-review").disabled = !due.length;
   $("#btn-review").onclick = () => startQuiz(due.slice(0, REVIEW_MAX), { mode: "review" });
 
-  // コース
+  // コース一覧 (コンパクト)。タップでコース画面へ
   const courses = $("#courses");
   for (const c of DATA.categories) {
     const lessons = lessonsOf(c.id);
     const done = lessons.filter((l) => s.lessons[l.id]?.done).length;
     const next = lessons.find((l) => !s.lessons[l.id]?.done) || null;
-    const total = lessons.length + c.planned.length;
-    const el = document.createElement("div");
-    el.className = "course";
-    el.innerHTML = `
-      <div class="course-head"><span class="course-title">${escapeHtml(c.title)}</span>
-        <span class="course-progress">${done} / ${lessons.length} 完了${c.planned.length ? ` (準備中 ${c.planned.length})` : ""}</span></div>
-      <p class="course-desc">${escapeHtml(c.description)}</p>
-      <div class="progress"><div style="width:${total ? (100 * done) / total : 0}%"></div></div>
-      <div class="lesson-list"></div>`;
-    const list = $(".lesson-list", el);
-    for (const l of lessons) {
-      const st = s.lessons[l.id]?.done ? "done" : next && next.id === l.id ? "next" : "todo";
-      const b = document.createElement("button");
-      b.className = `lesson-row ${st}`;
-      b.innerHTML = `<span class="icon">${st === "done" ? "✓" : st === "next" ? "▶" : "○"}</span><span>${escapeHtml(l.title)}</span><span class="mins">${l.minutes} 分</span>`;
-      b.onclick = () => showLesson(l.id);
-      list.appendChild(b);
-    }
-    for (const title of c.planned) {
-      const d = document.createElement("div");
-      d.className = "lesson-row planned";
-      d.innerHTML = `<span class="icon">·</span><span>${escapeHtml(title)}</span><span class="mins">準備中</span>`;
-      list.appendChild(d);
-    }
-    if (next) {
-      const b = document.createElement("button");
-      b.className = "primary big continue";
-      b.textContent = done ? `続きから: ${next.title}` : `始める: ${next.title}`;
-      b.onclick = () => showLesson(next.id);
-      el.appendChild(b);
-    }
-    courses.appendChild(el);
+    const pct = lessons.length ? Math.round((100 * done) / lessons.length) : 0;
+    const b = document.createElement("button");
+    b.className = "course-card";
+    const state_ = done === lessons.length && lessons.length ? "done" : done ? "started" : "";
+    b.innerHTML = `<span class="title">${escapeHtml(c.title)}</span>
+      <span class="pct ${state_}">${done} / ${lessons.length}</span>
+      <span class="sub">${next ? "次: " + escapeHtml(next.title) : "用意されたレッスンは完了"}${c.planned.length ? ` ・ 準備中 ${c.planned.length}` : ""}</span>
+      <span class="bar"><div style="width:${pct}%"></div></span>`;
+    b.onclick = () => showCourse(c.id);
+    courses.appendChild(b);
   }
 
   // ランダム演習
@@ -227,6 +205,46 @@ function renderStats(s) {
     `</table>`;
 }
 
+function showCourse(catId) {
+  const c = DATA.categories.find((x) => x.id === catId);
+  const s = loadState();
+  const lessons = lessonsOf(catId);
+  const done = lessons.filter((l) => s.lessons[l.id]?.done).length;
+  const next = lessons.find((l) => !s.lessons[l.id]?.done) || null;
+  mount("tpl-course");
+  $("#course-title").textContent = c.title;
+  $("#course-desc").textContent = c.description;
+  $("#course-progress").textContent = `${done} / ${lessons.length} 完了${c.planned.length ? ` ・ 準備中 ${c.planned.length}` : ""}`;
+  const total = lessons.length + c.planned.length;
+  $("#course-bar").style.width = `${total ? (100 * done) / total : 0}%`;
+  if (next) {
+    const b = $("#btn-course-continue");
+    b.hidden = false;
+    b.textContent = done ? `続きから: ${next.title}` : `始める: ${next.title}`;
+    b.onclick = () => showLesson(next.id);
+  }
+  const list = $("#course-lessons");
+  for (const l of lessons) {
+    const st = s.lessons[l.id]?.done ? "done" : next && next.id === l.id ? "next" : "todo";
+    const b = document.createElement("button");
+    b.className = `lesson-row ${st}`;
+    b.innerHTML = `<span class="icon">${st === "done" ? "✓" : st === "next" ? "▶" : "○"}</span><span>${escapeHtml(l.title)}</span><span class="mins">${l.minutes} 分</span>`;
+    b.onclick = () => showLesson(l.id);
+    list.appendChild(b);
+  }
+  if (c.planned.length) {
+    $("#course-planned-head").hidden = false;
+    const planned = $("#course-planned");
+    for (const title of c.planned) {
+      const d = document.createElement("div");
+      d.className = "lesson-row planned";
+      d.innerHTML = `<span class="icon">·</span><span>${escapeHtml(title)}</span><span class="mins">準備中</span>`;
+      planned.appendChild(d);
+    }
+  }
+  $("#btn-course-back").onclick = showHome;
+}
+
 function showLesson(lessonId) {
   const l = DATA.lessons.find((x) => x.id === lessonId);
   const list = lessonsOf(l.category);
@@ -243,7 +261,7 @@ function showLesson(lessonId) {
   const btn = $("#btn-lesson-quiz");
   btn.textContent = `確認問題を解く (${qs.length} 問)`;
   btn.onclick = () => startQuiz(shuffle(qs.slice()), { mode: "lesson", lessonId });
-  $("#btn-lesson-back").onclick = showHome;
+  $("#btn-lesson-back").onclick = () => showCourse(l.category);
 }
 
 function startQuiz(queue, { mode, lessonId = null }) {
@@ -339,7 +357,13 @@ function showResult() {
     retry.hidden = false;
     retry.onclick = () => startQuiz(shuffle(wrong.map((r) => r.q)), { mode: state.mode });
   }
-  $("#btn-back").onclick = showHome;
+  if (state.mode === "lesson") {
+    const cat = DATA.lessons.find((x) => x.id === state.lessonId).category;
+    $("#btn-back").textContent = "コースへ";
+    $("#btn-back").onclick = () => showCourse(cat);
+  } else {
+    $("#btn-back").onclick = showHome;
+  }
 }
 
 // ---------- 起動 ----------

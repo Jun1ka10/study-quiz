@@ -3,6 +3,27 @@ id: js-03
 title: DOM 操作とイベント
 summary: 要素の取得・書き換え・追加と、クリックや送信への反応。フレームワーク無しで画面を動かす基本
 minutes: 10
+exercise: |
+  **ゴール:** 素の HTML + JS で、追加した行にもイベント委譲でクリックを効かせる。
+
+  1. `dom.html`:
+     ```html
+     <input id="t"><button id="add">追加</button>
+     <ul id="list"></ul>
+     <script>
+       const list = document.querySelector("#list");
+       document.querySelector("#add").addEventListener("click", () => {
+         const li = document.createElement("li");
+         li.textContent = document.querySelector("#t").value;   // innerHTML にしない
+         list.appendChild(li);
+       });
+       list.addEventListener("click", (e) => { if (e.target.closest("li")) e.target.remove(); });
+     </script>
+     ```
+  2. ブラウザで開き、追加した行をクリックして消えることを確認
+  3. 入力に `<b>x</b>` を入れて追加。太字にならないことを確認。`textContent` を `innerHTML` に変えて違いを見る
+
+  **確認:** 後から追加した li にもクリックが効く。innerHTML だとタグが解釈される。
 questions:
   - id: js-l03-1
     difficulty: 1

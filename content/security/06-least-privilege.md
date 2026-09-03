@@ -3,6 +3,20 @@ id: sec-06
 title: 最小権限
 summary: IAM ロール、サービスアカウント、DB ユーザー、コンテナの実行ユーザー。「必要なものだけ」を各層で徹底する
 minutes: 10
+exercise: |
+  **ゴール:** DB ユーザーを分けて、app ユーザーでは DROP できないことを見る。
+
+  1. RLS の課題の PostgreSQL コンテナで postgres として:
+     ```sql
+     create role migrator login password 'm'; alter table orders owner to migrator;
+     create role app2 login password 'a';
+     grant select, insert, update, delete on orders to app2;
+     ```
+  2. `psql -U app2` で `drop table orders;` → 権限エラー。`alter table orders add column x int;` → エラー
+  3. `psql -U migrator` で `alter table orders add column x int;` → 成功
+  4. 手元のクラウドの IAM を開き、自分のアカウントに付いているロールを一覧し、「Owner / Editor / Admin」があればメモする
+
+  **確認:** アプリ用の権限で DDL が通らない。自分の IAM に基本ロールがあるか確認した。
 questions:
   - id: sec-l06-1
     difficulty: 1

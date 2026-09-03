@@ -3,6 +3,23 @@ id: py-02
 title: リスト・タプル・辞書・セット
 summary: 4 つのコレクションの使い分けと、ミュータブル / イミュータブルの違い
 minutes: 10
+exercise: |
+  **ゴール:** 代入がコピーではないことを確かめる。
+
+  1. `python3` で:
+     ```python
+     a = [1, 2, 3]; b = a; b.append(4); a
+     c = a.copy(); c.append(5); a, c
+     d = {"x": 1}; d.get("y"), d.get("y", 0)
+     list(set([3, 1, 3, 2]))
+     ```
+  2. 関数に list を渡して中で append し、呼び出し元の list が変わることを確認する
+     ```python
+     def add(xs): xs.append(99)
+     nums = [1]; add(nums); nums
+     ```
+
+  **確認:** `b = a` では `a` も変わり、`copy()` なら変わらない。
 questions:
   - id: py-l02-1
     difficulty: 1

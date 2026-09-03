@@ -25,6 +25,7 @@ def test_each_lesson(lesson):
     assert len(qs) >= 3, "確認問題は 3 問以上"
     assert "<h1" not in lesson["html"], "本文に h1 は書かない (タイトルは frontmatter)"
     assert lesson["summary"], "summary は必須 (ホーム画面の一覧に出る)"
+    assert lesson["exerciseHtml"], "exercise (やってみる課題) は必須。読んで終わりにしない"
 
 
 @pytest.mark.parametrize("q", DATA["questions"], ids=lambda q: q["id"])

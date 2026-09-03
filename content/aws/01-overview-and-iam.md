@@ -3,6 +3,15 @@ id: aws-01
 title: AWS の全体像と IAM の最初の一歩
 summary: リージョン・AZ・アカウントの構造と、ルートユーザーを封印して IAM で作業する理由
 minutes: 10
+exercise: |
+  **ゴール:** IAM ポリシーを読み、ロールの仕組みをコンソールで確認する (課金なし)。
+
+  1. AWS コンソール → IAM → ポリシー → `AmazonS3ReadOnlyAccess` を開き、JSON タブで Action と Resource を読む
+  2. 自分のユーザー → 「アクセス許可」と「セキュリティ認証情報」。アクセスキーがあるか、MFA が有効かを確認
+  3. IAM → ロール → 何か 1 つ開き、「信頼関係」タブで「誰が引き受けられるか」(`Principal`) を読む
+  4. ルートユーザーの MFA が有効かを「セキュリティ認証情報」で確認
+
+  **確認:** ポリシーの Effect / Action / Resource を指せる。ロールの信頼ポリシーとアクセス許可ポリシーの違いが分かる。
 questions:
   - id: aws-l01-1
     difficulty: 1

@@ -3,6 +3,32 @@ id: be-06
 title: FastAPI と Pydantic
 summary: ルーター分割、パス / クエリ / ボディの受け取り、Pydantic による検証、Depends、HTTPException
 minutes: 14
+exercise: |
+  **ゴール:** FastAPI で 422 と Depends を体験する。
+
+  1. `uv init fademo && cd fademo && uv add fastapi uvicorn`
+  2. `main.py`:
+     ```python
+     from fastapi import Depends, FastAPI, HTTPException
+     from pydantic import BaseModel, Field
+     app = FastAPI()
+     class Item(BaseModel):
+         name: str = Field(min_length=1)
+         price: int = Field(ge=0)
+     DB = {}
+     def get_db(): return DB
+     @app.post("/items", status_code=201)
+     def create(item: Item, db=Depends(get_db)):
+         db[item.name] = item; return item
+     @app.get("/items/{name}")
+     def read(name: str, db=Depends(get_db)):
+         if name not in db: raise HTTPException(404, "not found")
+         return db[name]
+     ```
+  3. `uv run uvicorn main:app --reload` → `http://localhost:8000/docs` で試す
+  4. `curl -i -X POST localhost:8000/items -H "Content-Type: application/json" -d '{"name":"","price":-1}'` → 422 を読む
+
+  **確認:** 422 の本文に 2 つのエラーが field 名付きで入っている。/docs が自動でできている。
 questions:
   - id: be-l06-1
     difficulty: 1

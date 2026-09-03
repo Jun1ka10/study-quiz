@@ -3,6 +3,16 @@ id: py-06
 title: モジュール・パッケージ・仮想環境
 summary: import の仕組み、パッケージの作り方、venv / poetry / uv、ロックファイルで環境を再現する
 minutes: 12
+exercise: |
+  **ゴール:** uv (無ければ venv) でプロジェクトを作り、ロックファイルを見る。
+
+  1. `mkdir uvdemo && cd uvdemo && uv init` (uv が無ければ `python -m venv .venv && source .venv/bin/activate`)
+  2. `uv add requests` して `pyproject.toml` と `uv.lock` を開き、requests 以外に何が入っているか数える
+  3. `uv add --dev pytest` して dev グループに入ることを確認
+  4. `uv run python -c "import requests; print(requests.__version__)"`
+  5. `cat .gitignore` に `.venv` があるか確認
+
+  **確認:** pyproject には requests だけ、lock には推移的依存 (certifi, urllib3 など) も入っている。
 questions:
   - id: py-l06-1
     difficulty: 1

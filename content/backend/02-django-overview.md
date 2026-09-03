@@ -3,6 +3,16 @@ id: be-02
 title: Django の全体像
 summary: プロジェクトとアプリ、settings、manage.py、リクエストが流れる順番。Django プロジェクトの構造を読めるようになる
 minutes: 12
+exercise: |
+  **ゴール:** Django プロジェクトを 0 から起動し、管理画面を出す。
+
+  1. `uv init djdemo && cd djdemo && uv add django && uv run django-admin startproject config . && uv run python manage.py startapp members`
+  2. `config/settings.py` の `INSTALLED_APPS` に `"members"` を足す
+  3. `uv run python manage.py migrate && uv run python manage.py createsuperuser`
+  4. `uv run python manage.py runserver` → `http://localhost:8000/admin/` にログイン
+  5. `settings.py` の `DEBUG` と `ALLOWED_HOSTS` を眺め、`SECRET_KEY` が直書きされているのを見つける
+
+  **確認:** プロジェクト (config) とアプリ (members) の違いをディレクトリで指せる。
 questions:
   - id: be-l02-1
     difficulty: 1

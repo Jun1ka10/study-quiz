@@ -3,6 +3,15 @@ id: infra-02
 title: ネットワークの基礎
 summary: IP アドレスとサブネット、TCP / UDP、DNS、HTTP / HTTPS。クラウドの設定を読むための土台
 minutes: 12
+exercise: |
+  **ゴール:** CIDR・DNS・TCP を手で確かめる。
+
+  1. `python3 -c "import ipaddress as i; n=i.ip_network('10.0.0.0/22'); print(n.num_addresses, list(n.hosts())[0], list(n.hosts())[-1])"` を /24 /16 で試す
+  2. `dig +short example.com A`、`dig example.com ANY | head -20`、`dig +short www.github.com CNAME`
+  3. `curl -v https://example.com 2>&1 | grep -E "Connected|SSL|HTTP/"` で TLS ハンドシェイクとステータス行を見る
+  4. `ss -ltn` で自分のマシンが待ち受けているポートを見る
+
+  **確認:** /22 のホスト数、CNAME の向き先、443 に接続してから TLS が始まる順番を見た。
 questions:
   - id: infra-l02-1
     difficulty: 1

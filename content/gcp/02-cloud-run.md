@@ -3,6 +3,16 @@ id: gcp-02
 title: Cloud Run でアプリを動かす
 summary: コンテナを渡すだけで HTTPS 公開・自動スケールする。サーバーレスの基本形
 minutes: 10
+exercise: |
+  **ゴール:** Cloud Run にコンテナを 1 つデプロイし、0 台スケールと認証を見る (無料枠内)。
+
+  1. be-06 の FastAPI に `Dockerfile` (dk-02 の形、`--port 8080`) を用意
+  2. `gcloud run deploy demo --source . --region asia-northeast1 --allow-unauthenticated` → 出た URL に curl
+  3. `gcloud run services describe demo --region asia-northeast1 --format="value(spec.template.spec.containers[0].image)"` でイメージ名を見る
+  4. `gcloud run services update demo --region asia-northeast1 --no-allow-unauthenticated` → curl で 403。`curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" URL` で通る
+  5. 終わったら `gcloud run services delete demo --region asia-northeast1`
+
+  **確認:** 認証必須にすると ID トークンが要る。数分放置して初回アクセスが遅い (コールドスタート) のを体感。
 questions:
   - id: gcp-l02-1
     difficulty: 1

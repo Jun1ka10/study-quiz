@@ -3,6 +3,20 @@ id: infra-01
 title: Linux の基本操作
 summary: ファイル・プロセス・権限・サービス。サーバーに入って最初にやることを身につける
 minutes: 12
+exercise: |
+  **ゴール:** サーバーに入ったときの最初の 5 分を手で再現する。
+
+  1. 手元の Linux (SSH 先でも WSL でも) で:
+     ```bash
+     uptime; df -h; free -h; ps aux --sort=-%mem | head -5
+     sudo systemctl status ssh   # 無ければ cron や docker
+     journalctl -u ssh -n 20 --no-pager
+     ls -la ~/.ssh; stat -c "%a %n" ~/.ssh/*
+     ```
+  2. `touch t && chmod 600 t && ls -l t`、`chmod 644 t && ls -l t` で表示の変化を見る
+  3. `du -sh /var/log/* 2>/dev/null | sort -h | tail -3` で大きいログを探す
+
+  **確認:** `.ssh` の秘密鍵が 600 になっている (なっていなければ直す)。
 questions:
   - id: infra-l01-1
     difficulty: 1

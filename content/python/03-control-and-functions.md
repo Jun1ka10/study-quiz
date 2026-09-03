@@ -3,6 +3,21 @@ id: py-03
 title: 制御構文と関数
 summary: if / for / while と、関数の定義。デフォルト引数の罠
 minutes: 10
+exercise: |
+  **ゴール:** デフォルト引数の罠を再現して直す。
+
+  1. ファイル `trap.py` を作る
+     ```python
+     def add(x, acc=[]):
+         acc.append(x)
+         return acc
+     print(add(1)); print(add(2))
+     ```
+  2. `python3 trap.py` で `[1, 2]` が出るのを見る
+  3. `acc=None` にして関数内で `if acc is None: acc = []` を足し、`[1]` `[2]` になるのを確認
+  4. `for i, x in enumerate(["a", "b"]): print(i, x)` を末尾に足して実行
+
+  **確認:** 直す前後で出力が変わった理由を一言で言える。
 questions:
   - id: py-l03-1
     difficulty: 1

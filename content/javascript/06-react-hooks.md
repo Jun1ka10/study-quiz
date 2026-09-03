@@ -3,6 +3,22 @@ id: js-06
 title: React の hooks
 summary: useEffect で API を呼ぶ、依存配列、クリーンアップ、カスタム hook。バグの温床を先に潰す
 minutes: 12
+exercise: |
+  **ゴール:** useEffect の依存配列とクリーンアップを体感する。
+
+  1. 前の課題の `App.tsx` に足す:
+     ```tsx
+     const [sec, setSec] = useState(0);
+     useEffect(() => {
+       const t = setInterval(() => setSec((s) => s + 1), 1000);
+       return () => clearInterval(t);
+     }, []);
+     ```
+     と `<p>{sec} 秒</p>`
+  2. `return () => clearInterval(t)` を消し、コンポーネントを再マウント (ファイル保存で HMR) してカウントが加速するのを見る
+  3. 戻してから、依存配列を `[]` から省略に変え、コンソールに `console.log("effect")` を足して毎描画走るのを見る
+
+  **確認:** クリーンアップが無いとタイマーが積み重なる。依存配列で回数が変わる。
 questions:
   - id: js-l06-1
     difficulty: 1

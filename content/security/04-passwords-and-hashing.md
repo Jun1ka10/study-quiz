@@ -3,6 +3,21 @@ id: sec-04
 title: パスワードとハッシュ
 summary: なぜ平文でも暗号化でもなくハッシュなのか。bcrypt / argon2、ソルト、ストレッチング、漏洩時の被害を抑える設計
 minutes: 10
+exercise: |
+  **ゴール:** ハッシュの速度差を測る。
+
+  1. `uv add bcrypt` → `python3`:
+     ```python
+     import hashlib, bcrypt, time
+     pw = b"password123"
+     t = time.perf_counter(); [hashlib.sha256(pw).hexdigest() for _ in range(100000)]; print("sha256 x100k", time.perf_counter() - t)
+     t = time.perf_counter(); h = bcrypt.hashpw(pw, bcrypt.gensalt(rounds=12)); print("bcrypt x1", time.perf_counter() - t)
+     print(h); print(bcrypt.hashpw(pw, bcrypt.gensalt(rounds=12)))     # 毎回違う (ソルト)
+     bcrypt.checkpw(pw, h), bcrypt.checkpw(b"wrong", h)
+     ```
+  2. rounds を 10 と 14 にして時間を比べる
+
+  **確認:** SHA-256 は 10 万回でも一瞬、bcrypt は 1 回で数百 ms。同じパスワードでもハッシュが毎回違う。
 questions:
   - id: sec-l04-1
     difficulty: 1

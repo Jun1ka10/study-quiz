@@ -3,6 +3,26 @@ id: be-04
 title: Django のビュー・URL・テンプレート
 summary: 関数ビューの書き方、urls.py、テンプレート構文、フォームと CSRF、ログイン必須の付け方
 minutes: 14
+exercise: |
+  **ゴール:** ビュー・URL・テンプレートをつなぎ、CSRF エラーを 1 回出す。
+
+  1. `members/views.py`:
+     ```python
+     from django.shortcuts import render, redirect
+     from .models import Client
+     def index(request):
+         if request.method == "POST":
+             Client.objects.create(name=request.POST["name"]); return redirect("index")
+         return render(request, "index.html", {"clients": Client.objects.all()})
+     ```
+  2. `config/urls.py` に `path("", views.index, name="index")`。`templates/index.html` を作り `settings.TEMPLATES[0]["DIRS"]` に `BASE_DIR / "templates"` を足す
+     ```django
+     <form method="post"><input name="name"><button>追加</button></form>
+     <ul>{% for c in clients %}<li>{{ c.name }}</li>{% endfor %}</ul>
+     ```
+  3. 送信して 403 を見る。`{% csrf_token %}` を form 内に足して通す
+
+  **確認:** 403 の理由を説明できる。POST 後に redirect している理由も。
 questions:
   - id: be-l04-1
     difficulty: 1

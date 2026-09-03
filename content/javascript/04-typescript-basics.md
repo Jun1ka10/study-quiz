@@ -3,6 +3,23 @@ id: js-04
 title: TypeScript の基本
 summary: 型注釈、interface / type、ユニオン、ジェネリクス、any を避ける。Next.js のコードを読むための土台
 minutes: 12
+exercise: |
+  **ゴール:** TypeScript のエラーを出して直す。
+
+  1. `mkdir tsdemo && cd tsdemo && npm init -y && npm i -D typescript && npx tsc --init`
+  2. `a.ts`:
+     ```typescript
+     type Status = "draft" | "published";
+     interface User { id: number; name: string; email?: string }
+     function label(s: Status) { return s === "draft" ? "下書き" : "公開"; }
+     const u: User = { id: 1, name: "a" };
+     console.log(u.email.toLowerCase());     // エラーになるはず
+     label("deleted");                        // エラーになるはず
+     ```
+  3. `npx tsc --noEmit` でエラー 2 件を読む
+  4. `u.email?.toLowerCase()` と `"draft"` に直して通す
+
+  **確認:** 実行前に undefined の可能性と不正な値が見つかった。
 questions:
   - id: js-l04-1
     difficulty: 1

@@ -3,6 +3,15 @@ id: sec-07
 title: HTTPS・CORS・セキュリティヘッダー
 summary: 通信を守る HTTPS、ブラウザの同一オリジンポリシーと CORS の正しい理解、付けておくべきレスポンスヘッダー
 minutes: 12
+exercise: |
+  **ゴール:** CORS をブラウザで起こし、ヘッダーで直す。
+
+  1. `python3 -m http.server 8000` (オリジン A) と、別ターミナルで FastAPI (`uv run uvicorn main:app --port 8001`、be-06 の main.py で可)
+  2. `http://localhost:8000/` のコンソールで `await (await fetch("http://localhost:8001/items/x")).json()` → CORS エラー。Network タブでリクエストは届いて 404 が返っているのを見る
+  3. FastAPI に `CORSMiddleware(allow_origins=["http://localhost:8000"])` を足して再実行 → 通る
+  4. `curl -I https://github.com | grep -i "strict-transport\|content-security\|x-frame"` で実サイトのヘッダーを見る
+
+  **確認:** CORS は「ブラウザが読ませない」だけで、サーバーには届いていた。
 questions:
   - id: sec-l07-1
     difficulty: 1

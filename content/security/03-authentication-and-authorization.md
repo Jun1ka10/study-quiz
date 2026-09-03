@@ -3,6 +3,22 @@ id: sec-03
 title: 認証と認可
 summary: 「誰か」を確かめる認証と「何をしてよいか」を決める認可。セッション・JWT・OAuth の違いと落とし穴
 minutes: 14
+exercise: |
+  **ゴール:** JWT の中身を読み、署名検証が無いと何が起きるかを見る。
+
+  1. `uv add pyjwt` → `python3`:
+     ```python
+     import jwt, base64, json
+     t = jwt.encode({"sub": 42, "role": "member"}, "secret", algorithm="HS256")
+     print(t)
+     h, p, s = t.split("."); json.loads(base64.urlsafe_b64decode(p + "=="))     # 誰でも読める
+     jwt.decode(t, "secret", algorithms=["HS256"])
+     jwt.decode(t, "wrong", algorithms=["HS256"])                                  # 失敗
+     ```
+  2. ペイロードの `member` を `admin` に書き換えたトークンを手で作り、`decode` が失敗することを確認
+  3. `exp` に過去の時刻を入れて encode し、decode で `ExpiredSignatureError` を見る
+
+  **確認:** 中身は見えるが、鍵が無いと改ざんできないことを確認した。
 questions:
   - id: sec-l03-1
     difficulty: 1

@@ -3,6 +3,30 @@ id: de-02
 title: SOLID 原則
 summary: 5 つの原則を「何を防ぐための道具か」で理解する
 minutes: 12
+exercise: |
+  **ゴール:** if 分岐を Protocol + 実装クラスに置き換える (OCP / DIP)。
+
+  1. `notify.py`:
+     ```python
+     def notify(msg, kind):
+         if kind == "email": print("email:", msg)
+         elif kind == "slack": print("slack:", msg)
+     ```
+  2. これを書き換える:
+     ```python
+     from typing import Protocol
+     class Notifier(Protocol):
+         def send(self, msg: str) -> None: ...
+     class Email:
+         def send(self, msg): print("email:", msg)
+     class Slack:
+         def send(self, msg): print("slack:", msg)
+     def notify(msg: str, n: Notifier): n.send(msg)
+     notify("hi", Slack())
+     ```
+  3. `Sms` クラスを追加する。`notify` を触らずに済むことを確認
+
+  **確認:** 手段を足すときに既存の関数を変更しなかった。
 questions:
   - id: de-l02-1
     difficulty: 1

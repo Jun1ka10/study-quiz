@@ -3,6 +3,20 @@ id: be-01
 title: Web アプリの仕組みと HTTP
 summary: ブラウザからサーバー、DB まで 1 リクエストがどう流れるか。Django と FastAPI の位置づけ
 minutes: 10
+exercise: |
+  **ゴール:** curl で HTTP の生の姿を見る。
+
+  1. 次を実行する
+
+     ```bash
+     curl -v https://httpbin.org/get 2>&1 | head -40
+     curl -i https://httpbin.org/status/404
+     curl -i -X POST -H "Content-Type: application/json" -d '{"a":1}' https://httpbin.org/post
+     curl -I https://httpbin.org/redirect/1
+     ```
+  2. それぞれで「メソッド・パス・ヘッダー・ステータス行」を指で追う
+
+  **確認:** リクエストとレスポンスの各部分を言葉で言える。302 の `Location` ヘッダーを見つけた。
 questions:
   - id: be-l01-1
     difficulty: 1

@@ -3,6 +3,22 @@ id: js-02
 title: 非同期処理と fetch
 summary: Promise / async / await と、API を呼ぶ fetch。画面が API を叩く仕組み
 minutes: 12
+exercise: |
+  **ゴール:** fetch で公開 API を呼び、ok 判定と並行呼び出しを体験する。
+
+  1. ブラウザのコンソールで:
+     ```javascript
+     const r = await fetch("https://httpbin.org/status/404"); r.ok, r.status
+     const d = await (await fetch("https://httpbin.org/json")).json(); d
+     console.time("seq"); await fetch("https://httpbin.org/delay/1"); await fetch("https://httpbin.org/delay/1"); console.timeEnd("seq")
+     console.time("par"); await Promise.all([fetch("https://httpbin.org/delay/1"), fetch("https://httpbin.org/delay/1")]); console.timeEnd("par")
+     ```
+  2. POST も 1 回:
+     ```javascript
+     (await (await fetch("https://httpbin.org/post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ a: 1 }) })).json()).json
+     ```
+
+  **確認:** 404 でも例外にならず `ok` が false。並行は直列の約半分の時間。
 questions:
   - id: js-l02-1
     difficulty: 1

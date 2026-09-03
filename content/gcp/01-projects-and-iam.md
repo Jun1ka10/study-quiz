@@ -3,6 +3,16 @@ id: gcp-01
 title: GCP の全体像とプロジェクト・IAM
 summary: 組織 / フォルダ / プロジェクトの階層、IAM ロールの種類、サービスアカウントの使い方
 minutes: 10
+exercise: |
+  **ゴール:** プロジェクトの IAM とサービスアカウントを CLI で読む。
+
+  1. `gcloud auth login && gcloud config set project <id>`
+  2. `gcloud projects get-iam-policy $(gcloud config get project) --format=json | head -60` で誰に何のロールがあるか読む。`roles/owner` `roles/editor` を数える
+  3. `gcloud iam service-accounts list` でサービスアカウントを一覧。既定の `*-compute@` があるか
+  4. `gcloud services list --enabled | head` で有効な API を見る
+  5. `gcloud iam service-accounts keys list --iam-account=<どれか>` で鍵が発行されているか確認
+
+  **確認:** 基本ロールが付いているメンバーと、鍵が存在するサービスアカウントを把握した。
 questions:
   - id: gcp-l01-1
     difficulty: 1

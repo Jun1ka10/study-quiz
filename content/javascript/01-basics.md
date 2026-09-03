@@ -3,6 +3,22 @@ id: js-01
 title: JavaScript の基本
 summary: 変数・関数・配列・オブジェクト。Python との違いを軸に押さえる
 minutes: 12
+exercise: |
+  **ゴール:** ブラウザのコンソールで JS の型と配列操作を触る。
+
+  1. ブラウザで任意のページを開き、開発者ツール (F12) → Console
+  2. 1 行ずつ:
+     ```javascript
+     "1" == 1, "1" === 1
+     const xs = [3, 1, 2]; xs.push(4); xs
+     xs.map(x => x * 2); xs.filter(x => x > 1); xs.find(x => x > 1)
+     const user = { name: "Kato", age: 30 }; const { name } = user; name
+     ({ ...user, age: 31 })
+     user.address?.city
+     ```
+  3. `const n = 1; n = 2;` でエラーを見る
+
+  **確認:** `==` と `===` の違い、`const` でも `push` できること。
 questions:
   - id: js-l01-1
     difficulty: 1

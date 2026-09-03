@@ -3,6 +3,16 @@ id: dk-01
 title: イメージとコンテナ
 summary: Docker が解く問題、イメージとコンテナの関係、日常で使うコマンド
 minutes: 10
+exercise: |
+  **ゴール:** コンテナの使い捨てとポート・ボリュームを体感する。
+
+  1. `docker run -d --name web -p 8080:80 nginx:alpine` → `curl localhost:8080`
+  2. `docker exec -it web sh` で `echo hi > /usr/share/nginx/html/index.html` → `curl localhost:8080` で hi
+  3. `docker rm -f web` して同じ `run` をやり直し、`curl` が元の HTML に戻るのを見る
+  4. `docker run -d --name web2 -p 8081:80 -v $(pwd):/usr/share/nginx/html nginx:alpine`、カレントに `index.html` を作って `curl localhost:8081`
+  5. `docker logs web2` と `docker ps` を見て、`docker rm -f web2`
+
+  **確認:** コンテナ内の変更は消える。マウントした方は残る。
 questions:
   - id: dk-l01-1
     difficulty: 1

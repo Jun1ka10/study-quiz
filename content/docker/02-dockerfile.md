@@ -3,6 +3,22 @@ id: dk-02
 title: Dockerfile を書く
 summary: FROM / COPY / RUN / CMD の意味、キャッシュが効く順序、マルチステージビルド
 minutes: 12
+exercise: |
+  **ゴール:** キャッシュ順の効果とマルチステージのサイズ差を見る。
+
+  1. `app.py` (`print("hi")`) と `requirements.txt` (`requests`) を作り、Dockerfile A:
+     ```dockerfile
+     FROM python:3.12-slim
+     WORKDIR /app
+     COPY . .
+     RUN pip install -r requirements.txt
+     CMD ["python", "app.py"]
+     ```
+  2. `docker build -t a .` を 2 回。`app.py` を 1 文字変えて 3 回目 → pip install が再実行されるのを見る
+  3. `COPY requirements.txt .` → `RUN pip install` → `COPY . .` の順に直して同じ実験。install がキャッシュされる
+  4. `docker images` でサイズを見て、`FROM python:3.12` (slim 無し) に変えたときのサイズと比べる
+
+  **確認:** 順序だけでビルド時間が変わる。slim で数百 MB 減る。
 questions:
   - id: dk-l02-1
     difficulty: 1

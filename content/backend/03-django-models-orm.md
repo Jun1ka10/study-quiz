@@ -3,6 +3,30 @@ id: be-03
 title: Django モデルと ORM
 summary: モデル定義、マイグレーション、QuerySet。N+1 を避ける select_related / prefetch_related
 minutes: 14
+exercise: |
+  **ゴール:** モデルを作り、マイグレーションと N+1 を見る。
+
+  1. `members/models.py`:
+     ```python
+     from django.db import models
+     class Client(models.Model):
+         name = models.CharField(max_length=100)
+     class Invoice(models.Model):
+         client = models.ForeignKey(Client, on_delete=models.PROTECT)
+         amount = models.IntegerField()
+     ```
+  2. `uv run python manage.py makemigrations && uv run python manage.py migrate`。生成されたファイルを開く
+  3. `uv run python manage.py shell`:
+     ```python
+     from members.models import *
+     c = Client.objects.create(name="A"); [Invoice.objects.create(client=c, amount=i) for i in range(5)]
+     from django.db import connection, reset_queries
+     from django.conf import settings; settings.DEBUG = True
+     reset_queries(); [i.client.name for i in Invoice.objects.all()]; len(connection.queries)
+     reset_queries(); [i.client.name for i in Invoice.objects.select_related("client")]; len(connection.queries)
+     ```
+
+  **確認:** クエリ数が 6 → 1 になった。
 questions:
   - id: be-l03-1
     difficulty: 1

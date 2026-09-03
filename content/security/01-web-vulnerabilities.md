@@ -3,6 +3,20 @@ id: sec-01
 title: Web の 3 大脆弱性 (XSS / CSRF / SQL インジェクション)
 summary: 何が起きるのか、なぜ防げるのかを仕組みで理解する。フレームワークが守ってくれる範囲と、自分で壊してしまう書き方
 minutes: 14
+exercise: |
+  **ゴール:** XSS と SQL インジェクションを自分で起こして、自分で塞ぐ。
+
+  1. XSS: `xss.html` に `<div id="o"></div><script>document.querySelector("#o").innerHTML = location.hash.slice(1)</script>`。ブラウザで `xss.html#<img src=x onerror=alert(1)>` を開く。`innerHTML` を `textContent` に変えて再度開く
+  2. SQLi: `python3`
+     ```python
+     import sqlite3; c = sqlite3.connect(":memory:")
+     c.execute("create table u(name)"); c.execute("insert into u values('a'),('b')")
+     name = "' OR 1=1 --"
+     c.execute(f"select * from u where name = '{name}'").fetchall()
+     c.execute("select * from u where name = ?", [name]).fetchall()
+     ```
+
+  **確認:** alert が出た → 出なくなった。全件返った → 0 件になった。
 questions:
   - id: sec-l01-1
     difficulty: 1

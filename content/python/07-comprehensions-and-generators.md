@@ -3,6 +3,27 @@ id: py-07
 title: 内包表記とジェネレータ
 summary: リスト・辞書・集合の内包表記、ジェネレータで大きなデータをメモリに載せずに処理する、itertools
 minutes: 10
+exercise: |
+  **ゴール:** ジェネレータでメモリを使わずに処理する。
+
+  1. `python3`:
+     ```python
+     import sys
+     xs = [x * x for x in range(10**6)]; sys.getsizeof(xs)
+     g = (x * x for x in range(10**6)); sys.getsizeof(g)
+     sum(g); sum(g)      # 2 回目は 0
+     ```
+  2. 巨大ファイルを作って 1 行ずつ数える
+     ```python
+     with open("big.txt", "w") as f:
+         for i in range(200000): f.write(f"line {i} {'ERROR' if i % 1000 == 0 else 'ok'}\n")
+     def lines(p):
+         with open(p) as f:
+             for l in f: yield l
+     sum(1 for l in lines("big.txt") if "ERROR" in l)
+     ```
+
+  **確認:** ジェネレータのサイズが一定で小さい。2 回目の sum が 0。
 questions:
   - id: py-l07-1
     difficulty: 1

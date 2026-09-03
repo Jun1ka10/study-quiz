@@ -3,6 +3,15 @@ id: sec-05
 title: 秘密情報の管理
 summary: API キー・DB パスワード・署名鍵をどこに置き、どう配り、漏れたらどうするか。.env から Secret Manager まで
 minutes: 12
+exercise: |
+  **ゴール:** 秘密がどこに漏れるかを実際に見て、検出ツールを入れる。
+
+  1. 新しい git リポジトリで `.env` に `API_KEY=sk_live_dummy123` を書き、`git add -A && git commit -m x`。`git log -p | grep sk_live` で履歴に残るのを見る
+  2. `.gitignore` に `.env` を足しても履歴からは消えないことを `git log -p` で確認
+  3. `pip install gitleaks` は無いので `docker run --rm -v $(pwd):/repo zricethezav/gitleaks:latest detect -s /repo` で検出される
+  4. `.env.example` を作り、値を空にしてコミットする
+
+  **確認:** コミットした時点で漏れている、と実感した。検出ツールの出力を読んだ。
 questions:
   - id: sec-l05-1
     difficulty: 1

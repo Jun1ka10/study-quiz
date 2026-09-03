@@ -3,6 +3,21 @@ id: infra-05
 title: Terraform の基本
 summary: resource / variable / output、init → plan → apply、state の意味。IaC でクラウドを組む土台
 minutes: 12
+exercise: |
+  **ゴール:** Terraform を init → plan → apply → destroy まで回す (ローカルファイルなので課金なし)。
+
+  1. `mkdir tfdemo && cd tfdemo`、`main.tf`:
+     ```hcl
+     terraform { required_providers { local = { source = "hashicorp/local" } } }
+     variable "name" { type = string, default = "hello" }
+     resource "local_file" "f" { filename = "${path.module}/${var.name}.txt", content = "hi" }
+     output "path" { value = local_file.f.filename }
+     ```
+  2. `terraform init && terraform plan && terraform apply` → `cat hello.txt`、`cat terraform.tfstate | head -30`
+  3. `terraform apply -var name=world` → plan に `-/+ replace` が出る理由を読む
+  4. `terraform destroy`
+
+  **確認:** state にリソースが記録されている。名前変更が replace になる。
 questions:
   - id: infra-l05-1
     difficulty: 1

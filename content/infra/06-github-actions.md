@@ -3,6 +3,25 @@ id: infra-06
 title: GitHub Actions
 summary: workflow の構造、トリガー、secrets、CI (lint / test) と CD (デプロイ) の型
 minutes: 12
+exercise: |
+  **ゴール:** GitHub Actions を 1 本書いて PR で動かす。
+
+  1. 任意の自分のリポジトリに `.github/workflows/ci.yml`:
+     ```yaml
+     name: CI
+     on: [pull_request, workflow_dispatch]
+     jobs:
+       check:
+         runs-on: ubuntu-latest
+         steps:
+           - uses: actions/checkout@v4
+           - run: echo "secret is ${{ secrets.DEMO }}"
+           - run: test -f README.md
+     ```
+  2. Settings → Secrets に `DEMO` を登録し、ブランチを切って PR を作る。Actions タブでログを開き、secret が `***` になっているのを見る
+  3. `test -f NOPE.md` に変えて push し、失敗して PR に赤が付くのを見る
+
+  **確認:** PR で自動実行され、secret がマスクされ、失敗が PR に表示された。
 questions:
   - id: infra-l06-1
     difficulty: 1

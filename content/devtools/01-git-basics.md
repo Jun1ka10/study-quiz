@@ -3,6 +3,16 @@ id: dt-01
 title: Git の基本
 summary: コミット・ブランチ・リモート。毎日使う 10 個のコマンドと、困ったときの戻し方
 minutes: 12
+exercise: |
+  **ゴール:** ブランチ、amend、revert を安全な場所で一通りやる。
+
+  1. `mkdir gitdemo && cd gitdemo && git init && echo a > f && git add -A && git commit -m "first"`
+  2. `git switch -c feature`、`echo b >> f && git commit -am "add b"`、メッセージを `git commit --amend -m "add line b"` で直して `git log --oneline`
+  3. `git switch main && git merge feature`
+  4. `echo c >> f && git commit -am "add c"` → `git revert HEAD` → `cat f` と `git log --oneline` で打ち消しコミットを見る
+  5. `echo tmp >> f && git stash && git status && git stash pop`
+
+  **確認:** amend は履歴を書き換え、revert は積む。stash で退避できる。
 questions:
   - id: dt-l01-1
     difficulty: 1

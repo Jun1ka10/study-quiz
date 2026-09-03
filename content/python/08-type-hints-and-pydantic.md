@@ -3,6 +3,27 @@ id: py-08
 title: 型ヒントと Pydantic
 summary: 型ヒントの書き方と mypy / pyright、Pydantic で外部入力を検証する、dataclass との使い分け
 minutes: 12
+exercise: |
+  **ゴール:** Pydantic に不正データを渡してエラーを読む。
+
+  1. `uv add pydantic` (または `pip install pydantic`)
+  2. `v.py`:
+     ```python
+     from pydantic import BaseModel, EmailStr, Field, ValidationError
+     class User(BaseModel):
+         email: str
+         age: int = Field(ge=0)
+         role: str = "member"
+     print(User(email="a@b.c", age="30"))
+     try:
+         User(email="x", age=-1)
+     except ValidationError as e:
+         print(e)
+     ```
+  3. `age: int | None = None` に変えて `User(email="a")` が通ることを確認
+  4. 余裕があれば `uv add mypy` して `uv run mypy v.py`
+
+  **確認:** `"30"` が int になった。エラーが 2 件まとめて出た。
 questions:
   - id: py-l08-1
     difficulty: 1

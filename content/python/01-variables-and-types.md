@@ -3,6 +3,21 @@ id: py-01
 title: 変数と基本の型
 summary: 数値・文字列・真偽値と、型の変換。f-string で表示する
 minutes: 8
+exercise: |
+  **ゴール:** 型と f-string を REPL で体感する。
+
+  1. `python3` で対話モードに入る
+  2. 次を 1 行ずつ打って結果を見る
+     ```python
+     7 / 2, 7 // 2, type(7 / 2)
+     "12" + 3          # エラーになる
+     int("12") + 3
+     f"{0.8765:.1%}"
+     bool(""), bool("False"), bool([0])
+     ```
+  3. `x = 3` のあと `x = "three"` と入れ直し、`type(x)` を見る
+
+  **確認:** 割り算の結果が float になること、`"False"` が真であることを自分の目で見た。
 questions:
   - id: py-l01-1
     difficulty: 1

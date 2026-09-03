@@ -3,6 +3,25 @@ id: py-09
 title: pytest でテストを書く
 summary: テストの書き方、fixture、parametrize、モック、何をテストすべきか
 minutes: 12
+exercise: |
+  **ゴール:** テストを 1 つ書いて落とし、直して通す。
+
+  1. `calc.py`: `def total_with_tax(amount, rate=0.1): return int(amount * (1 + rate))`
+  2. `test_calc.py`:
+     ```python
+     import pytest
+     from calc import total_with_tax
+     @pytest.mark.parametrize("amount, expected", [(1000, 1100), (0, 0), (1, 1)])
+     def test_total(amount, expected):
+         assert total_with_tax(amount) == expected
+     def test_negative():
+         with pytest.raises(ValueError):
+             total_with_tax(-1)
+     ```
+  3. `uv run pytest -q` (または `pytest -q`) で 1 件落ちるのを見る
+  4. `calc.py` に `if amount < 0: raise ValueError` を足して全部通す
+
+  **確認:** 落ちたときの表示で、どの入力が落ちたかが読めた。
 questions:
   - id: py-l09-1
     difficulty: 1

@@ -83,6 +83,17 @@ pre { background: var(--card); padding: 10px 12px; border-radius: 8px; overflow-
 code { background: var(--card); padding: 1px 5px; border-radius: 4px; font-size: .92em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 pre code { background: none; padding: 0; font-size: inherit; }
 
+/* やってみる */
+.exercise { margin-top: 28px; padding: 14px; border: 2px dashed var(--accent); border-radius: 12px; background: var(--accent-soft); }
+.exercise > h2 { margin: 0 0 8px; color: var(--fg); font-size: 18px; }
+.exercise > h2 .meta { display: block; font-size: 13px; font-weight: 400; margin: 2px 0 0; }
+.exercise .lesson-body h2, .exercise .lesson-body h3 { font-size: 15px; border: none; margin: 14px 0 4px; }
+.exercise pre { background: var(--bg); }
+.exercise code { background: var(--bg); }
+.exercise button.big { margin-top: 8px; }
+.exercise button.big.done { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.lesson-row .mins .practiced { color: var(--ok); margin-right: 4px; }
+
 /* 出題 */
 .question { font-size: 18px; font-weight: 600; margin-bottom: 16px; white-space: pre-wrap; }
 .question pre { white-space: pre; font-weight: 400; }

@@ -3,6 +3,28 @@ id: be-05
 title: Django REST framework
 summary: APIView とシリアライザ、認証と権限。API をどう守るか
 minutes: 12
+exercise: |
+  **ゴール:** DRF で API を 1 本立て、400 と 201 を見る。
+
+  1. `uv add djangorestframework`、`INSTALLED_APPS` に `"rest_framework"`
+  2. `members/api.py`:
+     ```python
+     from rest_framework import serializers, status
+     from rest_framework.response import Response
+     from rest_framework.views import APIView
+     from .models import Client
+     class ClientSerializer(serializers.ModelSerializer):
+         class Meta: model = Client; fields = ["id", "name"]
+     class ClientList(APIView):
+         def get(self, request): return Response(ClientSerializer(Client.objects.all(), many=True).data)
+         def post(self, request):
+             s = ClientSerializer(data=request.data); s.is_valid(raise_exception=True); s.save()
+             return Response(s.data, status=status.HTTP_201_CREATED)
+     ```
+  3. `urls.py` に `path("api/clients/", ClientList.as_view())`
+  4. `curl -i -X POST -H "Content-Type: application/json" -d '{}' http://localhost:8000/api/clients/` → 400 の本文を読む。`{"name":"B"}` で 201
+
+  **確認:** バリデーションエラーがフィールド名付きで返る。
 questions:
   - id: be-l05-1
     difficulty: 1

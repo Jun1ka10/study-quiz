@@ -3,6 +3,24 @@ id: py-04
 title: 例外処理と with
 summary: try / except の正しい使い方と、リソースを確実に閉じる with 文
 minutes: 8
+exercise: |
+  **ゴール:** 例外の型を絞り、with で確実に閉じる。
+
+  1. `python3` で `int("abc")` と `{}["k"]` と `open("none.txt")` を打ち、それぞれの例外名をメモ
+  2. ファイル `safe.py`:
+     ```python
+     def to_int(s):
+         try:
+             return int(s)
+         except ValueError:
+             return None
+         finally:
+             print("done")
+     print(to_int("12"), to_int("abc"))
+     ```
+  3. `with open("safe.py") as f: print(len(f.read()))` を末尾に足し、`f.closed` を print して True を確認
+
+  **確認:** finally が両方の呼び出しで走った。`f.closed` が True。
 questions:
   - id: py-l04-1
     difficulty: 1

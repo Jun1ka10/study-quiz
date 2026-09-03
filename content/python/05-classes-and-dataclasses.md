@@ -3,6 +3,26 @@ id: py-05
 title: クラスと dataclass
 summary: class の基本、self、__init__、dataclass で楽をする、継承より委譲
 minutes: 12
+exercise: |
+  **ゴール:** dataclass を書いて default_factory の必要性を見る。
+
+  1. `model.py`:
+     ```python
+     from dataclasses import dataclass, field
+     @dataclass
+     class Invoice:
+         id: int
+         amount: int
+         tags: list[str] = field(default_factory=list)
+         @property
+         def total(self): return int(self.amount * 1.1)
+     a = Invoice(1, 1000); b = Invoice(2, 500)
+     a.tags.append("x"); print(a, b, a.total)
+     ```
+  2. `field(default_factory=list)` を `[]` に変えて実行し、エラーを読む
+  3. `@dataclass(frozen=True)` にして `a.amount = 1` を試す
+
+  **確認:** `b.tags` が空のまま。frozen で代入がエラーになる。
 questions:
   - id: py-l05-1
     difficulty: 1

@@ -54,6 +54,14 @@ function record(qid, ok) {
   saveState(s);
 }
 
+function togglePracticed(lessonId) {
+  const s = loadState();
+  const prev = s.lessons[lessonId] || { done: false, best: 0 };
+  s.lessons[lessonId] = { ...prev, practiced: !prev.practiced, practicedAt: Date.now() };
+  saveState(s);
+  return s.lessons[lessonId].practiced;
+}
+
 function markLesson(lessonId, rate) {
   const s = loadState();
   const prev = s.lessons[lessonId] || { done: false, best: 0 };
@@ -214,7 +222,8 @@ function showCourse(catId) {
   mount("tpl-course");
   $("#course-title").textContent = c.title;
   $("#course-desc").textContent = c.description;
-  $("#course-progress").textContent = `${done} / ${lessons.length} 完了${c.planned.length ? ` ・ 準備中 ${c.planned.length}` : ""}`;
+  const practicedCount = lessons.filter((l) => s.lessons[l.id]?.practiced).length;
+  $("#course-progress").textContent = `合格 ${done} / ${lessons.length} ・ 実践 ${practicedCount} / ${lessons.length}${c.planned.length ? ` ・ 準備中 ${c.planned.length}` : ""}`;
   const total = lessons.length + c.planned.length;
   $("#course-bar").style.width = `${total ? (100 * done) / total : 0}%`;
   if (next) {
@@ -228,7 +237,8 @@ function showCourse(catId) {
     const st = s.lessons[l.id]?.done ? "done" : next && next.id === l.id ? "next" : "todo";
     const b = document.createElement("button");
     b.className = `lesson-row ${st}`;
-    b.innerHTML = `<span class="icon">${st === "done" ? "✓" : st === "next" ? "▶" : "○"}</span><span>${escapeHtml(l.title)}</span><span class="mins">${l.minutes} 分</span>`;
+    const practiced = s.lessons[l.id]?.practiced ? '<span class="practiced" title="やってみた">🛠</span>' : "";
+    b.innerHTML = `<span class="icon">${st === "done" ? "✓" : st === "next" ? "▶" : "○"}</span><span>${escapeHtml(l.title)}</span><span class="mins">${practiced}${l.minutes} 分</span>`;
     b.onclick = () => showLesson(l.id);
     list.appendChild(b);
   }
@@ -258,6 +268,11 @@ function showLesson(lessonId) {
   $("#lesson-title").textContent = l.title;
   if (rec?.done) { $("#lesson-status").hidden = false; $("#lesson-status").textContent = `✓ 合格済み (最高 ${Math.round(rec.best * 100)}%)`; }
   $("#lesson-body").innerHTML = l.html;   // build.py が Markdown から生成した自前の HTML
+  $("#exercise-body").innerHTML = l.exerciseHtml;
+  const pbtn = $("#btn-practiced");
+  const renderPracticed = (on) => { pbtn.textContent = on ? "✓ やってみた (取り消す)" : "やってみた"; pbtn.classList.toggle("done", on); };
+  renderPracticed(!!rec?.practiced);
+  pbtn.onclick = () => renderPracticed(togglePracticed(lessonId));
   const btn = $("#btn-lesson-quiz");
   btn.textContent = `確認問題を解く (${qs.length} 問)`;
   btn.onclick = () => startQuiz(shuffle(qs.slice()), { mode: "lesson", lessonId });

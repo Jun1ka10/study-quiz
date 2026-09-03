@@ -3,6 +3,28 @@ id: sec-02
 title: PostgreSQL の Row Level Security
 summary: アプリの WHERE 句に頼らず、DB 側で「見える行」を強制する。マルチテナントの最後の砦
 minutes: 14
+exercise: |
+  **ゴール:** PostgreSQL で RLS を有効にし、別ユーザーで行が消えるのを見る。
+
+  1. `docker run -d --name pg -e POSTGRES_PASSWORD=pw -p 5432:5432 postgres:16` → `docker exec -it pg psql -U postgres`
+  2. 次を実行する
+     ```sql
+     create table orders(id serial, org_id int, note text);
+     insert into orders(org_id, note) values (1,'a'),(1,'b'),(2,'c');
+     create role app login password 'app'; grant select, insert on orders to app;
+     alter table orders enable row level security;
+     create policy org_iso on orders using (org_id = current_setting('app.org_id', true)::int)
+       with check (org_id = current_setting('app.org_id', true)::int);
+     ```
+  3. 別ターミナルで `docker exec -it pg psql -U app -d postgres`:
+     ```sql
+     select count(*) from orders;                       -- 0
+     begin; set local app.org_id = '1'; select * from orders; commit;   -- 2 件
+     begin; set local app.org_id = '1'; insert into orders(org_id, note) values (2,'x'); commit;   -- エラー
+     ```
+  4. postgres (owner) で `select count(*) from orders` → 3 件 (RLS が効かない)
+
+  **確認:** 設定なしで 0 件、org 1 で 2 件、他 org の insert が拒否、owner は素通り。
 questions:
   - id: sec-l02-1
     difficulty: 1

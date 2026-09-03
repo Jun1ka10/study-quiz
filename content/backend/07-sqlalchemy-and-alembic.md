@@ -3,6 +3,25 @@ id: be-07
 title: SQLAlchemy 2 と Alembic
 summary: Mapped 記法のモデル、Session と select、リレーション、Alembic でのマイグレーション運用
 minutes: 14
+exercise: |
+  **ゴール:** SQLAlchemy でモデルを作り、Alembic のマイグレーションを 1 本生成して読む。
+
+  1. `uv add sqlalchemy alembic` (DB は SQLite で可)
+  2. `models.py`:
+     ```python
+     from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+     class Base(DeclarativeBase): pass
+     class Client(Base):
+         __tablename__ = "clients"
+         id: Mapped[int] = mapped_column(primary_key=True)
+         name: Mapped[str]
+         note: Mapped[str | None]
+     ```
+  3. `uv run alembic init alembic`。`alembic.ini` の `sqlalchemy.url = sqlite:///app.db`、`alembic/env.py` で `from models import Base; target_metadata = Base.metadata`
+  4. `uv run alembic revision --autogenerate -m "clients" && uv run alembic upgrade head`。生成された versions/ のファイルを読む
+  5. `note` 列を消して再度 autogenerate し、`drop_column` が出るのを見る (apply はしなくてよい)
+
+  **確認:** `Mapped[str | None]` が nullable=True になっている。列削除がそのまま反映されると分かった。
 questions:
   - id: be-l07-1
     difficulty: 1

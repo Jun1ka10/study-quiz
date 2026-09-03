@@ -3,6 +3,26 @@ id: js-05
 title: React の基本
 summary: コンポーネント、JSX、props、state。「状態が変わると画面が描き直される」を体で覚える
 minutes: 12
+exercise: |
+  **ゴール:** React コンポーネントで state を更新して再描画を見る。
+
+  1. `npm create vite@latest rdemo -- --template react-ts && cd rdemo && npm i && npm run dev`
+  2. `src/App.tsx` を置き換え:
+     ```tsx
+     import { useState } from "react";
+     export default function App() {
+       const [items, setItems] = useState<string[]>([]);
+       const [text, setText] = useState("");
+       return (<div>
+         <input value={text} onChange={(e) => setText(e.target.value)} />
+         <button onClick={() => { setItems([...items, text]); setText(""); }} disabled={!text}>追加</button>
+         <ul>{items.map((it, i) => <li key={i}>{it}</li>)}</ul>
+       </div>);
+     }
+     ```
+  3. ブラウザで動かす。次に `setItems([...items, text])` を `items.push(text)` に変え、画面が変わらないことを確認
+
+  **確認:** 新しい配列を set したときだけ再描画される。
 questions:
   - id: js-l05-1
     difficulty: 1

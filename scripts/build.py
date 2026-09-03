@@ -4,7 +4,7 @@
 
 入力:
   content/categories.yaml        カテゴリの並び・説明・今後書く予定のレッスン名
-  content/<category>/NN-*.md     レッスン。frontmatter (id/title/questions) + 本文 Markdown。NN が順番
+  content/<category>/NN-*.md     レッスン。frontmatter (id/title/summary/exercise/questions) + 本文 Markdown。NN が順番
   questions/<category>.yaml      レッスンに紐づかない問題プール (ランダム演習・復習用)
 """
 
@@ -74,7 +74,12 @@ class ContentError(ValueError):
 
 
 def _md(text: str) -> str:
-    return markdown.markdown(text, extensions=["fenced_code", "tables", "sane_lists"])
+    return markdown.markdown(
+        text,
+        extensions=["pymdownx.superfences", "pymdownx.highlight", "tables", "sane_lists"],
+        # 構文ハイライトは使わない (pygments の有無で出力が変わらないように)
+        extension_configs={"pymdownx.highlight": {"use_pygments": False}},
+    )
 
 
 def _validate_question(q: dict, where: str, seen: set[str]) -> None:
@@ -170,6 +175,7 @@ def load_lessons(categories: list[dict], seen_qids: set[str]) -> list[dict]:
                     "summary": meta.get("summary", ""),
                     "minutes": meta.get("minutes", 5),
                     "html": _md(body),
+                    "exerciseHtml": _md(meta["exercise"]) if meta.get("exercise") else "",
                     "questions": questions,
                 }
             )

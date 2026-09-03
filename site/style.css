@@ -1,11 +1,11 @@
 :root {
   --bg: #ffffff; --fg: #1a1a1a; --muted: #666; --card: #f4f6f8; --border: #d0d7de;
-  --accent: #1f6feb; --ok: #1a7f37; --ng: #cf222e; --ok-bg: #dafbe1; --ng-bg: #ffebe9;
+  --accent: #1f6feb; --accent-soft: #dbe9ff; --ok: #1a7f37; --ng: #cf222e; --ok-bg: #dafbe1; --ng-bg: #ffebe9;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0d1117; --fg: #e6edf3; --muted: #9da7b3; --card: #161b22; --border: #30363d;
-    --accent: #58a6ff; --ok: #3fb950; --ng: #f85149; --ok-bg: #12261e; --ng-bg: #2d1416;
+    --accent: #58a6ff; --accent-soft: #1b2a41; --ok: #3fb950; --ng: #f85149; --ok-bg: #12261e; --ng-bg: #2d1416;
   }
 }
 * { box-sizing: border-box; }
@@ -13,51 +13,85 @@ html, body { margin: 0; background: var(--bg); color: var(--fg);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
   font-size: 17px; line-height: 1.6; -webkit-text-size-adjust: 100%; }
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px;
-  padding-top: calc(12px + env(safe-area-inset-top)); border-bottom: 1px solid var(--border); }
+  padding-top: calc(12px + env(safe-area-inset-top)); border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 1; }
 .topbar .link { font-weight: 700; font-size: 18px; }
 .badge { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--card); color: var(--muted); }
 .screen { max-width: 640px; margin: 0 auto; padding: 16px; padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
-h1 { font-size: 22px; margin: 8px 0 16px; }
-h2 { font-size: 17px; margin: 28px 0 8px; color: var(--muted); }
+h1 { font-size: 22px; margin: 8px 0 16px; line-height: 1.4; }
+h2 { font-size: 15px; margin: 28px 0 8px; color: var(--muted); text-transform: none; }
 button { font: inherit; color: inherit; background: var(--card); border: 1px solid var(--border);
-  border-radius: 10px; padding: 10px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  border-radius: 10px; padding: 10px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; text-align: left; }
 button:disabled { opacity: .45; cursor: default; }
 button.primary { background: var(--accent); color: #fff; border-color: transparent; }
-button.big { width: 100%; padding: 14px; font-size: 18px; margin-top: 12px; }
+button.big { width: 100%; padding: 14px; font-size: 18px; margin-top: 12px; text-align: center; }
 button.link { background: none; border: none; padding: 4px 0; color: var(--accent); }
 button.link.danger { color: var(--ng); margin-top: 12px; }
-.row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
-select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); margin-left: 6px; }
-.cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.card { text-align: left; padding: 14px; }
-.card.selected { outline: 2px solid var(--accent); }
-.card .count { display: block; font-size: 13px; color: var(--muted); }
+.row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); margin-left: 6px; max-width: 60vw; }
+.meta { color: var(--muted); font-size: 14px; margin: 0 0 8px; }
+.meta.center { text-align: center; }
+
+/* 今日の復習 */
+.review-card { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 16px; background: var(--accent-soft); border-color: transparent; }
+.review-title { font-weight: 700; }
+.review-count { grid-row: 1 / span 2; align-self: center; font-size: 28px; font-weight: 700; color: var(--accent); }
+.review-note { font-size: 13px; color: var(--muted); }
+.review-card:disabled { opacity: .7; }
+
+/* コース */
+.course { border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+.course-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.course-title { font-weight: 700; font-size: 18px; }
+.course-progress { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.course-desc { font-size: 14px; color: var(--muted); margin: 2px 0 8px; }
 .progress { height: 6px; background: var(--card); border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
 .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .2s; }
-.meta { color: var(--muted); font-size: 14px; margin: 0 0 8px; }
+.lesson-list { display: grid; gap: 6px; }
+.lesson-row { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: center; padding: 10px 12px; }
+.lesson-row .icon { text-align: center; color: var(--muted); }
+.lesson-row.done .icon { color: var(--ok); }
+.lesson-row.next { border-color: var(--accent); }
+.lesson-row.next .icon { color: var(--accent); }
+.lesson-row .mins { font-size: 12px; color: var(--muted); }
+.lesson-row.planned { opacity: .55; cursor: default; }
+.course .continue { margin-top: 10px; }
+
+/* レッスン本文 */
+.lesson-body { font-size: 16px; }
+.lesson-body h2 { font-size: 18px; color: var(--fg); margin: 28px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.lesson-body h3 { font-size: 16px; margin: 20px 0 6px; }
+.lesson-body p { margin: 8px 0; }
+.lesson-body ul, .lesson-body ol { padding-left: 22px; }
+.lesson-body li { margin: 3px 0; }
+.lesson-body table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 10px 0; display: block; overflow-x: auto; }
+.lesson-body th, .lesson-body td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
+.lesson-body th { background: var(--card); }
+.lesson-body strong { font-weight: 700; }
+pre { background: var(--card); padding: 10px 12px; border-radius: 8px; overflow-x: auto; font-size: 13.5px; line-height: 1.5; white-space: pre; margin: 10px 0; }
+code { background: var(--card); padding: 1px 5px; border-radius: 4px; font-size: .92em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* 出題 */
 .question { font-size: 18px; font-weight: 600; margin-bottom: 16px; white-space: pre-wrap; }
-.question pre, .feedback pre { background: var(--card); padding: 10px 12px; border-radius: 8px; overflow-x: auto;
-  font-size: 14px; font-weight: 400; white-space: pre; }
-code { background: var(--card); padding: 1px 5px; border-radius: 4px; font-size: .92em; }
-pre code { background: none; padding: 0; }
+.question pre { white-space: pre; font-weight: 400; }
 .choices { display: grid; gap: 10px; }
-.choice { text-align: left; padding: 14px; font-size: 16px; line-height: 1.5; }
-/* 回答後: 不正解の選択肢は薄く、正解と選んだものははっきり残す */
+.choice { padding: 14px; font-size: 16px; line-height: 1.5; }
 .choice:disabled { opacity: .5; }
 .choice.correct, .choice.wrong { opacity: 1; }
 .choice.correct { background: var(--ok-bg); border-color: var(--ok); }
 .choice.wrong { background: var(--ng-bg); border-color: var(--ng); }
-button.unknown { width: 100%; margin-top: 10px; padding: 12px; color: var(--muted); border-style: dashed; }
+button.unknown { width: 100%; margin-top: 10px; padding: 12px; color: var(--muted); border-style: dashed; text-align: center; }
 button.unknown:disabled { opacity: .5; }
-.result.skip { color: var(--muted); }
-.wrong-item .tag { font-size: 12px; color: var(--muted); }
 .feedback { margin-top: 16px; padding: 14px; border-radius: 10px; background: var(--card); }
 .result { font-weight: 700; margin: 0 0 8px; }
-.result.ok { color: var(--ok); } .result.ng { color: var(--ng); }
-.score { font-size: 32px; font-weight: 700; text-align: center; }
+.result.ok { color: var(--ok); } .result.ng { color: var(--ng); } .result.skip { color: var(--muted); }
+
+/* 結果 */
+.score { font-size: 32px; font-weight: 700; text-align: center; margin: 4px 0; }
 .wrong-item { padding: 12px; border: 1px solid var(--border); border-radius: 10px; margin: 10px 0; }
 .wrong-item .q { font-weight: 600; white-space: pre-wrap; }
 .wrong-item .a { color: var(--ok); }
+.wrong-item .tag { font-size: 12px; color: var(--muted); }
 table.stats { width: 100%; border-collapse: collapse; }
 table.stats td, table.stats th { padding: 6px 4px; text-align: left; border-bottom: 1px solid var(--border); font-size: 15px; }
 table.stats td.num { text-align: right; font-variant-numeric: tabular-nums; }

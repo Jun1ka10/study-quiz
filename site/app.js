@@ -1,36 +1,69 @@
 // Study Quiz - 依存ライブラリなしの単一ファイルアプリ。
-// 状態: questions.json (問題) + localStorage (正誤履歴)
+// データ: data.json (カテゴリ / レッスン / 問題)。学習記録: localStorage。
+//
+// 学習の流れ:
+//   レッスンを読む → 確認問題 (8 割で合格) → 次のレッスン
+//   解いた問題は間隔反復 (1 → 3 → 7 → 14 → 30 → 60 日) で「今日の復習」に戻ってくる
 
 "use strict";
 
-const STORAGE_KEY = "study-quiz.history.v1";
+const STORAGE_KEY = "study-quiz.v2";
+const LEGACY_KEY = "study-quiz.history.v1";
+const INTERVALS_DAYS = [1, 3, 7, 14, 30, 60];
+const PASS_RATE = 0.8;
+const REVIEW_MAX = 20;
+const DAY = 24 * 60 * 60 * 1000;
+
 const $ = (sel, root = document) => root.querySelector(sel);
 const app = $("#app");
 
-// ---------- 履歴 (localStorage) ----------
-// { [questionId]: { correct: n, wrong: n, last: epoch_ms, lastCorrect: bool } }
-function loadHistory() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+// ---------- 学習記録 (localStorage) ----------
+// { history: { [qid]: { correct, wrong, unknown, streak, due, last, lastCorrect } },
+//   lessons: { [lessonId]: { done, best, at } } }
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (s && s.history) return s;
+  } catch { /* 壊れていたら作り直す */ }
+  let history = {};
+  try { history = JSON.parse(localStorage.getItem(LEGACY_KEY)) || {}; } catch { /* なし */ }
+  return { history, lessons: {} };
 }
-function saveHistory(h) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(h)); } catch { /* 容量超過などは無視 */ }
-}
-// ok: true = 正解 / false = 不正解 / null = わからない (不正解として数え、unknown にも記録)
-function record(qid, ok) {
-  const h = loadHistory();
-  const e = h[qid] || { correct: 0, wrong: 0, unknown: 0 };
-  if (ok) e.correct++; else e.wrong++;
-  if (ok === null) e.unknown = (e.unknown || 0) + 1;
-  ok = ok === true;
-  e.last = Date.now();
-  e.lastCorrect = ok;
-  h[qid] = e;
-  saveHistory(h);
+function saveState(s) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch { /* 容量超過などは無視 */ }
 }
 
-// ---------- 軽量 Markdown (```code```, `code`, 改行) ----------
+// ok: true = 正解 / false = 不正解 / null = わからない
+function record(qid, ok) {
+  const s = loadState();
+  const e = s.history[qid] || { correct: 0, wrong: 0, unknown: 0, streak: 0, due: 0 };
+  const now = Date.now();
+  if (ok === true) {
+    e.correct++;
+    e.streak = (e.streak || 0) + 1;
+    e.due = now + INTERVALS_DAYS[Math.min(e.streak - 1, INTERVALS_DAYS.length - 1)] * DAY;
+  } else {
+    e.wrong++;
+    if (ok === null) e.unknown = (e.unknown || 0) + 1;
+    e.streak = 0;
+    e.due = now + 1 * DAY;
+  }
+  e.last = now;
+  e.lastCorrect = ok === true;
+  s.history[qid] = e;
+  saveState(s);
+}
+
+function markLesson(lessonId, rate) {
+  const s = loadState();
+  const prev = s.lessons[lessonId] || { done: false, best: 0 };
+  s.lessons[lessonId] = { done: prev.done || rate >= PASS_RATE, best: Math.max(prev.best, rate), at: Date.now() };
+  saveState(s);
+}
+
+// ---------- 軽量 Markdown (問題文用: ```code```, `code`, 改行) ----------
 function escapeHtml(s) {
-  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 function render(md) {
   const parts = md.split(/```(\w*)\n([\s\S]*?)```/g);
@@ -50,9 +83,9 @@ function shuffle(arr) {
   }
   return arr;
 }
-// 苦手優先: 未出題 > 前回間違い > 正答率が低い の順に重みを付けて並べ替え
+// 苦手優先: 未出題 > 前回間違い > 正答率が低い の順
 function pickQuestions(pool, n, weakFirst) {
-  const h = loadHistory();
+  const h = loadState().history;
   const scored = shuffle(pool.slice()).map((q) => {
     const e = h[q.id];
     let w = 0;
@@ -65,41 +98,123 @@ function pickQuestions(pool, n, weakFirst) {
   const picked = scored.map((s) => s.q);
   return n > 0 ? picked.slice(0, n) : picked;
 }
+// 復習期限が来ている問題 (期限の古い順)
+function dueQuestions(state) {
+  const now = Date.now();
+  return DATA.questions
+    .filter((q) => { const e = state.history[q.id]; return e && (e.due || 0) <= now; })
+    .sort((a, b) => (state.history[a.id].due || 0) - (state.history[b.id].due || 0));
+}
+function lessonsOf(catId) {
+  return DATA.lessons.filter((l) => l.category === catId).sort((a, b) => a.order - b.order);
+}
+function questionsOfLesson(lessonId) {
+  return DATA.questions.filter((q) => q.lesson === lessonId);
+}
+function nextLesson(lessonId) {
+  const l = DATA.lessons.find((x) => x.id === lessonId);
+  const list = lessonsOf(l.category);
+  return list[list.findIndex((x) => x.id === lessonId) + 1] || null;
+}
+// 学習済み = 合格したレッスンの問題 + レッスンに紐づかないプール問題
+function learnedPool(state, catId) {
+  return DATA.questions.filter((q) =>
+    (catId === "all" || q.category === catId) && (!q.lesson || state.lessons[q.lesson]?.done));
+}
 
 // ---------- 画面 ----------
 let DATA = null;
-const state = { category: null, queue: [], index: 0, results: [] };
+const state = { mode: "random", lessonId: null, queue: [], index: 0, results: [], randCategory: "all" };
 
-function mount(tplId) {
+function mount(tplId, pushHistory = true) {
   app.replaceChildren($(`#${tplId}`).content.cloneNode(true));
+  if (pushHistory) history.pushState({ screen: tplId }, "");
+  window.scrollTo(0, 0);
 }
 
 function showHome() {
-  mount("tpl-home");
-  const list = $("#category-list");
-  const cats = [{ id: "all", title: "全部", count: DATA.questions.length }, ...DATA.categories];
-  for (const c of cats) {
-    const b = document.createElement("button");
-    b.className = "card" + (state.category === c.id ? " selected" : "");
-    b.innerHTML = `${escapeHtml(c.title)}<span class="count">${c.count} 問</span>`;
-    b.onclick = () => { state.category = c.id; showHome(); };
-    list.appendChild(b);
+  mount("tpl-home", false);
+  const s = loadState();
+
+  // 今日の復習
+  const due = dueQuestions(s);
+  const seen = Object.keys(s.history).length;
+  $("#review-count").textContent = `${due.length} 問`;
+  $("#review-note").textContent = due.length ? "間隔反復。忘れかけた頃に出ます" : seen ? "今日の分は終わり。明日また" : "レッスンを解くと、ここに復習が溜まります";
+  $("#btn-review").disabled = !due.length;
+  $("#btn-review").onclick = () => startQuiz(due.slice(0, REVIEW_MAX), { mode: "review" });
+
+  // コース
+  const courses = $("#courses");
+  for (const c of DATA.categories) {
+    const lessons = lessonsOf(c.id);
+    const done = lessons.filter((l) => s.lessons[l.id]?.done).length;
+    const next = lessons.find((l) => !s.lessons[l.id]?.done) || null;
+    const total = lessons.length + c.planned.length;
+    const el = document.createElement("div");
+    el.className = "course";
+    el.innerHTML = `
+      <div class="course-head"><span class="course-title">${escapeHtml(c.title)}</span>
+        <span class="course-progress">${done} / ${lessons.length} 完了${c.planned.length ? ` (準備中 ${c.planned.length})` : ""}</span></div>
+      <p class="course-desc">${escapeHtml(c.description)}</p>
+      <div class="progress"><div style="width:${total ? (100 * done) / total : 0}%"></div></div>
+      <div class="lesson-list"></div>`;
+    const list = $(".lesson-list", el);
+    for (const l of lessons) {
+      const st = s.lessons[l.id]?.done ? "done" : next && next.id === l.id ? "next" : "todo";
+      const b = document.createElement("button");
+      b.className = `lesson-row ${st}`;
+      b.innerHTML = `<span class="icon">${st === "done" ? "✓" : st === "next" ? "▶" : "○"}</span><span>${escapeHtml(l.title)}</span><span class="mins">${l.minutes} 分</span>`;
+      b.onclick = () => showLesson(l.id);
+      list.appendChild(b);
+    }
+    for (const title of c.planned) {
+      const d = document.createElement("div");
+      d.className = "lesson-row planned";
+      d.innerHTML = `<span class="icon">·</span><span>${escapeHtml(title)}</span><span class="mins">準備中</span>`;
+      list.appendChild(d);
+    }
+    if (next) {
+      const b = document.createElement("button");
+      b.className = "primary big continue";
+      b.textContent = done ? `続きから: ${next.title}` : `始める: ${next.title}`;
+      b.onclick = () => showLesson(next.id);
+      el.appendChild(b);
+    }
+    courses.appendChild(el);
   }
-  $("#btn-start").disabled = !state.category;
+
+  // ランダム演習
+  const sel = $("#rand-category");
+  for (const c of [{ id: "all", title: "全部" }, ...DATA.categories]) {
+    const o = document.createElement("option");
+    o.value = c.id; o.textContent = c.title;
+    sel.appendChild(o);
+  }
+  sel.value = state.randCategory;
+  sel.onchange = () => { state.randCategory = sel.value; };
   $("#btn-start").onclick = () => {
-    const pool = state.category === "all" ? DATA.questions : DATA.questions.filter((q) => q.category === state.category);
-    startQuiz(pickQuestions(pool, Number($("#count").value), $("#weak-first").checked));
+    const cat = sel.value;
+    const pool = $("#learned-only").checked
+      ? learnedPool(loadState(), cat)
+      : DATA.questions.filter((q) => cat === "all" || q.category === cat);
+    if (!pool.length) { alert("まだ学習済みの範囲がありません。レッスンを 1 つ終えるか、「学習済みの範囲だけ」を外してください"); return; }
+    startQuiz(pickQuestions(pool, Number($("#count").value), $("#weak-first").checked), { mode: "random" });
   };
-  $("#btn-reset").onclick = () => { if (confirm("成績をすべて消しますか?")) { localStorage.removeItem(STORAGE_KEY); showHome(); } };
-  renderStats();
+
+  renderStats(s);
+  $("#btn-reset").onclick = () => {
+    if (confirm("レッスンの進捗と成績をすべて消しますか?")) {
+      localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(LEGACY_KEY); showHome();
+    }
+  };
 }
 
-function renderStats() {
-  const h = loadHistory();
+function renderStats(s) {
   const rows = DATA.categories.map((c) => {
     const qs = DATA.questions.filter((q) => q.category === c.id);
     let correct = 0, wrong = 0, seen = 0;
-    for (const q of qs) { const e = h[q.id]; if (e) { seen++; correct += e.correct; wrong += e.wrong; } }
+    for (const q of qs) { const e = s.history[q.id]; if (e) { seen++; correct += e.correct; wrong += e.wrong; } }
     const total = correct + wrong;
     return { title: c.title, seen, n: qs.length, rate: total ? Math.round((100 * correct) / total) : null };
   });
@@ -108,16 +223,39 @@ function renderStats() {
     `</table>`;
 }
 
-function startQuiz(queue) {
+function showLesson(lessonId) {
+  const l = DATA.lessons.find((x) => x.id === lessonId);
+  const list = lessonsOf(l.category);
+  const cat = DATA.categories.find((c) => c.id === l.category);
+  const qs = questionsOfLesson(lessonId);
+  const rec = loadState().lessons[lessonId];
+  mount("tpl-lesson");
+  $("#lesson-category").textContent = cat.title;
+  $("#lesson-position").textContent = `${list.findIndex((x) => x.id === lessonId) + 1} / ${list.length}`;
+  $("#lesson-minutes").textContent = l.minutes;
+  $("#lesson-title").textContent = l.title;
+  if (rec?.done) { $("#lesson-status").hidden = false; $("#lesson-status").textContent = `✓ 合格済み (最高 ${Math.round(rec.best * 100)}%)`; }
+  $("#lesson-body").innerHTML = l.html;   // build.py が Markdown から生成した自前の HTML
+  const btn = $("#btn-lesson-quiz");
+  btn.textContent = `確認問題を解く (${qs.length} 問)`;
+  btn.onclick = () => startQuiz(shuffle(qs.slice()), { mode: "lesson", lessonId });
+  $("#btn-lesson-back").onclick = showHome;
+}
+
+function startQuiz(queue, { mode, lessonId = null }) {
   if (!queue.length) { alert("出題できる問題がありません"); return; }
+  state.mode = mode; state.lessonId = lessonId;
   state.queue = queue; state.index = 0; state.results = [];
   showQuestion();
 }
 
+const MODE_LABEL = { lesson: "確認問題", review: "復習", random: "演習" };
+
 function showQuestion() {
-  mount("tpl-quiz");
+  mount("tpl-quiz", state.index === 0);
   const q = state.queue[state.index];
   $("#progress-bar").style.width = `${(100 * state.index) / state.queue.length}%`;
+  $("#q-mode").textContent = MODE_LABEL[state.mode];
   $("#q-index").textContent = `${state.index + 1} / ${state.queue.length}`;
   $("#q-category").textContent = q.categoryTitle;
   $("#q-difficulty").textContent = "★".repeat(q.difficulty);
@@ -128,12 +266,12 @@ function showQuestion() {
   for (const i of order) {
     const b = document.createElement("button");
     b.className = "choice";
+    b.dataset.index = i;
     b.innerHTML = render(q.choices[i]);
     b.onclick = () => answer(q, i, b);
     choices.appendChild(b);
   }
   $("#btn-unknown").onclick = () => answer(q, null, null);
-  window.scrollTo(0, 0);
 }
 
 function answer(q, chosen, btn) {
@@ -144,11 +282,7 @@ function answer(q, chosen, btn) {
   for (const b of $("#choices").children) b.disabled = true;
   $("#btn-unknown").disabled = true;
   if (btn) btn.classList.add(ok ? "correct" : "wrong");
-  if (!ok) {
-    // 正解の選択肢を緑で示す
-    const idx = [...$("#choices").children].findIndex((b) => b.innerHTML === render(q.choices[q.answer]));
-    if (idx >= 0) $("#choices").children[idx].classList.add("correct");
-  }
+  if (!ok) $(`#choices [data-index="${q.answer}"]`).classList.add("correct");
   const fb = $("#feedback");
   fb.hidden = false;
   $("#feedback-result").textContent = skipped ? "わからない → 正解は緑の選択肢" : ok ? "正解!" : "不正解";
@@ -164,23 +298,50 @@ function showResult() {
   mount("tpl-result");
   const n = state.results.length;
   const ok = state.results.filter((r) => r.ok).length;
+  const rate = ok / n;
   const skipped = state.results.filter((r) => r.skipped).length;
-  $("#score").textContent = `${ok} / ${n} 正解 (${Math.round((100 * ok) / n)}%)`;
   const wrong = state.results.filter((r) => !r.ok);
+  $("#score").textContent = `${ok} / ${n} 正解 (${Math.round(rate * 100)}%)`;
+
+  if (state.mode === "lesson") {
+    markLesson(state.lessonId, rate);
+    const passed = rate >= PASS_RATE;
+    const next = nextLesson(state.lessonId);
+    $("#result-title").textContent = passed ? "合格!" : "もう一歩";
+    $("#result-note").textContent = passed
+      ? (next ? "このレッスンは完了。次に進めます" : "このコースの用意されているレッスンはすべて完了です")
+      : `${Math.round(PASS_RATE * 100)}% 以上で合格。解説を読んで、もう一度どうぞ`;
+    if (passed && next) {
+      const b = $("#btn-next-lesson");
+      b.hidden = false; b.textContent = `次のレッスン: ${next.title}`;
+      b.onclick = () => showLesson(next.id);
+    }
+    if (!passed) {
+      $("#btn-reread").hidden = false;
+      $("#btn-reread").onclick = () => showLesson(state.lessonId);
+      $("#btn-retry-all").hidden = false;
+      $("#btn-retry-all").onclick = () => startQuiz(shuffle(state.queue.slice()), { mode: "lesson", lessonId: state.lessonId });
+    }
+  } else {
+    $("#result-note").textContent = state.mode === "review" ? "正解した問題は次の間隔まで出ません" : "";
+  }
+
   $("#wrong-list").innerHTML = wrong.length
     ? `<h2>間違えた問題 (不正解 ${wrong.length - skipped} ・ わからない ${skipped})</h2>` + wrong.map((r) =>
         `<div class="wrong-item"><span class="tag">${r.skipped ? "わからない" : "不正解"}</span><div class="q">${render(r.q.question)}</div><div class="a">正解: ${render(r.q.choices[r.q.answer])}</div></div>`).join("")
-    : "<p>全問正解!</p>";
-  const retry = $("#btn-retry-wrong");
-  retry.hidden = !wrong.length;
-  retry.onclick = () => startQuiz(shuffle(wrong.map((r) => r.q)));
+    : "<p class='meta center'>全問正解!</p>";
+  if (wrong.length && state.mode !== "lesson") {
+    const retry = $("#btn-retry-wrong");
+    retry.hidden = false;
+    retry.onclick = () => startQuiz(shuffle(wrong.map((r) => r.q)), { mode: state.mode });
+  }
   $("#btn-back").onclick = showHome;
-  window.scrollTo(0, 0);
 }
 
 // ---------- 起動 ----------
 async function main() {
   $("#btn-home").onclick = showHome;
+  window.addEventListener("popstate", showHome);   // 端末の「戻る」はホームへ
   const badge = $("#offline-badge");
   const updateOnline = () => { badge.hidden = navigator.onLine; };
   window.addEventListener("online", updateOnline);
@@ -190,8 +351,9 @@ async function main() {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").catch((e) => console.warn("SW 登録失敗", e));
   }
-  const res = await fetch("questions.json");
+  const res = await fetch("data.json");
   DATA = await res.json();
+  history.replaceState({ screen: "tpl-home" }, "");
   showHome();
 }
 main().catch((e) => { app.innerHTML = `<p>読み込みに失敗しました: ${escapeHtml(String(e))}</p>`; });

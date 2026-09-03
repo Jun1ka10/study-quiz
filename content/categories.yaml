@@ -1,0 +1,59 @@
+# カテゴリの並び順と説明。planned は「これから書くレッスン」でホームに準備中として出る
+categories:
+  - id: python
+    title: Python
+    description: 文法の基礎から、実務で困らない書き方まで
+    planned:
+      - クラスと dataclass
+      - モジュール・パッケージ・仮想環境
+      - 内包表記とジェネレータ
+      - 型ヒントと mypy
+      - pytest でテストを書く
+      - asyncio 入門
+      - 標準ライブラリの要点 (pathlib / datetime / json / logging)
+
+  - id: design
+    title: 設計
+    description: 変更しやすく、壊れにくいコードの考え方
+    planned:
+      - レイヤーと依存の向き (クリーンアーキテクチャ)
+      - DDD 入門 (エンティティ・値オブジェクト・集約)
+      - API 設計 (REST の作法・冪等性・バージョニング)
+      - テストしやすい設計
+      - コードの匂いとリファクタリング
+
+  - id: aws
+    title: AWS
+    description: アカウントの作り方から、よく使うサービスの設計まで
+    planned:
+      - EC2 と EBS
+      - S3 とストレージクラス
+      - IAM を深く (ポリシーの読み方)
+      - RDS と DynamoDB
+      - Lambda とサーバーレス
+      - ECS / Fargate
+      - CloudWatch と CloudTrail
+      - コスト管理
+
+  - id: gcp
+    title: GCP
+    description: プロジェクト階層と IAM から、Cloud Run・BigQuery まで
+    planned:
+      - VPC とファイアウォール
+      - Cloud Storage
+      - BigQuery
+      - Cloud SQL と Spanner
+      - GKE
+      - Pub/Sub
+      - Cloud Build で CI/CD
+
+  - id: infra
+    title: インフラ
+    description: Linux・ネットワークの基礎から、コンテナ・IaC・監視まで
+    planned:
+      - SSH と鍵認証
+      - Docker
+      - Kubernetes
+      - IaC (Terraform)
+      - 監視と SLO
+      - CI/CD

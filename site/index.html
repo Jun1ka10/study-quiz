@@ -20,11 +20,23 @@
 
   <main id="app" class="screen"></main>
 
+  <!-- ホーム: 今日の復習 / コース一覧 / ランダム演習 / 成績 -->
   <template id="tpl-home">
     <section>
-      <h1>何を勉強する?</h1>
-      <div id="category-list" class="cards"></div>
+      <button id="btn-review" class="review-card">
+        <span class="review-title">今日の復習</span>
+        <span id="review-count" class="review-count"></span>
+        <span id="review-note" class="review-note"></span>
+      </button>
+
+      <h2>コース</h2>
+      <div id="courses"></div>
+
+      <h2>ランダム演習</h2>
       <div class="row">
+        <label>範囲
+          <select id="rand-category"></select>
+        </label>
         <label>出題数
           <select id="count">
             <option value="5">5 問</option>
@@ -33,19 +45,36 @@
             <option value="0">全部</option>
           </select>
         </label>
-        <label><input type="checkbox" id="weak-first" checked> 苦手優先</label>
       </div>
-      <button id="btn-start" class="primary big" disabled>スタート</button>
+      <div class="row">
+        <label><input type="checkbox" id="weak-first" checked> 苦手優先</label>
+        <label><input type="checkbox" id="learned-only" checked> 学習済みの範囲だけ</label>
+      </div>
+      <button id="btn-start" class="big">スタート</button>
+
       <h2>成績</h2>
       <div id="stats"></div>
-      <button id="btn-reset" class="link danger">成績をリセット</button>
+      <button id="btn-reset" class="link danger">学習記録をリセット</button>
     </section>
   </template>
 
+  <!-- レッスン (教科書ページ) -->
+  <template id="tpl-lesson">
+    <section>
+      <p class="meta"><span id="lesson-category"></span> ・ <span id="lesson-position"></span> ・ 約 <span id="lesson-minutes"></span> 分</p>
+      <h1 id="lesson-title"></h1>
+      <p id="lesson-status" class="meta" hidden></p>
+      <article id="lesson-body" class="lesson-body"></article>
+      <button id="btn-lesson-quiz" class="primary big"></button>
+      <button id="btn-lesson-back" class="big">コース一覧へ</button>
+    </section>
+  </template>
+
+  <!-- 出題 -->
   <template id="tpl-quiz">
     <section>
       <div class="progress"><div id="progress-bar"></div></div>
-      <p class="meta"><span id="q-index"></span> ・ <span id="q-category"></span> ・ <span id="q-difficulty"></span></p>
+      <p class="meta"><span id="q-mode"></span> ・ <span id="q-index"></span> ・ <span id="q-category"></span> ・ <span id="q-difficulty"></span></p>
       <div id="q-text" class="question"></div>
       <div id="choices" class="choices"></div>
       <button id="btn-unknown" class="unknown">わからない</button>
@@ -57,12 +86,17 @@
     </section>
   </template>
 
+  <!-- 結果 -->
   <template id="tpl-result">
     <section>
-      <h1>結果</h1>
+      <h1 id="result-title">結果</h1>
       <p class="score"><span id="score"></span></p>
+      <p id="result-note" class="meta center"></p>
+      <button id="btn-next-lesson" class="primary big" hidden></button>
+      <button id="btn-reread" class="big" hidden>もう一度読む</button>
+      <button id="btn-retry-wrong" class="big" hidden>間違えた問題だけもう一度</button>
+      <button id="btn-retry-all" class="big" hidden>全部もう一度</button>
       <div id="wrong-list"></div>
-      <button id="btn-retry-wrong" class="primary big" hidden>間違えた問題だけもう一度</button>
       <button id="btn-back" class="big">ホームへ</button>
     </section>
   </template>

@@ -95,6 +95,15 @@ pre { background: var(--card); padding: 10px 12px; border-radius: 8px; overflow-
 code { background: var(--card); padding: 1px 5px; border-radius: 4px; font-size: .92em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 pre code { background: none; padding: 0; font-size: inherit; }
 
+/* まず解く */
+.pretest-note { font-size: 14px; color: var(--muted); background: var(--card); padding: 10px 12px; border-radius: 10px; margin: 0 0 12px; }
+.pretest-note .link { display: inline; padding: 0 0 0 6px; font-size: 14px; }
+.hints { margin: 0 0 20px; padding: 12px 14px; border-left: 4px solid var(--accent); background: var(--card); border-radius: 0 10px 10px 0; }
+.hints h2 { margin: 0 0 4px; font-size: 16px; color: var(--fg); }
+.hints .hint { margin: 10px 0 0; }
+.hints .hint .q { font-weight: 600; white-space: pre-wrap; }
+.hints .hint .a { font-size: 14px; color: var(--muted); margin-top: 2px; }
+
 /* やってみる */
 .exercise { margin-top: 28px; padding: 14px; border: 2px dashed var(--accent); border-radius: 12px; background: var(--accent-soft); }
 .exercise > h2 { margin: 0 0 8px; color: var(--fg); font-size: 18px; }

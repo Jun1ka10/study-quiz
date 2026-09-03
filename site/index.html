@@ -116,6 +116,11 @@
       <p class="meta"><span id="lesson-category"></span> ・ <span id="lesson-position"></span> ・ 約 <span id="lesson-minutes"></span> 分</p>
       <h1 id="lesson-title"></h1>
       <p id="lesson-status" class="meta" hidden></p>
+      <section id="lesson-hints" class="hints" hidden>
+        <h2 id="lesson-hints-title"></h2>
+        <p id="lesson-hints-note" class="meta"></p>
+        <div id="lesson-hints-list"></div>
+      </section>
       <article id="lesson-body" class="lesson-body"></article>
       <section id="lesson-exercise" class="exercise">
         <h2>やってみる <span class="meta">約 15 分。ターミナルで手を動かす</span></h2>
@@ -131,6 +136,8 @@
   <template id="tpl-quiz">
     <section>
       <div class="progress"><div id="progress-bar"></div></div>
+      <p id="pretest-note" class="pretest-note" hidden>本文はまだ読まなくて OK。知らなければ間違えてよい。間違えた問題が、本文を読むときの目印になります。
+        <button id="btn-skip-pretest" class="link">先に本文を読む</button></p>
       <p class="meta"><span id="q-mode"></span> ・ <span id="q-index"></span> ・ <span id="q-category"></span> ・ <span id="q-difficulty"></span></p>
       <div id="q-text" class="question"></div>
       <div id="choices" class="choices"></div>
@@ -150,6 +157,7 @@
       <p class="score"><span id="score"></span></p>
       <p id="result-note" class="meta center"></p>
       <button id="btn-next-lesson" class="primary big" hidden></button>
+      <button id="btn-read-lesson" class="primary big" hidden>本文を読む</button>
       <button id="btn-reread" class="big" hidden>もう一度読む</button>
       <button id="btn-retry-wrong" class="big" hidden>間違えた問題だけもう一度</button>
       <button id="btn-retry-all" class="big" hidden>全部もう一度</button>

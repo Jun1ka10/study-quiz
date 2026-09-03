@@ -70,6 +70,18 @@ function togglePracticed(lessonId) {
   return s.lessons[lessonId].practiced;
 }
 
+const PRETEST_COUNT = 3;
+
+function markPretest(lessonId, results) {
+  const s = loadState();
+  const prev = s.lessons[lessonId] || { done: false, best: 0 };
+  s.lessons[lessonId] = {
+    ...prev,
+    pretest: { total: results.length, correct: results.filter((r) => r.ok).length, wrongIds: results.filter((r) => !r.ok).map((r) => r.q.id), at: Date.now() },
+  };
+  saveState(s);
+}
+
 function markLesson(lessonId, rate) {
   const s = loadState();
   const prev = s.lessons[lessonId] || { done: false, best: 0 };
@@ -351,18 +363,39 @@ function showCourse(catId) {
   $("#btn-course-back").onclick = showHome;
 }
 
-function showLesson(lessonId) {
+// レッスンを開く。未合格で「まず解く」がまだなら、本文より先に 3 問解かせる (事前テスト効果)
+function showLesson(lessonId, { skipPretest = false } = {}) {
   const l = DATA.lessons.find((x) => x.id === lessonId);
   const list = lessonsOf(l.category);
   const cat = DATA.categories.find((c) => c.id === l.category);
   const qs = questionsOfLesson(lessonId);
   const rec = loadState().lessons[lessonId];
+  if (!skipPretest && !rec?.done && !rec?.pretest) {
+    startQuiz(shuffle(qs.slice()).slice(0, PRETEST_COUNT), { mode: "pretest", lessonId });
+    return;
+  }
   mount("tpl-lesson");
   $("#lesson-category").textContent = cat.title;
   $("#lesson-position").textContent = `${list.findIndex((x) => x.id === lessonId) + 1} / ${list.length}`;
   $("#lesson-minutes").textContent = l.minutes;
   $("#lesson-title").textContent = l.title;
   if (rec?.done) { $("#lesson-status").hidden = false; $("#lesson-status").textContent = `✓ 合格済み (最高 ${Math.round(rec.best * 100)}%)`; }
+  if (rec?.pretest) {
+    const p = rec.pretest;
+    const wrong = p.wrongIds.map((id) => qs.find((q) => q.id === id)).filter(Boolean);
+    $("#lesson-hints").hidden = false;
+    if (wrong.length) {
+      $("#lesson-hints-title").textContent = `まず解くで間違えた ${wrong.length} 問`;
+      $("#lesson-hints-note").textContent = "この答えが本文のどこで説明されているかを探しながら読む。全部読まなくてよい";
+      $("#lesson-hints-list").innerHTML = wrong.map((q) =>
+        `<div class="hint"><div class="q">${render(q.question)}</div><div class="a">答え: ${render(q.choices[q.answer])} ・ ${render(q.explanation)}</div></div>`).join("");
+    } else if (p.total > 0) {
+      $("#lesson-hints-title").textContent = `まず解くは ${p.correct} / ${p.total} 正解`;
+      $("#lesson-hints-note").textContent = "知っている範囲。本文は流し読みで、やってみるに進んでよい";
+    } else {
+      $("#lesson-hints").hidden = true;
+    }
+  }
   $("#lesson-body").innerHTML = l.html;   // build.py が Markdown から生成した自前の HTML
   $("#exercise-body").innerHTML = l.exerciseHtml;
   const pbtn = $("#btn-practiced");
@@ -382,13 +415,17 @@ function startQuiz(queue, { mode, lessonId = null }) {
   showQuestion();
 }
 
-const MODE_LABEL = { lesson: "確認問題", review: "復習", random: "演習" };
+const MODE_LABEL = { pretest: "まず解く", lesson: "確認問題", review: "復習", random: "演習" };
 
 function showQuestion() {
   mount("tpl-quiz", state.index === 0);
   const q = state.queue[state.index];
   $("#progress-bar").style.width = `${(100 * state.index) / state.queue.length}%`;
   $("#q-mode").textContent = MODE_LABEL[state.mode];
+  $("#pretest-note").hidden = state.mode !== "pretest";
+  if (state.mode === "pretest") {
+    $("#btn-skip-pretest").onclick = () => { markPretest(state.lessonId, []); showLesson(state.lessonId); };
+  }
   $("#q-index").textContent = `${state.index + 1} / ${state.queue.length}`;
   $("#q-category").textContent = q.categoryTitle;
   $("#q-difficulty").textContent = "★".repeat(q.difficulty);
@@ -436,7 +473,17 @@ function showResult() {
   const wrong = state.results.filter((r) => !r.ok);
   $("#score").textContent = `${ok} / ${n} 正解 (${Math.round(rate * 100)}%)`;
 
-  if (state.mode === "lesson") {
+  if (state.mode === "pretest") {
+    markPretest(state.lessonId, state.results);
+    const wrongCount = wrong.length;
+    $("#result-title").textContent = "まず解いてみた結果";
+    $("#result-note").textContent = wrongCount
+      ? `間違えた ${wrongCount} 問が、本文を読むときの目印になります。合否ではありません`
+      : "全問正解。本文は流し読みでよさそうです";
+    const b = $("#btn-read-lesson");
+    b.hidden = false;
+    b.onclick = () => showLesson(state.lessonId);
+  } else if (state.mode === "lesson") {
     markLesson(state.lessonId, rate);
     const passed = rate >= PASS_RATE;
     const next = nextLesson(state.lessonId);
@@ -463,12 +510,12 @@ function showResult() {
     ? `<h2>間違えた問題 (不正解 ${wrong.length - skipped} ・ わからない ${skipped})</h2>` + wrong.map((r) =>
         `<div class="wrong-item"><span class="tag">${r.skipped ? "わからない" : "不正解"}</span><div class="q">${render(r.q.question)}</div><div class="a">正解: ${render(r.q.choices[r.q.answer])}</div></div>`).join("")
     : "<p class='meta center'>全問正解!</p>";
-  if (wrong.length && state.mode !== "lesson") {
+  if (wrong.length && state.mode !== "lesson" && state.mode !== "pretest") {
     const retry = $("#btn-retry-wrong");
     retry.hidden = false;
     retry.onclick = () => startQuiz(shuffle(wrong.map((r) => r.q)), { mode: state.mode });
   }
-  if (state.mode === "lesson") {
+  if (state.mode === "lesson" || state.mode === "pretest") {
     const cat = DATA.lessons.find((x) => x.id === state.lessonId).category;
     $("#btn-back").textContent = "コースへ";
     $("#btn-back").onclick = () => showCourse(cat);

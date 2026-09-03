@@ -15,10 +15,13 @@ function loadHistory() {
 function saveHistory(h) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(h)); } catch { /* 容量超過などは無視 */ }
 }
+// ok: true = 正解 / false = 不正解 / null = わからない (不正解として数え、unknown にも記録)
 function record(qid, ok) {
   const h = loadHistory();
-  const e = h[qid] || { correct: 0, wrong: 0 };
+  const e = h[qid] || { correct: 0, wrong: 0, unknown: 0 };
   if (ok) e.correct++; else e.wrong++;
+  if (ok === null) e.unknown = (e.unknown || 0) + 1;
+  ok = ok === true;
   e.last = Date.now();
   e.lastCorrect = ok;
   h[qid] = e;
@@ -129,15 +132,18 @@ function showQuestion() {
     b.onclick = () => answer(q, i, b);
     choices.appendChild(b);
   }
+  $("#btn-unknown").onclick = () => answer(q, null, null);
   window.scrollTo(0, 0);
 }
 
 function answer(q, chosen, btn) {
-  const ok = chosen === q.answer;
-  record(q.id, ok);
-  state.results.push({ q, chosen, ok });
+  const skipped = chosen === null;
+  const ok = !skipped && chosen === q.answer;
+  record(q.id, skipped ? null : ok);
+  state.results.push({ q, chosen, ok, skipped });
   for (const b of $("#choices").children) b.disabled = true;
-  btn.classList.add(ok ? "correct" : "wrong");
+  $("#btn-unknown").disabled = true;
+  if (btn) btn.classList.add(ok ? "correct" : "wrong");
   if (!ok) {
     // 正解の選択肢を緑で示す
     const idx = [...$("#choices").children].findIndex((b) => b.innerHTML === render(q.choices[q.answer]));
@@ -145,8 +151,8 @@ function answer(q, chosen, btn) {
   }
   const fb = $("#feedback");
   fb.hidden = false;
-  $("#feedback-result").textContent = ok ? "正解!" : "不正解";
-  $("#feedback-result").className = "result " + (ok ? "ok" : "ng");
+  $("#feedback-result").textContent = skipped ? "わからない → 正解は緑の選択肢" : ok ? "正解!" : "不正解";
+  $("#feedback-result").className = "result " + (skipped ? "skip" : ok ? "ok" : "ng");
   $("#feedback-explanation").innerHTML = render(q.explanation);
   const next = $("#btn-next");
   next.textContent = state.index + 1 < state.queue.length ? "次へ" : "結果を見る";
@@ -158,11 +164,12 @@ function showResult() {
   mount("tpl-result");
   const n = state.results.length;
   const ok = state.results.filter((r) => r.ok).length;
+  const skipped = state.results.filter((r) => r.skipped).length;
   $("#score").textContent = `${ok} / ${n} 正解 (${Math.round((100 * ok) / n)}%)`;
   const wrong = state.results.filter((r) => !r.ok);
   $("#wrong-list").innerHTML = wrong.length
-    ? "<h2>間違えた問題</h2>" + wrong.map((r) =>
-        `<div class="wrong-item"><div class="q">${render(r.q.question)}</div><div class="a">正解: ${render(r.q.choices[r.q.answer])}</div></div>`).join("")
+    ? `<h2>間違えた問題 (不正解 ${wrong.length - skipped} ・ わからない ${skipped})</h2>` + wrong.map((r) =>
+        `<div class="wrong-item"><span class="tag">${r.skipped ? "わからない" : "不正解"}</span><div class="q">${render(r.q.question)}</div><div class="a">正解: ${render(r.q.choices[r.q.answer])}</div></div>`).join("")
     : "<p>全問正解!</p>";
   const retry = $("#btn-retry-wrong");
   retry.hidden = !wrong.length;

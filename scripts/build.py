@@ -265,7 +265,7 @@ def load_all() -> dict:
                 "title": c["title"],
                 "prefix": c["prefix"],
                 "description": c.get("description", ""),
-                "planned": c.get("planned", []),
+                "planned": c.get("planned") or [],
                 "lessonCount": sum(1 for ls in lessons if ls["category"] == c["id"]),
                 "questionCount": sum(1 for q in questions if q["category"] == c["id"]),
             }

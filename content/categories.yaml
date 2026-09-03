@@ -64,13 +64,6 @@ categories:
     prefix: aws
     description: EC2 + RDS + S3 で動く Django アプリの構成を理解する
     planned:
-      - EC2 と EBS (起動・SSH・cron で動かす)
-      - S3 と boto3
-      - RDS (PostgreSQL) の運用
-      - IAM を深く (ポリシーの読み方・ロールの設計)
-      - ロードバランサと証明書 (ALB / ACM / Route 53)
-      - CloudWatch と CloudTrail
-      - コスト管理
 
   - id: gcp
     title: GCP

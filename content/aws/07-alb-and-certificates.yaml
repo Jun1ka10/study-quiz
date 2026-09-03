@@ -1,0 +1,42 @@
+lesson: aws-07
+questions:
+- id: aws-l07-1
+  difficulty: 1
+  question: "ALB が 502 を返している。最初に疑うのは?"
+  choices:
+  - "DNS"
+  - "後ろの EC2 が応答していない (プロセス停止、ポート違い、SG で届かない)。ターゲットグループのヘルス状態を見る"
+  - "証明書の期限"
+  - "Route 53 の TTL"
+  answer: 1
+  explanation: "503 は「ヘルシーなターゲットが 0」。どちらもターゲットグループから追う。"
+- id: aws-l07-2
+  difficulty: 2
+  question: "EC2 のセキュリティグループのインバウンド 8000 番の送信元に、CIDR ではなく ALB の SG を指定する利点は?"
+  choices:
+  - "速い"
+  - "ALB の IP が変わっても壊れず、ALB 以外からの直接アクセスが遮断される"
+  - "課金が減る"
+  - "利点は無い"
+  answer: 1
+  explanation: "SG は「前段の SG から」で連鎖させる。ALB → web → db。"
+- id: aws-l07-3
+  difficulty: 2
+  question: "ALB で TLS を終端したら Django がリダイレクトループになった。原因と対処は?"
+  choices:
+  - "Django のバグ"
+  - "Django には HTTP で届くため `is_secure()` が False になり HTTPS へ飛ばし続ける。`SECURE_PROXY_SSL_HEADER = (\"HTTP_X_FORWARDED_PROTO\", \"https\")` を設定"
+  - "証明書が無効"
+  - "ALLOWED_HOSTS"
+  answer: 1
+  explanation: "前段でTLSを終端する構成の定番のつまずき。X-Forwarded-For も同様に信頼して読む設定が要る。"
+- id: aws-l07-4
+  difficulty: 1
+  question: "ACM の証明書について正しいのは?"
+  choices:
+  - "有料で年 1 回手動更新"
+  - "無料で、DNS 検証を Route 53 に置けば自動更新される。付けられるのは ALB / CloudFront / API Gateway"
+  - "EC2 に直接インストールできる"
+  - "ワイルドカードは不可"
+  answer: 1
+  explanation: "EC2 で直接 TLS 終端するなら Let's Encrypt。ACM を使いたければ前に ALB を置く。"

@@ -1,0 +1,42 @@
+lesson: aws-04
+questions:
+- id: aws-l04-1
+  difficulty: 1
+  question: "アップロードされたファイルを EC2 のディスクではなく S3 に置く理由は?"
+  choices:
+  - "速いから"
+  - "EC2 が壊れても・入れ替えても・複数台にしてもファイルが失われない。バックアップと配信も S3 側で済む"
+  - "無料だから"
+  - "Django が要求するから"
+  answer: 1
+  explanation: "「状態を持つものはサーバーの外へ」の一例。django-storages でモデルの変更なしに切り替えられる。"
+- id: aws-l04-2
+  difficulty: 2
+  question: "非公開バケットのファイルをユーザーにダウンロードさせる方法は?"
+  choices:
+  - "バケットを公開する"
+  - "署名付き URL (期限付き) を発行して渡す。バケットは非公開のまま"
+  - "ファイルを EC2 にコピーしてから配る"
+  - "できない"
+  answer: 1
+  explanation: "アップロードも署名付き URL で直接 S3 に送れる。アプリサーバーを経由しないので大きなファイルでも軽い。"
+- id: aws-l04-3
+  difficulty: 2
+  question: "boto3 を EC2 上で使うとき、認証情報はどう渡す?"
+  choices:
+  - "コードにアクセスキーを書く"
+  - "何も書かない。インスタンスに付けた IAM ロールから自動で取得される"
+  - ".env にルートのキーを置く"
+  - "毎回ログインする"
+  answer: 1
+  explanation: "boto3 は 環境変数 → 設定ファイル → インスタンスメタデータ の順に探す。ロールなら一時クレデンシャルが自動更新される。"
+- id: aws-l04-4
+  difficulty: 2
+  question: "IAM ポリシーで `s3:ListBucket` の Resource に `arn:aws:s3:::bucket/*` を書いたら一覧が AccessDenied になった。なぜ?"
+  choices:
+  - "バケット名が違う"
+  - "ListBucket はバケット自体への操作なので Resource は `arn:aws:s3:::bucket` (末尾の `/*` なし)。オブジェクト操作だけが `/*`"
+  - "一覧には管理者権限が要る"
+  - "リージョンの指定が要る"
+  answer: 1
+  explanation: "S3 のポリシーで最も多いつまずき。バケットとオブジェクトで ARN が違う。"

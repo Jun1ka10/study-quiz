@@ -1,0 +1,52 @@
+lesson: aws-06
+questions:
+- id: aws-l06-1
+  difficulty: 1
+  question: "ユーザーに `AdministratorAccess` が付いているのに、ある操作が AccessDenied になる。考えられるのは?"
+  choices:
+  - "バグ"
+  - "どこかに明示的 Deny がある (SCP、Permissions Boundary、リソースポリシー)。Deny は Allow より常に強い"
+  - "リージョンが違う"
+  - "パスワードが古い"
+  answer: 1
+  explanation: "Organizations の SCP で「このリージョン禁止」などがよくある原因。Deny の出所を探す。"
+- id: aws-l06-2
+  difficulty: 2
+  question: "ロールの「信頼ポリシー」と「アクセス許可ポリシー」の違いは?"
+  choices:
+  - "同じ"
+  - "信頼ポリシーは「誰がこのロールを引き受けられるか」、許可ポリシーは「引き受けた後に何ができるか」"
+  - "信頼ポリシーは S3 専用"
+  - "許可ポリシーは人間専用"
+  answer: 1
+  explanation: "「ロールを引き受けられない」は信頼ポリシー、「引き受けたのに操作できない」は許可ポリシーを見る。"
+- id: aws-l06-3
+  difficulty: 2
+  question: "「本番の削除操作は MFA 済みのセッションだけ許可」を表現するには?"
+  choices:
+  - "できない"
+  - "Condition に `\"Bool\": {\"aws:MultiFactorAuthPresent\": \"true\"}` を付けた Allow (または MFA 無しを Deny)"
+  - "パスワードを長くする"
+  - "削除権限を誰にも付けない"
+  answer: 1
+  explanation: "Condition は IP、タグ、リージョン、時間などでも絞れる。危険な操作に条件を付けるのが常套手段。"
+- id: aws-l06-4
+  difficulty: 2
+  question: "最小権限に近づけるために「実際に使われた権限」を知る道具は?"
+  choices:
+  - "勘"
+  - "IAM Access Analyzer の未使用アクセスの検出と CloudTrail のイベント履歴"
+  - "ポリシーの行数"
+  - "請求書"
+  answer: 1
+  explanation: "「90 日使われていない Action」を削っていく。ポリシーシミュレータで事前に確認できる。"
+- id: aws-l06-5
+  difficulty: 1
+  question: "社員のアクセス管理で推奨されるのは?"
+  choices:
+  - "全員に IAM ユーザーとアクセスキー"
+  - "IAM Identity Center (SSO) で ID プロバイダからログインし、権限セットで割り当てる。IAM ユーザーは作らない"
+  - "ルートユーザーを共有"
+  - "パスワードを共有"
+  answer: 1
+  explanation: "退職時は IdP で無効化すれば全アカウントから消える。鍵の配布が無くなる。"

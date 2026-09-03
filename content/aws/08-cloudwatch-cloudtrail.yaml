@@ -1,0 +1,52 @@
+lesson: aws-08
+questions:
+- id: aws-l08-1
+  difficulty: 1
+  question: "EC2 の「メモリ使用率」が CloudWatch に出ていない。なぜ?"
+  choices:
+  - "出ないのが仕様で見る方法は無い"
+  - "メモリとディスクは OS 内部の情報なので、CloudWatch エージェントを入れないと送られない (CPU やネットワークはハイパーバイザから取れる)"
+  - "インスタンスが小さい"
+  - "権限が無い"
+  answer: 1
+  explanation: "エージェントでアプリのログファイルも同時に送れる。ロールに CloudWatchAgentServerPolicy。"
+- id: aws-l08-2
+  difficulty: 2
+  question: "「誰がセキュリティグループの 22 番を 0.0.0.0/0 に開けたか」を調べるには?"
+  choices:
+  - "CloudWatch のメトリクス"
+  - "CloudTrail のイベント履歴で `AuthorizeSecurityGroupIngress` を検索し、ユーザーと時刻を見る"
+  - "EC2 のログ"
+  - "分からない"
+  answer: 1
+  explanation: "コンソールの操作も API 呼び出しとして記録される。証跡を S3 に残せば 90 日を超えて追える。"
+- id: aws-l08-3
+  difficulty: 2
+  question: "CloudWatch Logs の費用が増え続けている。まず確認するのは?"
+  choices:
+  - "アラームの数"
+  - "ロググループの保持期間が「無期限」になっていないか、DEBUG レベルや巨大な本文を送っていないか"
+  - "EC2 の台数"
+  - "リージョン"
+  answer: 1
+  explanation: "保持を 30〜90 日に設定し、送る量を減らす。長期保存が要るものは S3 へエクスポート。"
+- id: aws-l08-4
+  difficulty: 1
+  question: "アラームの通知先として作るものは?"
+  choices:
+  - "メールアドレスを直接"
+  - "SNS トピック。それにメール・Slack・PagerDuty を購読させる"
+  - "Lambda"
+  - "S3"
+  answer: 1
+  explanation: "通知先を後から増やしてもアラーム側を触らなくてよい。"
+- id: aws-l08-5
+  difficulty: 2
+  question: "セキュリティ監視として最低限アラームにすべき CloudTrail イベントは?"
+  choices:
+  - "全イベント"
+  - "ルートユーザーのログイン、IAM ポリシー / ユーザーの変更、セキュリティグループ / バケットポリシーの変更"
+  - "EC2 の起動"
+  - "S3 の GetObject"
+  answer: 1
+  explanation: "「権限と入口が変わった」ことを即知る。CloudTrail → CloudWatch Logs → メトリクスフィルタ → アラーム。"

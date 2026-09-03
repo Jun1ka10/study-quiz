@@ -1,0 +1,52 @@
+lesson: aws-03
+questions:
+- id: aws-l03-1
+  difficulty: 1
+  question: "EC2 と Cloud Run のような サーバーレスコンテナの最大の違いは?"
+  choices:
+  - "料金だけ"
+  - "EC2 は OS のパッチ・再起動・ディスク・プロセス常駐を自分で管理する。サーバーレスはコンテナを渡すだけ"
+  - "EC2 は Docker が使えない"
+  - "違いは無い"
+  answer: 1
+  explanation: "自由度と引き換えに運用が増える。systemd、cron、ログ、バックアップを自分で組む。"
+- id: aws-l03-2
+  difficulty: 2
+  question: "SSH の 22 番をセキュリティグループで閉じたまま EC2 に入る方法は?"
+  choices:
+  - "入れない"
+  - "SSM Session Manager (インスタンスに SSM のロールを付け、`aws ssm start-session`)。操作は CloudTrail に残る"
+  - "VNC"
+  - "パスワード認証"
+  answer: 1
+  explanation: "鍵の配布と 22 番の公開が無くなる。踏み台サーバーも不要。"
+- id: aws-l03-3
+  difficulty: 2
+  question: "cron のジョブに `flock -n /tmp/x.lock -c '...'` を付ける理由は?"
+  choices:
+  - "速くなる"
+  - "前回の実行が終わっていないときに次を起動しない (多重起動の防止)"
+  - "ログを取る"
+  - "権限を上げる"
+  answer: 1
+  explanation: "毎分起動するジョブが 3 分かかると 3 つ同時に走り、DB の二重更新などが起きる。"
+- id: aws-l03-4
+  difficulty: 1
+  question: "EC2 を「終了 (terminate)」したとき、既定でどうなる?"
+  choices:
+  - "停止と同じで再開できる"
+  - "インスタンスは消え、ルート EBS も削除される。スナップショットや AMI が無ければ戻せない"
+  - "EBS は必ず残る"
+  - "課金だけ止まる"
+  answer: 1
+  explanation: "「停止 (stop)」はディスクが残り再開できる。終了は消える。本番は終了保護を有効化する。"
+- id: aws-l03-5
+  difficulty: 2
+  question: "cron で `0 6 * * *` と書いたのに 15 時に動いた。原因は?"
+  choices:
+  - "cron のバグ"
+  - "サーバーのタイムゾーンが UTC。JST の 6 時にしたいなら TZ を Asia/Tokyo にするか、UTC の 21 時 (`0 21 * * *`) と書く"
+  - "分と時が逆"
+  - "ログの時刻がずれている"
+  answer: 1
+  explanation: "「`timedatectl` で TZ を確認」を EC2 構築の手順に入れる。"

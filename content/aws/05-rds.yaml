@@ -1,0 +1,52 @@
+lesson: aws-05
+questions:
+- id: aws-l05-1
+  difficulty: 1
+  question: "RDS のマルチ AZ の目的は?"
+  choices:
+  - "読み取り性能"
+  - "可用性。別 AZ に同期スタンバイを持ち、障害時に同じエンドポイントのまま自動で切り替わる"
+  - "容量の拡張"
+  - "コスト削減"
+  answer: 1
+  explanation: "読み取り分散はリードレプリカ。マルチ AZ のスタンバイには接続できない。"
+- id: aws-l05-2
+  difficulty: 2
+  question: "RDS を「パブリックアクセス有効」で作ってはいけない理由は?"
+  choices:
+  - "遅くなる"
+  - "インターネットからエンドポイントに到達でき、パスワード総当たりや脆弱性の入口になる。プライベートサブネット + SG でアプリからだけ"
+  - "課金が増える"
+  - "必須ではないので理由は無い"
+  answer: 1
+  explanation: "ローカルから見たいなら SSM のポートフォワードか開発用 RDS。本番を開けない。"
+- id: aws-l05-3
+  difficulty: 2
+  question: "「too many connections」が出た。まず確認・対処するのは?"
+  choices:
+  - "インスタンスを大きくする"
+  - "gunicorn のワーカー数 × 台数 が max_connections を超えていないか。CONN_MAX_AGE で使い回し、足りなければ RDS Proxy"
+  - "RDS を再起動する"
+  - "DB を分割する"
+  answer: 1
+  explanation: "PostgreSQL は接続ごとにプロセスなので上限が小さい。接続数を減らす・プールする、が先。"
+- id: aws-l05-4
+  difficulty: 2
+  question: "誤って本番のテーブルを DELETE した (30 分前)。取れる手段は?"
+  choices:
+  - "無い"
+  - "自動バックアップの PITR で 30 分前の時点に別インスタンスとして復元し、そのテーブルを取り出して戻す"
+  - "再起動すれば戻る"
+  - "リードレプリカから戻す (非同期なので既に消えている)"
+  answer: 1
+  explanation: "復元は別インスタンスに出る。本番に上書きはしない。復元にかかる時間を平時に測っておく。"
+- id: aws-l05-5
+  difficulty: 1
+  question: "遅いクエリを見つける最初の一手は?"
+  choices:
+  - "全クエリをログに出す"
+  - "パラメータグループで `log_min_duration_statement` を設定し、閾値を超えたクエリだけログに出す。Performance Insights も併用"
+  - "アプリのコードを全部読む"
+  - "インスタンスを大きくする"
+  answer: 1
+  explanation: "「1 秒超」だけ出せばログが溢れない。そこから EXPLAIN とインデックスへ。"

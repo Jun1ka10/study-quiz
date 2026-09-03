@@ -23,11 +23,7 @@ categories:
     prefix: js
     description: ブラウザで動く素の JS から、TypeScript・React・Next.js まで
     planned:
-      - DOM 操作とイベント
       - モジュールと npm
-      - TypeScript の基本 (型・interface・ジェネリクス)
-      - React の基本 (コンポーネント・props・state)
-      - React の hooks (useState / useEffect / カスタム hook)
       - Next.js (App Router・サーバー / クライアントコンポーネント)
       - Tailwind CSS
       - Playwright で E2E テスト
@@ -100,9 +96,7 @@ categories:
     planned:
       - SSH と鍵認証
       - cron と systemd timer
-      - Terraform の基本 (resource / variable / state)
       - Terraform で GCP を組む (Cloud Run / IAM / Cloud SQL)
-      - GitHub Actions (workflow の書き方・secrets・OIDC)
       - デプロイ戦略 (ローリング / カナリア / ロールバック)
       - 監視と SLO
       - Kubernetes の概要

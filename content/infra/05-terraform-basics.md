@@ -1,0 +1,153 @@
+---
+id: infra-05
+title: Terraform の基本
+summary: resource / variable / output、init → plan → apply、state の意味。IaC でクラウドを組む土台
+minutes: 12
+questions:
+  - id: infra-l05-1
+    difficulty: 1
+    question: "Terraform の基本的な作業の流れは?"
+    choices:
+      - "apply → plan → init"
+      - "init (プロバイダ取得) → plan (差分確認) → apply (適用)"
+      - "plan だけで反映される"
+      - "init だけで反映される"
+    answer: 1
+    explanation: "plan で「何を作る / 変える / 消す」を必ず見てから apply する。特に destroy や replace が出ていないか確認する。"
+  - id: infra-l05-2
+    difficulty: 2
+    question: "tfstate (state ファイル) の役割は?"
+    choices:
+      - "ログ"
+      - "Terraform が「自分が管理しているリソースの現状」を記録したもの。これと設定の差分で plan が決まる"
+      - "バックアップ"
+      - "不要なファイル"
+    answer: 1
+    explanation: "state を失うと Terraform はリソースを知らない状態になり、作り直そうとする。チームでは GCS / S3 などのリモートバックエンドに置き、ロックをかける。"
+  - id: infra-l05-3
+    difficulty: 2
+    question: "plan の出力に `-/+ resource must be replaced` と出た。意味は?"
+    choices:
+      - "何も起きない"
+      - "そのリソースを一度削除して作り直す。DB やディスクならデータが消える可能性がある"
+      - "更新だけ"
+      - "警告のみで apply には影響しない"
+    answer: 1
+    explanation: "変更できない属性 (名前やリージョンなど) を変えたときに出る。本番で見たら止まって確認する。"
+  - id: infra-l05-4
+    difficulty: 1
+    question: "環境 (dev / prod) で値を変えたい項目はどこに書く?"
+    choices: ["resource に直書き", "variable で宣言し、tfvars や -var で渡す", "state に書く", "コメント"]
+    answer: 1
+    explanation: "`variable \"project_id\" {}` と宣言し、`terraform.tfvars` や `-var=\"project_id=...\"`、環境変数 `TF_VAR_project_id` で渡す。"
+---
+## IaC の考え方
+
+クラウドの設定をコンソールで手作業すると、「誰が何をいつ変えたか」が残らず、同じ環境を再現できません。**Infrastructure as Code** は設定をコードに書き、Git で管理し、ツールで適用します。Terraform はその代表で、GCP も AWS も同じ書き方で扱えます。
+
+## 最小の構成
+
+```hcl
+# main.tf
+terraform {
+  required_providers {
+    google = { source = "hashicorp/google", version = "~> 6.0" }
+  }
+  backend "gcs" {                       # state の置き場 (チーム用)
+    bucket = "my-terraform-state"
+    prefix = "prod"
+  }
+}
+
+provider "google" {
+  project = var.project_id
+  region  = "asia-northeast1"
+}
+
+variable "project_id" { type = string }
+
+resource "google_storage_bucket" "assets" {
+  name     = "${var.project_id}-assets"
+  location = "ASIA-NORTHEAST1"
+}
+
+output "bucket_url" {
+  value = google_storage_bucket.assets.url
+}
+```
+
+| ブロック | 役割 |
+|---|---|
+| `terraform` | バージョンと state の置き場 |
+| `provider` | どのクラウドに、どの認証で |
+| `variable` | 外から渡す値 |
+| `resource` | 作るもの。`種類 "名前"` |
+| `output` | 作った結果を表示 / 他から参照 |
+| `data` | 既にあるものを参照 (作らない) |
+
+## 作業の流れ
+
+```bash
+terraform init          # プロバイダを取得、backend を初期化。最初と設定変更時
+terraform fmt           # 整形
+terraform validate      # 文法チェック
+terraform plan          # 差分を表示 (まだ何もしない)
+terraform apply         # 差分を適用 (確認プロンプトあり)
+terraform destroy       # 全部消す (本番では基本使わない)
+```
+
+**plan を読まずに apply しない** のが唯一にして最大のルールです。
+
+```
+  + create        新規作成
+  ~ update in-place   その場で更新
+  -/+ replace     削除して作り直し ← 要注意
+  - destroy       削除 ← 要注意
+```
+
+## state
+
+Terraform は「自分が作ったリソースの現状」を **state** (`terraform.tfstate`) に記録し、設定ファイルとの差分で plan を作ります。
+
+- state を失うと、既存リソースを知らない扱いになり作り直そうとする
+- チームでは **リモートバックエンド** (GCS / S3) に置き、同時実行をロックする
+- state には秘密情報 (DB パスワードなど) が平文で入ることがある。公開しない
+
+手で作ったリソースを管理下に入れるには `terraform import` を使います。
+
+## リソース同士の参照
+
+```hcl
+resource "google_service_account" "app" {
+  account_id = "app-runner"
+}
+
+resource "google_cloud_run_v2_service" "api" {
+  name     = "api"
+  location = "asia-northeast1"
+  template {
+    service_account = google_service_account.app.email     # ← 参照。依存関係も自動で解決
+    containers {
+      image = var.image
+    }
+  }
+}
+```
+
+`種類.名前.属性` で参照すると、作成順序も Terraform が決めます。
+
+## 変数の渡し方
+
+```bash
+terraform apply -var="project_id=my-prod"
+terraform apply -var-file="prod.tfvars"
+TF_VAR_project_id=my-prod terraform apply
+```
+
+環境ごとに tfvars を分けるか、ディレクトリ (workspaces) を分けます。
+
+## まとめ
+
+- init → plan → apply。plan の replace / destroy を必ず見る
+- state が現状の記録。リモートに置き、失わない、公開しない
+- 環境差は variable。リソース間は `種類.名前.属性` で参照

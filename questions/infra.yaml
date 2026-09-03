@@ -1,0 +1,106 @@
+category: infra
+title: インフラ
+questions:
+  - id: infra-001
+    difficulty: 1
+    question: "Linux で実行中プロセスの一覧を表示するコマンドは?"
+    choices: ["ls", "ps", "df", "du"]
+    answer: 1
+    explanation: "ps (例: `ps aux`) がプロセス一覧。df はディスク空き容量、du はディレクトリ使用量。"
+
+  - id: infra-002
+    difficulty: 1
+    question: "TCP の 3 ウェイハンドシェイクの順序は?"
+    choices: ["SYN → ACK → SYN-ACK", "SYN → SYN-ACK → ACK", "ACK → SYN → FIN", "SYN → FIN → ACK"]
+    answer: 1
+    explanation: "クライアントが SYN、サーバーが SYN-ACK、クライアントが ACK で接続確立。"
+
+  - id: infra-003
+    difficulty: 1
+    question: "HTTPS が標準で使うポート番号は?"
+    choices: ["22", "80", "443", "8080"]
+    answer: 2
+    explanation: "HTTP は 80、HTTPS は 443、SSH は 22。"
+
+  - id: infra-004
+    difficulty: 2
+    question: "DNS の A レコードと CNAME レコードの違いは?"
+    choices:
+      - "A は IPv6 アドレス、CNAME は IPv4 アドレス"
+      - "A は名前 → IPv4 アドレス、CNAME は名前 → 別の名前 (別名)"
+      - "A はメールサーバー指定、CNAME はドメイン所有確認"
+      - "違いはない"
+    answer: 1
+    explanation: "A: IPv4、AAAA: IPv6、CNAME: 別名、MX: メール、TXT: 任意テキスト (所有確認などに使う)。"
+
+  - id: infra-005
+    difficulty: 2
+    question: "`192.168.1.0/24` に含まれるホストに割り当て可能なアドレス数は?"
+    choices: ["254", "256", "128", "255"]
+    answer: 0
+    explanation: "/24 は 256 アドレスだが、ネットワークアドレス (.0) とブロードキャスト (.255) を除いて 254。"
+
+  - id: infra-006
+    difficulty: 2
+    question: "Docker のイメージとコンテナの関係として正しいものは?"
+    choices:
+      - "イメージは実行中のプロセス、コンテナはその設計図"
+      - "イメージは読み取り専用のテンプレート、コンテナはそれから起動した実行インスタンス"
+      - "両者は同じもの"
+      - "コンテナから複数のイメージが同時に起動される"
+    answer: 1
+    explanation: "1 つのイメージから複数のコンテナを起動できる。コンテナは書き込み可能なレイヤーを上に持つ。"
+
+  - id: infra-007
+    difficulty: 2
+    question: "Kubernetes で「同じ Pod を指定数だけ維持し、ローリングアップデートする」リソースは?"
+    choices: ["Service", "Deployment", "ConfigMap", "Ingress"]
+    answer: 1
+    explanation: "Deployment が ReplicaSet を管理して Pod 数を維持・更新する。Service はネットワーク公開、Ingress は L7 ルーティング。"
+
+  - id: infra-008
+    difficulty: 2
+    question: "Infrastructure as Code (IaC) の主なメリットとして誤っているものは?"
+    choices:
+      - "構成をバージョン管理できる"
+      - "同じ環境を再現性高く構築できる"
+      - "手作業の設定変更が不要になる"
+      - "適用すると自動で必ず無停止になる"
+    answer: 3
+    explanation: "IaC は再現性・レビュー・差分管理をもたらすが、リソースの置き換えでダウンタイムが出ることはある。plan / 差分確認が重要。"
+
+  - id: infra-009
+    difficulty: 3
+    question: "ロードバランサの L4 と L7 の違いは?"
+    choices:
+      - "L4 は IP / ポートで振り分け、L7 は HTTP のパスやヘッダーで振り分けできる"
+      - "L7 は TCP だけ扱い、L4 は HTTP を解釈する"
+      - "L4 の方が機能が多い"
+      - "違いはない"
+    answer: 0
+    explanation: "L4 (トランスポート層) は高速だが中身を見ない。L7 (アプリケーション層) は URL ルーティングや TLS 終端などができる。"
+
+  - id: infra-010
+    difficulty: 3
+    question: "systemd でサービスを OS 起動時に自動起動させるコマンドは?"
+    choices: ["systemctl start nginx", "systemctl enable nginx", "systemctl status nginx", "systemctl reload nginx"]
+    answer: 1
+    explanation: "start は今すぐ起動、enable は起動時の自動起動を有効化。両方やるなら `enable --now`。"
+
+  - id: infra-011
+    difficulty: 2
+    question: "SSH の公開鍵認証で、サーバー側に置くのはどちらか?"
+    choices: ["秘密鍵", "公開鍵", "両方", "どちらも不要"]
+    answer: 1
+    explanation: "公開鍵を `~/.ssh/authorized_keys` に置く。秘密鍵はクライアントから出さない。"
+
+  - id: infra-012
+    difficulty: 3
+    question: "監視で「SLO」が指すものは?"
+    choices:
+      - "サービスが提供する機能の一覧"
+      - "可用性やレイテンシなどの目標値 (例: 99.9% の成功率)"
+      - "契約上の罰則付き合意"
+      - "監視ツールの名前"
+    answer: 1
+    explanation: "SLI (指標) を測り、SLO (目標) を決め、SLA (顧客との契約) はその外側。エラーバジェットは SLO から導く。"

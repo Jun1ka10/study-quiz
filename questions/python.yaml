@@ -1,0 +1,108 @@
+# カテゴリ: Python
+# フォーマット:
+#   id: カテゴリ内で一意 (py-001 など)
+#   difficulty: 1 (基礎) / 2 (中級) / 3 (上級)
+#   choices: 選択肢。answer は正解の添字 (0 始まり)
+#   explanation: 解説。正誤に関わらず必ず表示される
+category: python
+title: Python
+questions:
+  - id: py-001
+    difficulty: 1
+    question: "リスト `a = [1, 2, 3]` に対して `a[-1]` はどの値を返すか?"
+    choices: ["1", "2", "3", "IndexError が発生する"]
+    answer: 2
+    explanation: "負のインデックスは末尾から数える。`-1` は最後の要素。"
+
+  - id: py-002
+    difficulty: 1
+    question: "次のうち、イミュータブル (変更不可) な型はどれか?"
+    choices: ["list", "dict", "set", "tuple"]
+    answer: 3
+    explanation: "tuple と str, frozenset, int などはイミュータブル。list / dict / set は要素を変更できる。"
+
+  - id: py-003
+    difficulty: 1
+    question: "`print(type(3 / 2))` の出力は?"
+    choices: ["<class 'int'>", "<class 'float'>", "<class 'decimal'>", "エラー"]
+    answer: 1
+    explanation: "Python 3 では `/` は常に float を返す。整数除算は `//`。"
+
+  - id: py-004
+    difficulty: 2
+    question: "次のコードの出力は?\n\n```python\ndef f(x, acc=[]):\n    acc.append(x)\n    return acc\n\nf(1)\nprint(f(2))\n```"
+    choices: ["[2]", "[1, 2]", "[[1], 2]", "TypeError"]
+    answer: 1
+    explanation: "デフォルト引数は関数定義時に一度だけ評価される。ミュータブルなデフォルト値は呼び出し間で共有されるので `[1, 2]` になる。`acc=None` にして関数内で初期化するのが定石。"
+
+  - id: py-005
+    difficulty: 2
+    question: "`with open('f.txt') as fp:` の `with` 文が保証するものは?"
+    choices:
+      - "ファイルが存在しなければ自動で作成される"
+      - "ブロックを抜けるときに例外の有無にかかわらず `close()` が呼ばれる"
+      - "ファイルが読み取り専用で開かれる"
+      - "ブロック内の例外がすべて握りつぶされる"
+    answer: 1
+    explanation: "with はコンテキストマネージャの `__exit__` を必ず呼ぶ。例外は握りつぶされず伝播する (`__exit__` が True を返さない限り)。"
+
+  - id: py-006
+    difficulty: 2
+    question: "ジェネレータ関数を定義するために使うキーワードは?"
+    choices: ["return", "yield", "async", "lambda"]
+    answer: 1
+    explanation: "関数本体に `yield` があるとジェネレータ関数になり、呼び出すとジェネレータオブジェクトを返す。値は遅延評価される。"
+
+  - id: py-007
+    difficulty: 2
+    question: "`[x * 2 for x in range(3)]` と同じ結果になるものは?"
+    choices:
+      - "list(map(lambda x: x * 2, range(3)))"
+      - "list(filter(lambda x: x * 2, range(3)))"
+      - "(x * 2 for x in range(3))"
+      - "{x * 2 for x in range(3)}"
+    answer: 0
+    explanation: "map は各要素に関数を適用する。3 番目はジェネレータ式、4 番目は set 内包表記で型が異なる。"
+
+  - id: py-008
+    difficulty: 2
+    question: "`try / except / else / finally` のうち、例外が発生しなかったときだけ実行されるブロックは?"
+    choices: ["except", "else", "finally", "try"]
+    answer: 1
+    explanation: "else は try ブロックが例外なく完了したときだけ実行される。finally は常に実行される。"
+
+  - id: py-009
+    difficulty: 3
+    question: "CPython の GIL (Global Interpreter Lock) について正しいものは?"
+    choices:
+      - "マルチスレッドで CPU バウンドな処理を並列化できる"
+      - "1 プロセス内で同時に Python バイトコードを実行できるスレッドは 1 つだけ"
+      - "I/O 待ちの間も他スレッドは実行できない"
+      - "multiprocessing でも GIL は共有される"
+    answer: 1
+    explanation: "GIL により CPU バウンドはマルチスレッドで速くならない。I/O 待ち中は GIL が解放されるので I/O バウンドには有効。CPU 並列は multiprocessing (別プロセス) を使う。"
+
+  - id: py-010
+    difficulty: 3
+    question: "`@dataclass(frozen=True)` を付けたクラスの特徴として正しいものは?"
+    choices:
+      - "インスタンス生成後に属性を代入すると FrozenInstanceError になる"
+      - "`__init__` が生成されなくなる"
+      - "継承ができなくなる"
+      - "属性の型チェックが実行時に行われる"
+    answer: 0
+    explanation: "frozen=True は属性代入を禁止し、`__hash__` も自動生成されるので dict のキーや set の要素に使える。型チェックは行わない。"
+
+  - id: py-011
+    difficulty: 2
+    question: "`asyncio` で複数のコルーチンを並行実行して全結果を待つ関数は?"
+    choices: ["asyncio.run", "asyncio.gather", "asyncio.sleep", "asyncio.create_task のみ"]
+    answer: 1
+    explanation: "`await asyncio.gather(c1(), c2())` で並行実行し、結果をリストで受け取れる。run はイベントループの起動。"
+
+  - id: py-012
+    difficulty: 1
+    question: "仮想環境を作る標準モジュールは?"
+    choices: ["venv", "pipenv", "conda", "virtualenvwrapper"]
+    answer: 0
+    explanation: "`python -m venv .venv` が標準。pipenv / conda / virtualenvwrapper はサードパーティ。"

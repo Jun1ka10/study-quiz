@@ -1,0 +1,14 @@
+{
+  "name": "Study Quiz",
+  "short_name": "Quiz",
+  "description": "Python / 設計 / AWS / GCP / インフラを問題形式で学ぶ",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1f6feb",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,106 @@
+category: aws
+title: AWS
+questions:
+  - id: aws-001
+    difficulty: 1
+    question: "オブジェクトストレージサービスはどれか?"
+    choices: ["EBS", "EFS", "S3", "FSx"]
+    answer: 2
+    explanation: "S3 はオブジェクトストレージ。EBS はブロック、EFS / FSx はファイルストレージ。"
+
+  - id: aws-002
+    difficulty: 1
+    question: "IAM の「ロール」の説明として正しいものは?"
+    choices:
+      - "長期的なアクセスキーを持つ人間用のアイデンティティ"
+      - "一時的な認証情報を得るために引き受ける (AssumeRole) アイデンティティ"
+      - "複数ユーザーをまとめる入れ物"
+      - "S3 バケットに直接付けるアクセス制御"
+    answer: 1
+    explanation: "ロールは EC2 / Lambda / 他アカウントなどが引き受けて一時クレデンシャルを得る仕組み。人間用はユーザー、まとめる入れ物はグループ。"
+
+  - id: aws-003
+    difficulty: 1
+    question: "VPC 内でインターネットへ直接出るために、パブリックサブネットのルートテーブルに必要なものは?"
+    choices: ["NAT ゲートウェイ", "インターネットゲートウェイ", "VPC エンドポイント", "Transit Gateway"]
+    answer: 1
+    explanation: "0.0.0.0/0 → IGW のルートがあるサブネットがパブリックサブネット。NAT はプライベートサブネットから外向きのみ通す。"
+
+  - id: aws-004
+    difficulty: 2
+    question: "セキュリティグループとネットワーク ACL の違いとして正しいものは?"
+    choices:
+      - "セキュリティグループはステートレス、NACL はステートフル"
+      - "セキュリティグループはステートフル、NACL はステートレス"
+      - "どちらも拒否ルールを書ける"
+      - "NACL はインスタンス単位に付く"
+    answer: 1
+    explanation: "SG は許可ルールのみでステートフル (戻りは自動許可)、インスタンス (ENI) 単位。NACL は許可 / 拒否を書けてステートレス、サブネット単位。"
+
+  - id: aws-005
+    difficulty: 2
+    question: "Lambda 関数の最大実行時間は?"
+    choices: ["1 分", "5 分", "15 分", "無制限"]
+    answer: 2
+    explanation: "タイムアウトの上限は 15 分。長時間処理は Step Functions / ECS / Batch などを検討する。"
+
+  - id: aws-006
+    difficulty: 2
+    question: "S3 のストレージクラスで、取り出しに数時間かかるが最も安価なものは?"
+    choices: ["S3 Standard-IA", "S3 One Zone-IA", "S3 Glacier Deep Archive", "S3 Intelligent-Tiering"]
+    answer: 2
+    explanation: "Glacier Deep Archive は標準取り出しで 12 時間程度。長期保管向け。"
+
+  - id: aws-007
+    difficulty: 2
+    question: "RDS のマルチ AZ 配置の主な目的は?"
+    choices: ["読み取り性能の向上", "高可用性 (自動フェイルオーバー)", "ストレージコスト削減", "リージョン間レプリケーション"]
+    answer: 1
+    explanation: "マルチ AZ は同期レプリカを別 AZ に持ち、障害時に自動フェイルオーバーする。読み取り分散はリードレプリカ。"
+
+  - id: aws-008
+    difficulty: 2
+    question: "CloudWatch と CloudTrail の役割の違いは?"
+    choices:
+      - "CloudWatch は API 呼び出しの監査ログ、CloudTrail はメトリクス監視"
+      - "CloudWatch はメトリクス / ログ監視、CloudTrail は API 呼び出しの監査ログ"
+      - "両方とも同じ機能で名前が違うだけ"
+      - "CloudTrail は課金情報のみ記録する"
+    answer: 1
+    explanation: "CloudTrail は「誰がいつどの API を呼んだか」を記録する監査用。CloudWatch はメトリクス・ログ・アラーム。"
+
+  - id: aws-009
+    difficulty: 3
+    question: "S3 バケットへ VPC 内からインターネットを経由せずにアクセスしたい。適切なものは?"
+    choices: ["NAT ゲートウェイ", "ゲートウェイ型 VPC エンドポイント", "Direct Connect", "Elastic IP"]
+    answer: 1
+    explanation: "S3 と DynamoDB はゲートウェイ型エンドポイント (無料) が使える。他サービスはインターフェース型 (PrivateLink)。"
+
+  - id: aws-010
+    difficulty: 3
+    question: "ECS で Fargate 起動タイプを選ぶメリットは?"
+    choices:
+      - "EC2 インスタンスの管理 (OS パッチ・スケール) が不要になる"
+      - "GPU を自由に選べる"
+      - "EC2 起動タイプより常に安い"
+      - "Docker イメージが不要になる"
+    answer: 0
+    explanation: "Fargate はサーバーレスなコンテナ実行環境。ホスト管理不要だが、GPU 対応や単価は EC2 起動タイプに劣る場面もある。"
+
+  - id: aws-011
+    difficulty: 2
+    question: "DynamoDB のパーティションキー設計で避けるべきことは?"
+    choices:
+      - "アクセスが特定の少数キーに集中するホットパーティション"
+      - "キーに UUID を使うこと"
+      - "ソートキーを併用すること"
+      - "GSI を作ること"
+    answer: 0
+    explanation: "スループットはパーティションに分散されるため、キーの偏りは性能低下を招く。カーディナリティの高いキーを選ぶ。"
+
+  - id: aws-012
+    difficulty: 1
+    question: "アカウント全体の認証情報を守るために、ルートユーザーに対して最初にすべきことは?"
+    choices: ["アクセスキーを発行する", "MFA を有効化し日常利用しない", "管理者ポリシーを追加する", "パスワードを削除する"]
+    answer: 1
+    explanation: "ルートユーザーは MFA を付けて封印し、日常作業は IAM ユーザー / SSO で行うのがベストプラクティス。"

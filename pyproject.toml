@@ -1,0 +1,26 @@
+[project]
+name = "study-quiz"
+version = "0.1.0"
+description = "Python / 設計 / AWS / GCP / インフラを問題形式で学ぶオフライン対応クイズアプリ (PWA)"
+requires-python = ">=3.12"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]

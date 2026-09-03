@@ -129,4 +129,4 @@ button.unknown:disabled { opacity: .5; }
 .wrong-item .tag { font-size: 12px; color: var(--muted); }
 table.stats { width: 100%; border-collapse: collapse; }
 table.stats td, table.stats th { padding: 6px 4px; text-align: left; border-bottom: 1px solid var(--border); font-size: 15px; }
-table.stats td.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.stats td.num, table.stats th.num { text-align: right; font-variant-numeric: tabular-nums; }

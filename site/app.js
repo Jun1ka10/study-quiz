@@ -189,7 +189,7 @@ function showHome() {
     const state_ = done === lessons.length && lessons.length ? "done" : done ? "started" : "";
     b.innerHTML = `<span class="title">${escapeHtml(c.title)}</span>
       <span class="pct ${state_}">${done} / ${lessons.length}</span>
-      <span class="sub">${next ? "次: " + escapeHtml(next.title) : "用意されたレッスンは完了"}${c.planned.length ? ` ・ 準備中 ${c.planned.length}` : ""}</span>
+      <span class="sub">${next ? "次: " + escapeHtml(next.title) : "用意されたレッスンは完了"} ・ ${c.questionCount} 問${c.planned.length ? ` ・ 準備中 ${c.planned.length}` : ""}</span>
       <span class="bar"><div style="width:${pct}%"></div></span>`;
     b.onclick = () => showCourse(c.id);
     courses.appendChild(b);
@@ -232,8 +232,8 @@ function renderStats(s) {
     const total = correct + wrong;
     return { title: c.title, seen, n: qs.length, rate: total ? Math.round((100 * correct) / total) : null };
   });
-  $("#stats").innerHTML = `<table class="stats"><tr><th>カテゴリ</th><th>解いた</th><th>正答率</th></tr>` +
-    rows.map((r) => `<tr><td>${escapeHtml(r.title)}</td><td class="num">${r.seen} / ${r.n}</td><td class="num">${r.rate === null ? "-" : r.rate + "%"}</td></tr>`).join("") +
+  $("#stats").innerHTML = `<table class="stats"><tr><th>カテゴリ</th><th class="num">問題数</th><th class="num">解いた</th><th class="num">正答率</th></tr>` +
+    rows.map((r) => `<tr><td>${escapeHtml(r.title)}</td><td class="num">${r.n}</td><td class="num">${r.seen}</td><td class="num">${r.rate === null ? "-" : r.rate + "%"}</td></tr>`).join("") +
     `</table>`;
 }
 
@@ -319,7 +319,7 @@ function showCourse(catId) {
   $("#course-title").textContent = c.title;
   $("#course-desc").textContent = c.description;
   const practicedCount = lessons.filter((l) => s.lessons[l.id]?.practiced).length;
-  $("#course-progress").textContent = `合格 ${done} / ${lessons.length} ・ 実践 ${practicedCount} / ${lessons.length}${c.planned.length ? ` ・ 準備中 ${c.planned.length}` : ""}`;
+  $("#course-progress").textContent = `合格 ${done} / ${lessons.length} ・ 実践 ${practicedCount} / ${lessons.length} ・ ${c.questionCount} 問${c.planned.length ? ` ・ 準備中 ${c.planned.length}` : ""}`;
   const total = lessons.length + c.planned.length;
   $("#course-bar").style.width = `${total ? (100 * done) / total : 0}%`;
   if (next) {

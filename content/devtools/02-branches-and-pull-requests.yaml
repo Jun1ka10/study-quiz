@@ -1,0 +1,52 @@
+lesson: dt-02
+questions:
+- id: dt-l02-1
+  difficulty: 1
+  question: "「main は常にデプロイ可能」を守るための仕組みは?"
+  choices:
+  - "main に直接 push して毎回テストする"
+  - "作業はブランチで行い、PR で CI とレビューを通してからマージする。Branch protection で直接 push を禁止する"
+  - "デプロイ前に手動で確認する"
+  - "ブランチを使わない"
+  answer: 1
+  explanation: "1 人開発でも「PR 必須 + CI 必須」は入れる。自分のミスを機械が止める。"
+- id: dt-l02-2
+  difficulty: 2
+  question: "PR が 1500 行になった。どうすべきか?"
+  choices:
+  - "そのままレビューを依頼する"
+  - "目的ごとに分割する (土台 → API → 画面)。リファクタリングやフォーマット変更は別 PR に"
+  - "説明を長く書く"
+  - "レビューを省略する"
+  answer: 1
+  explanation: "大きい PR はレビューの質が落ち、バグが通る。300 行以下、15 分で読める量が目安。"
+- id: dt-l02-3
+  difficulty: 1
+  question: "PR の説明で最も重要な項目は?"
+  choices:
+  - "変更したファイル一覧"
+  - "「なぜ」この変更をするのか。コードは「何を」は語るが「なぜ」は残らない"
+  - "コミット数"
+  - "作業時間"
+  answer: 1
+  explanation: "半年後に「なぜこうなっているか」を知る手がかりは PR の説明と Issue のリンク。"
+- id: dt-l02-4
+  difficulty: 2
+  question: "`git push --force-with-lease` と `--force` の違いは?"
+  choices:
+  - "同じ"
+  - "--force-with-lease はリモートに自分が知らない更新があれば拒否する。--force は無条件に上書きし他人のコミットを消し得る"
+  - "--force の方が安全"
+  - "--force-with-lease は main 専用"
+  answer: 1
+  explanation: "rebase 後の自分のブランチには --force-with-lease。main や共有ブランチには どちらも使わない。"
+- id: dt-l02-5
+  difficulty: 1
+  question: "Squash and merge の利点は?"
+  choices:
+  - "履歴が全部残る"
+  - "PR が main 上で 1 コミットになり履歴が読みやすい。作業中のコミットは雑でよく、PR のタイトルが最終メッセージになる"
+  - "コンフリクトが起きない"
+  - "CI が速くなる"
+  answer: 1
+  explanation: "revert も PR 単位でできる。細かい履歴を残したい場合だけ Merge commit。"

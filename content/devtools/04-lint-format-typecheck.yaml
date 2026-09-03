@@ -1,0 +1,42 @@
+lesson: dt-04
+questions:
+- id: dt-l04-1
+  difficulty: 1
+  question: "フォーマッタと linter の違いは?"
+  choices:
+  - "同じ"
+  - "フォーマッタは見た目を機械的に揃える (議論しない)。linter は未使用変数やバグの温床など怪しいコードを検出する"
+  - "linter は TypeScript 専用"
+  - "フォーマッタはバグを直す"
+  answer: 1
+  explanation: "ruff は両方、TS は prettier + eslint。型チェッカー (mypy / tsc) は第 3 の道具。"
+- id: dt-l04-2
+  difficulty: 2
+  question: "CI で lint を「警告」ではなく「失敗」にする理由は?"
+  choices:
+  - "厳しくしたいから"
+  - "警告は誰も見ず、違反が積み上がる。失敗にすればマージ前に必ず直される"
+  - "失敗の方が速い"
+  - "理由は無い"
+  answer: 1
+  explanation: "手元では --fix と保存時整形で自動修正、CI では直さず落とす、の使い分け。"
+- id: dt-l04-3
+  difficulty: 2
+  question: "既存の大きなコードベースに ruff を導入するとき、最初にすべきことは?"
+  choices:
+  - "全ルールを有効にして全部直す 1 つの巨大 PR"
+  - "フォーマッタを 1 回だけ全体に掛けて単独コミットにし (blame-ignore に登録)、linter は既存違反を一旦許して新規コードから厳しくする"
+  - "導入しない"
+  - "新しいリポジトリに作り直す"
+  answer: 1
+  explanation: "巨大差分はレビューできず、機能変更と混ざると事故になる。段階的に。"
+- id: dt-l04-4
+  difficulty: 1
+  question: "pre-commit に gitleaks を入れる効果は?"
+  choices:
+  - "コミットが速くなる"
+  - "API キーなどの秘密がコミットに含まれていたらコミット自体を止める。push した時点で漏れる事故を防ぐ"
+  - "コードを整形する"
+  - "テストを回す"
+  answer: 1
+  explanation: "CI でも回すが、pre-commit なら履歴に入る前に止まる。"

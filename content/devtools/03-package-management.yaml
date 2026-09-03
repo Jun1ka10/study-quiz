@@ -1,0 +1,42 @@
+lesson: dt-03
+questions:
+- id: dt-l03-1
+  difficulty: 1
+  question: "CI で `npm install` ではなく `npm ci` を使う理由は?"
+  choices:
+  - "速いだけ"
+  - "package-lock.json 通りに厳密に入れ、ロックを書き換えない。手元・CI・本番で同じものが入る"
+  - "npm install は本番で使えない"
+  - "違いは無い"
+  answer: 1
+  explanation: "Python なら `uv sync --frozen` / `poetry install --sync` が同じ役割。"
+- id: dt-l03-2
+  difficulty: 1
+  question: "`dependencies` と `devDependencies` の違いは?"
+  choices:
+  - "同じ"
+  - "dependencies は本番の実行に必要、devDependencies はビルド・lint・テストなど開発時だけ。本番イメージでは dev を入れない"
+  - "devDependencies は Node 専用"
+  - "dependencies はテスト用"
+  answer: 1
+  explanation: "本番に入れないことでイメージが小さくなり攻撃面も減る。TypeScript や eslint は dev。"
+- id: dt-l03-3
+  difficulty: 2
+  question: "`\"react\": \"^19.0.0\"` の `^` の意味は?"
+  choices:
+  - "19.0.0 固定"
+  - "メジャー (19) を固定し、マイナー・パッチの更新 (19.x.x) を許す"
+  - "19 以上なら何でも"
+  - "19.0.x のみ"
+  answer: 1
+  explanation: "実際に入るバージョンはロックが決める。`^` は「ロック更新時にどこまで上げてよいか」の範囲。"
+- id: dt-l03-4
+  difficulty: 2
+  question: "Node のバージョン違いで「手元では動くのに CI で落ちる」を防ぐには?"
+  choices:
+  - "CI を無効化"
+  - "`.nvmrc` / `.node-version` にバージョンを書き、CI の setup-node にも同じ値を指定する。Python なら requires-python と .python-version"
+  - "最新版を常に使う"
+  - "node_modules をコミットする"
+  answer: 1
+  explanation: "ランタイムのバージョンも「宣言して固定」の対象。node_modules や .venv はコミットしない。"

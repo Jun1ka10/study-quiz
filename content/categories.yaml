@@ -83,9 +83,3 @@ categories:
     prefix: dt
     description: Git・GitHub・パッケージ管理・Lint・LLM API。毎日触る道具
     planned:
-      - ブランチと Pull Request の運用
-      - パッケージ管理 (poetry / uv / npm) とロックファイル
-      - ruff / eslint / 型チェック
-      - .env と秘密情報の扱い
-      - LLM API を呼ぶ (Anthropic / OpenAI SDK)
-      - Claude Code とスキルの書き方

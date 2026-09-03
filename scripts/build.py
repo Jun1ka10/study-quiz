@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from datetime import UTC, datetime
 from pathlib import Path
 
 import markdown
@@ -29,11 +30,25 @@ FRONTMATTER_RE = re.compile(r"\A---\n(.*?)\n---\n(.*)\Z", re.S)
 LESSON_FILE_RE = re.compile(r"^(\d{2})-[a-z0-9-]+\.md$")
 
 SW_TEMPLATE = """// 自動生成: scripts/build.py が書き出す。直接編集しない。
-const CACHE = "study-quiz-__VERSION__";
+const VERSION = "__VERSION__";
+const CACHE = "study-quiz-" + VERSION;
 const ASSETS = __ASSETS__;
 
+// install: 全ファイルを取り直してキャッシュ。cache: "reload" で HTTP キャッシュ (GitHub Pages は 10 分) を迂回する
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE)
+      .then((c) => Promise.all(ASSETS.map((u) =>
+        fetch(new Request(u, { cache: "reload" })).then((r) => {
+          if (!r.ok) throw new Error("fetch failed: " + u);
+          return c.put(u, r);
+        }))))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener("message", (e) => {
+  if (e.data === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("activate", (e) => {
@@ -205,17 +220,21 @@ def load_all() -> dict:
 
 def build() -> dict:
     data = load_all()
+    payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+
+    # 内容のハッシュをバージョンにする → 何か変わればキャッシュが更新される。
+    # data.json 自身には version を埋めるので、ハッシュは埋める前の payload で取る
+    h = hashlib.sha256(payload.encode("utf-8"))
+    for name in APP_SHELL:
+        p = SITE_DIR / name
+        if p.is_file() and name != "data.json":
+            h.update(p.read_bytes())
+    version = h.hexdigest()[:12]
+
+    data["meta"] = {"version": version, "builtAt": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")}
     (SITE_DIR / "data.json").write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     for stale in ("questions.json",):
         (SITE_DIR / stale).unlink(missing_ok=True)
-
-    # 内容のハッシュをバージョンにする → 何か変わればキャッシュが更新される
-    h = hashlib.sha256()
-    for name in APP_SHELL:
-        p = SITE_DIR / name
-        if p.is_file():
-            h.update(p.read_bytes())
-    version = h.hexdigest()[:12]
     sw = SW_TEMPLATE.replace("__VERSION__", version).replace("__ASSETS__", json.dumps(APP_SHELL))
     (SITE_DIR / "sw.js").write_text(sw, encoding="utf-8")
     return {

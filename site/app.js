@@ -133,6 +133,7 @@ function mount(tplId, pushHistory = true) {
 }
 
 function showHome() {
+  if (updateReady) { location.reload(); return; }
   mount("tpl-home", false);
   const s = loadState();
 
@@ -203,6 +204,9 @@ function showHome() {
   };
 
   renderStats(s);
+  $("#app-version").textContent = DATA.meta?.version || "-";
+  $("#app-built").textContent = DATA.meta?.builtAt || "-";
+  $("#btn-check-update").onclick = checkForUpdate;
   $("#btn-reset").onclick = () => {
     if (confirm("レッスンの進捗と成績をすべて消しますか?")) {
       localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(LEGACY_KEY); showHome();
@@ -348,12 +352,59 @@ async function main() {
   window.addEventListener("offline", updateOnline);
   updateOnline();
 
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js").catch((e) => console.warn("SW 登録失敗", e));
-  }
+  setupUpdates();
   const res = await fetch("data.json");
   DATA = await res.json();
   history.replaceState({ screen: "tpl-home" }, "");
   showHome();
+}
+
+// ---------- 更新 (Service Worker) ----------
+// 新しい sw.js が見つかると install → skipWaiting → controllerchange の順に進む。
+// controllerchange が来たら: ホーム画面なら即再読み込み、問題を解いている途中ならバナーを出して任せる。
+// PWA は起動しっぱなしになりやすいので、前面に戻るたびに update() で確認する。
+let swRegistration = null;
+let updateReady = false;
+
+function setupUpdates() {
+  if (!("serviceWorker" in navigator)) return;
+  const btn = $("#btn-update");
+  btn.onclick = () => location.reload();
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    updateReady = true;
+    if (!navigator.serviceWorker.controller || app.querySelector("#courses")) { location.reload(); return; }
+    btn.hidden = false;
+  });
+  navigator.serviceWorker.register("sw.js")
+    .then((reg) => {
+      swRegistration = reg;
+      if (reg.waiting) reg.waiting.postMessage("SKIP_WAITING");
+    })
+    .catch((e) => console.warn("SW 登録失敗", e));
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && swRegistration) swRegistration.update().catch(() => {});
+  });
+}
+
+// ホームの「更新を確認」。見つかれば controllerchange 経由で再読み込みされる
+async function checkForUpdate() {
+  const status = $("#update-status");
+  if (!swRegistration) { status.textContent = "この環境では更新確認を使えません"; return; }
+  if (!navigator.onLine) { status.textContent = "オフラインのため確認できません"; return; }
+  status.textContent = "確認中...";
+  try {
+    const reg = await swRegistration.update();
+    if (reg.installing || reg.waiting) {
+      status.textContent = "新しい版を取得しています。まもなく再読み込みします";
+      if (reg.waiting) reg.waiting.postMessage("SKIP_WAITING");
+    } else if (updateReady) {
+      status.textContent = "新しい版の準備ができています";
+      location.reload();
+    } else {
+      status.textContent = "最新です";
+    }
+  } catch (e) {
+    status.textContent = "確認に失敗しました: " + e;
+  }
 }
 main().catch((e) => { app.innerHTML = `<p>読み込みに失敗しました: ${escapeHtml(String(e))}</p>`; });

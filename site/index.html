@@ -16,6 +16,7 @@
   <header class="topbar">
     <button id="btn-home" class="link" aria-label="ホームへ">Study Quiz</button>
     <span id="offline-badge" class="badge" hidden>オフライン</span>
+    <button id="btn-update" class="update-btn" hidden>新しい版があります。タップで更新</button>
   </header>
 
   <main id="app" class="screen"></main>
@@ -55,6 +56,11 @@
       <h2>成績</h2>
       <div id="stats"></div>
       <button id="btn-reset" class="link danger">学習記録をリセット</button>
+
+      <h2>アプリ</h2>
+      <p class="meta">版: <span id="app-version"></span> (<span id="app-built"></span>)</p>
+      <button id="btn-check-update" class="link">更新を確認</button>
+      <p id="update-status" class="meta"></p>
     </section>
   </template>
 

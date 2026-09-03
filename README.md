@@ -25,9 +25,13 @@ uv run python -m http.server -d site 8000
 # → http://localhost:8000 を開く
 ```
 
-スマホで使うには、どこかの静的ホスティング (GitHub Pages / Cloud Storage / S3 など) に `site/` を置き、
-ブラウザで開いて「ホーム画面に追加」する。以降はオフラインでも起動できる。
-問題を更新したら build して再デプロイすれば、次回オンライン時に自動でキャッシュが更新される。
+## 公開 URL (スマホ用)
+
+https://jun1ka10.github.io/study-quiz/
+
+`main` に push すると GitHub Actions (`.github/workflows/pages.yml`) がテスト → build → GitHub Pages へデプロイする。
+スマホのブラウザで上の URL を開き「ホーム画面に追加」すれば、以降はオフラインでも起動できる。
+問題を更新して push すれば、次回オンライン時に自動でキャッシュが更新される。
 
 ## 問題の追加
 

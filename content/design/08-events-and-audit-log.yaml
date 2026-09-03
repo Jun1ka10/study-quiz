@@ -1,0 +1,52 @@
+lesson: de-08
+questions:
+- id: de-l08-1
+  difficulty: 1
+  question: "「状態を上書きする」設計の欠点は?"
+  choices:
+  - "遅い"
+  - "履歴が失われ、「いつ変わったか」「推移」を後から出せない。事実 (イベント) を積み、状態はそこから導く"
+  - "容量が増える"
+  - "欠点は無い"
+  answer: 1
+  explanation: "回答ログ (attempts) を積んでおけば、間隔反復のルールを変えても全員分を再計算できる。"
+- id: de-l08-2
+  difficulty: 2
+  question: "監査ログとアプリケーションログの違いは?"
+  choices:
+  - "同じ"
+  - "監査ログは説明責任 (誰が何をしたか) のため、選別した操作を長期・改ざん耐性ありで保持する。アプリログは障害調査のため、大量・短期"
+  - "監査ログは DEBUG レベル"
+  - "アプリログの方が長く保持する"
+  answer: 1
+  explanation: "混ぜず、監査は別テーブルか別ストレージ (Object Lock 等)。アプリの DB ロールには INSERT のみ。"
+- id: de-l08-3
+  difficulty: 2
+  question: "Outbox パターンが解く問題は?"
+  choices:
+  - "性能"
+  - "「DB に書いたのに通知されない」「通知したのに DB に書けていない」の不整合。イベントを同じトランザクションで outbox に書き、別プロセスが読んで処理する"
+  - "認証"
+  - "キャッシュ"
+  answer: 1
+  explanation: "外部 API 呼び出しをトランザクションの中でやらない。処理側は冪等に。"
+- id: de-l08-4
+  difficulty: 2
+  question: "イベントテーブルに対して許可すべき操作は?"
+  choices:
+  - "全部"
+  - "INSERT と SELECT のみ。UPDATE / DELETE はしない。訂正は訂正イベントを積む"
+  - "UPDATE のみ"
+  - "DELETE のみ"
+  answer: 1
+  explanation: "不変であることが「事実の記録」の価値。DB ロールでも権限を絞る。"
+- id: de-l08-5
+  difficulty: 1
+  question: "状態テーブル (review_schedule など) を持ち続ける理由は?"
+  choices:
+  - "イベントから毎回集計すると遅いので、導出結果のキャッシュとして持つ。壊れたらイベントから再構築できる"
+  - "イベントより信頼できる"
+  - "イベントは消すから"
+  - "理由は無い"
+  answer: 0
+  explanation: "「正はイベント、状態は導出」と役割を決めておく。再構築 Job を用意する。"

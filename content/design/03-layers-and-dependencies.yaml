@@ -1,0 +1,52 @@
+lesson: de-03
+questions:
+- id: de-l03-1
+  difficulty: 1
+  question: "クリーンアーキテクチャで「依存は内向き」とは?"
+  choices:
+  - "DB がドメインに依存する"
+  - "外側 (HTTP / DB) が内側 (ユースケース / ドメイン) に依存し、内側は外側を知らない。ドメインは何も import しない"
+  - "全部が互いに依存してよい"
+  - "ドメインが FastAPI に依存する"
+  answer: 1
+  explanation: "内側を変えずに DB やフレームワークを差し替えられ、内側のテストが外部無しで書ける。"
+- id: de-l03-2
+  difficulty: 2
+  question: "Repository パターンの役割は?"
+  choices:
+  - "SQL を速くする"
+  - "永続化の詳細 (SQLAlchemy / ORM / ファイル) をユースケースから隠し、コレクションのようなインターフェースにする。テストでは偽物に差し替える"
+  - "キャッシュ"
+  - "テーブルごとにクラスを作ること"
+  answer: 1
+  explanation: "`repo.add(attempt)` と書く側は DB を知らない。Protocol で抽象を定義し、SQL 実装と Fake 実装を持つ。"
+- id: de-l03-3
+  difficulty: 2
+  question: "小さなアプリで層を切る目安として適切なのは?"
+  choices:
+  - "最初から 4 層を全部作る"
+  - "まず「ルーター / ビューにロジックを書かない」だけ。差し替えやテストが要る境界が現れたら Protocol と層を足す"
+  - "層は作らない"
+  - "DB を使わない"
+  answer: 1
+  explanation: "予防的な層はファイルを増やすだけ。YAGNI。境界は必要になった時に切る。"
+- id: de-l03-4
+  difficulty: 2
+  question: "Pydantic のスキーマ (API の入出力) とドメインの dataclass を分ける理由は?"
+  choices:
+  - "分けなくてよい"
+  - "API の形は外部との契約、ドメインは内部の表現で、変わる理由が違う。同じにすると API の都合が内部に漏れる"
+  - "Pydantic が遅い"
+  - "dataclass が古い"
+  answer: 1
+  explanation: "小さいうちは同じでも動くが、API のバージョン違いや内部だけの属性が出てきた時に困る。"
+- id: de-l03-5
+  difficulty: 1
+  question: "Django でビューが肥大化したときの定番の逃がし先は?"
+  choices:
+  - "テンプレート"
+  - "アプリごとの services.py にユースケース関数を置き、ビューは入力を受けて呼んで返すだけにする"
+  - "urls.py"
+  - "settings.py"
+  answer: 1
+  explanation: "Django では ORM を Repository で隠すのは過剰なことが多く、services が ORM を直接使ってよい。"

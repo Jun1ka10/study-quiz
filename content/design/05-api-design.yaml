@@ -1,0 +1,52 @@
+lesson: de-05
+questions:
+- id: de-l05-1
+  difficulty: 1
+  question: "「レッスンを完了にする」操作の URL 設計として適切なのは?"
+  choices:
+  - "GET /completeLesson?id=1"
+  - "POST /lessons/1/complete  (状態遷移はサブリソース + POST)"
+  - "PUT /lessons/1?status=done"
+  - "DELETE /lessons/1"
+  answer: 1
+  explanation: "GET は副作用なし。動詞 URL は避け、遷移はサブリソースで表す。"
+- id: de-l05-2
+  difficulty: 2
+  question: "エラーでも常に 200 を返し本文に `ok: false` を入れる設計の問題は?"
+  choices:
+  - "問題ない"
+  - "クライアントの分岐、ログの集計、ロードバランサやリトライの判断がすべてステータスに依存しており、全部壊れる"
+  - "遅い"
+  - "本文が大きい"
+  answer: 1
+  explanation: "4xx / 5xx を正しく返し、本文は統一した形の error オブジェクトにする。"
+- id: de-l05-3
+  difficulty: 2
+  question: "一覧 API で offset ではなくカーソルを使う理由は?"
+  choices:
+  - "見た目"
+  - "offset は件数が増えると遅く、途中で挿入があると次ページがずれる。カーソル (最後の id) は安定して速い"
+  - "カーソルの方が実装が簡単"
+  - "理由は無い"
+  answer: 1
+  explanation: "`WHERE id > :last ORDER BY id LIMIT 50` はインデックスで一定時間。"
+- id: de-l05-4
+  difficulty: 2
+  question: "公開 API で「互換性を壊さない変更」は?"
+  choices:
+  - "フィールドの改名"
+  - "レスポンスにフィールドを追加する"
+  - "必須パラメータの追加"
+  - "ステータスコードの変更"
+  answer: 1
+  explanation: "追加は安全。削除・改名・型変更・必須化は壊す。クライアントは未知のフィールドを無視する前提で作る。"
+- id: de-l05-5
+  difficulty: 2
+  question: "POST を冪等にする仕組みは?"
+  choices:
+  - "できない"
+  - "クライアントが Idempotency-Key を付け、サーバーはキーごとに結果を保存して 2 回目は同じ結果を返す"
+  - "GET に変える"
+  - "リトライを禁止する"
+  answer: 1
+  explanation: "ネットワークは失敗し再送される前提。決済 API はほぼこの仕組みを持つ。"

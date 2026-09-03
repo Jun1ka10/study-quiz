@@ -1,59 +1,126 @@
-# カテゴリの並び順と説明。planned は「これから書くレッスン」でホームに準備中として出る
+# カテゴリの並び順と説明。
+#   prefix:  問題 id の接頭辞 (テストで検証)
+#   planned: これから書くレッスン。ホームに「準備中」として並ぶ
+# 対象は agent-base (FastAPI + Next.js + GCP/Terraform) と mokujitsu / backsimp (Django + EC2) で
+# 実際に使われている技術を全部カバーすること。
 categories:
   - id: python
     title: Python
+    prefix: py
     description: 文法の基礎から、実務で困らない書き方まで
     planned:
       - クラスと dataclass
-      - モジュール・パッケージ・仮想環境
+      - モジュール・パッケージ・仮想環境 (venv / poetry / uv)
       - 内包表記とジェネレータ
-      - 型ヒントと mypy
+      - 型ヒントと Pydantic
       - pytest でテストを書く
       - asyncio 入門
       - 標準ライブラリの要点 (pathlib / datetime / json / logging)
+      - requests と外部 API を呼ぶ (Slack / Stripe / Google API)
+
+  - id: javascript
+    title: JavaScript / TypeScript
+    prefix: js
+    description: ブラウザで動く素の JS から、TypeScript・React・Next.js まで
+    planned:
+      - DOM 操作とイベント
+      - モジュールと npm
+      - TypeScript の基本 (型・interface・ジェネリクス)
+      - React の基本 (コンポーネント・props・state)
+      - React の hooks (useState / useEffect / カスタム hook)
+      - Next.js (App Router・サーバー / クライアントコンポーネント)
+      - Tailwind CSS
+      - Playwright で E2E テスト
+
+  - id: backend
+    title: Web バックエンド
+    prefix: be
+    description: HTTP / REST から、Django・FastAPI・DB・認証まで
+    planned:
+      - REST API の設計 (リソース・メソッド・ステータス)
+      - Django の全体像 (MTV・settings・manage.py)
+      - Django モデルと ORM
+      - Django のビュー・URL・テンプレート
+      - Django REST framework
+      - FastAPI と Pydantic
+      - SQLAlchemy 2 と Alembic
+      - SQL と PostgreSQL の基礎
+      - インデックスとトランザクション
+      - 認証 (セッション / JWT / OAuth)
+      - 環境変数と設定 (.env / django-environ)
+      - バッチとスケジューラ (cron / APScheduler / Cloud Run Jobs)
+
+  - id: docker
+    title: Docker
+    prefix: dk
+    description: コンテナの仕組みから、本番用 Dockerfile・Cloud Run へのデプロイまで
+    planned:
+      - docker compose で開発環境を作る
+      - イメージを小さく安全にする (非 root・.dockerignore・キャッシュ)
+      - Artifact Registry / ECR へ push して Cloud Run で動かす
+      - コンテナのデバッグ (logs / exec / inspect)
 
   - id: design
     title: 設計
+    prefix: de
     description: 変更しやすく、壊れにくいコードの考え方
     planned:
       - レイヤーと依存の向き (クリーンアーキテクチャ)
       - DDD 入門 (エンティティ・値オブジェクト・集約)
-      - API 設計 (REST の作法・冪等性・バージョニング)
+      - API 設計 (冪等性・バージョニング・エラー表現)
       - テストしやすい設計
       - コードの匂いとリファクタリング
+      - イベントと監査ログ (誰が・いつ・何を)
 
   - id: aws
     title: AWS
-    description: アカウントの作り方から、よく使うサービスの設計まで
+    prefix: aws
+    description: mokujitsu が動いている EC2 + RDS + S3 の構成を理解する
     planned:
-      - EC2 と EBS
-      - S3 とストレージクラス
-      - IAM を深く (ポリシーの読み方)
-      - RDS と DynamoDB
-      - Lambda とサーバーレス
-      - ECS / Fargate
+      - EC2 と EBS (起動・SSH・cron で動かす)
+      - S3 と boto3
+      - RDS (PostgreSQL) の運用
+      - IAM を深く (ポリシーの読み方・ロールの設計)
+      - ロードバランサと証明書 (ALB / ACM / Route 53)
       - CloudWatch と CloudTrail
       - コスト管理
 
   - id: gcp
     title: GCP
-    description: プロジェクト階層と IAM から、Cloud Run・BigQuery まで
+    prefix: gcp
+    description: agent-base が動いている Cloud Run + Cloud SQL の構成を理解する
     planned:
-      - VPC とファイアウォール
+      - Cloud Run Jobs と Cloud Scheduler
+      - Cloud SQL (PostgreSQL) と Private IP
+      - Secret Manager
+      - Artifact Registry
+      - Workload Identity Federation (GitHub Actions から鍵なしで認証)
+      - Cloud Logging / Monitoring とアラート
       - Cloud Storage
       - BigQuery
-      - Cloud SQL と Spanner
-      - GKE
-      - Pub/Sub
-      - Cloud Build で CI/CD
 
   - id: infra
     title: インフラ
-    description: Linux・ネットワークの基礎から、コンテナ・IaC・監視まで
+    prefix: infra
+    description: Linux・ネットワークの基礎から、IaC・CI/CD・監視まで
     planned:
       - SSH と鍵認証
-      - Docker
-      - Kubernetes
-      - IaC (Terraform)
+      - cron と systemd timer
+      - Terraform の基本 (resource / variable / state)
+      - Terraform で GCP を組む (Cloud Run / IAM / Cloud SQL)
+      - GitHub Actions (workflow の書き方・secrets・OIDC)
+      - デプロイ戦略 (ローリング / カナリア / ロールバック)
       - 監視と SLO
-      - CI/CD
+      - Kubernetes の概要
+
+  - id: devtools
+    title: 開発ツール
+    prefix: dt
+    description: Git・GitHub・パッケージ管理・Lint・LLM API。毎日触る道具
+    planned:
+      - ブランチと Pull Request の運用
+      - パッケージ管理 (poetry / uv / npm) とロックファイル
+      - ruff / eslint / 型チェック
+      - .env と秘密情報の扱い
+      - LLM API を呼ぶ (Anthropic / OpenAI SDK)
+      - Claude Code とスキルの書き方

@@ -104,6 +104,9 @@ def load_categories() -> list[dict]:
     ids = [c["id"] for c in cats]
     if len(ids) != len(set(ids)):
         raise ContentError("categories.yaml: id が重複しています")
+    prefixes = [c.get("prefix") for c in cats]
+    if not all(prefixes) or len(prefixes) != len(set(prefixes)):
+        raise ContentError("categories.yaml: 各カテゴリに一意な prefix が必要です")
     return cats
 
 
@@ -190,6 +193,7 @@ def load_all() -> dict:
             {
                 "id": c["id"],
                 "title": c["title"],
+                "prefix": c["prefix"],
                 "description": c.get("description", ""),
                 "planned": c.get("planned", []),
                 "lessonCount": sum(1 for ls in lessons if ls["category"] == c["id"]),

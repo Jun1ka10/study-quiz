@@ -29,4 +29,5 @@ def test_each_lesson(lesson):
 
 @pytest.mark.parametrize("q", DATA["questions"], ids=lambda q: q["id"])
 def test_each_question(q):
-    assert q["id"].startswith(q["category"][:2]), "id の接頭辞はカテゴリ名の先頭 2 文字"
+    prefix = next(c["prefix"] for c in DATA["categories"] if c["id"] == q["category"])
+    assert q["id"].startswith(prefix + "-"), f"id の接頭辞はカテゴリの prefix ({prefix}-)"

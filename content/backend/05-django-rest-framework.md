@@ -1,7 +1,7 @@
 ---
 id: be-05
 title: Django REST framework
-summary: APIView とシリアライザ、認証と権限。mokujitsu の API がどう守られているか
+summary: APIView とシリアライザ、認証と権限。API をどう守るか
 minutes: 12
 questions:
   - id: be-l05-1
@@ -79,7 +79,7 @@ else:
 
 ## APIView
 
-mokujitsu が使っているのはこの形です。
+業務アプリでよく使う形です。
 
 ```python
 from rest_framework import status
@@ -130,7 +130,7 @@ class ApiKeyAuthentication(authentication.BaseAuthentication):
         return (client.user, client)           # (user, auth)
 ```
 
-外部システムから呼ばれる API (Slack、freee 連携) はこのように専用の認証クラスを書き、画面と同じセッション認証には頼りません。
+外部システムから呼ばれる API (チャットツールや会計サービスとの連携) はこのように専用の認証クラスを書き、画面と同じセッション認証には頼りません。
 
 権限は `IsAuthenticated` のほか、`BasePermission` を継承して `has_permission` を書けば自作できます。拒否は `PermissionDenied` を raise すれば 403 になります。
 

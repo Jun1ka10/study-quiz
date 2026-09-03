@@ -37,7 +37,7 @@ questions:
 
 「自分の環境では動くのに、サーバーでは動かない」。OS のバージョン、ライブラリ、環境変数、すべてを **イメージ** に閉じ込めて、どこでも同じように動かすのが Docker です。
 
-agent-base は backend (FastAPI) も frontend (Next.js) も Docker イメージにして Cloud Run で動かしています。
+FastAPI + Next.js 構成のアプリでは、backend も frontend も Docker イメージにして Cloud Run で動かします。
 
 ## イメージとコンテナ
 

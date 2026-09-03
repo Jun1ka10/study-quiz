@@ -1,7 +1,7 @@
 ---
 id: js-02
 title: 非同期処理と fetch
-summary: Promise / async / await と、API を呼ぶ fetch。mokujitsu の画面が API を叩く仕組み
+summary: Promise / async / await と、API を呼ぶ fetch。画面が API を叩く仕組み
 minutes: 12
 questions:
   - id: js-l02-1
@@ -124,7 +124,7 @@ button.addEventListener("click", async () => {
 });
 ```
 
-「ボタンを無効化 → 呼ぶ → 描画 → 失敗なら知らせる → 元に戻す」。mokujitsu のテンプレート内 JS はこの形の繰り返しです。
+「ボタンを無効化 → 呼ぶ → 描画 → 失敗なら知らせる → 元に戻す」。Django テンプレート内の JS はこの形の繰り返しです。
 
 ## まとめ
 

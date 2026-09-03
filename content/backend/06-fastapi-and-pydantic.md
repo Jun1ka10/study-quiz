@@ -50,7 +50,7 @@ questions:
 ```python
 from fastapi import FastAPI
 
-app = FastAPI(title="MokujitsuAgentBase API")
+app = FastAPI(title="My API")
 
 @app.get("/healthz")
 def healthz():
@@ -65,7 +65,7 @@ uvicorn main:app --reload --port 8080     # 開発
 
 ## ルーターで分割する
 
-agent-base は機能ごとに `routers/actors.py` のようにファイルを分け、`main.py` で束ねています。
+機能ごとに `routers/actors.py` のようにファイルを分け、`main.py` で束ねます。
 
 ```python
 # routers/actors.py
@@ -162,7 +162,7 @@ def me(user: User = Depends(get_current_user)):
 - 依存は入れ子にできる (`get_current_user` が `get_db` に依存)
 - テストでは `app.dependency_overrides[get_db] = fake_db` で差し替えられる
 
-agent-base の `deps.py` にある `get_scope_dep` などはこの仕組みで、「誰が・どの org で」を各ハンドラに配っています。
+「誰が・どの組織で」のような文脈も、この仕組みで各ハンドラに配ります。
 
 ## エラーの返し方
 
@@ -180,7 +180,7 @@ raise HTTPException(status_code=403, detail="forbidden")
 | | Django | FastAPI |
 |---|---|---|
 | 入力検証 | シリアライザ / フォーム | Pydantic (型ヒント) |
-| DB | 自前 ORM | 好きなもの (agent-base は SQLAlchemy) |
+| DB | 自前 ORM | 好きなもの (SQLAlchemy が定番) |
 | 認証 | ミドルウェア + セッション | Depends で自前 (JWT が多い) |
 | 画面 | テンプレート | 無い |
 | 型による自動ドキュメント | 無い | `/docs` |

@@ -39,14 +39,14 @@ questions:
       - "DB を作り直す"
       - "SQL を手で流す"
     answer: 1
-    explanation: "autogenerate は完璧ではない (型変更や rename を見落とす) ので必ず生成ファイルを読む。agent-base は 100 本以上のリビジョンを積んでいる。"
+    explanation: "autogenerate は完璧ではない (型変更や rename を見落とす) ので必ず生成ファイルを読む。長く運用すると 100 本を超えるリビジョンが積み上がる。"
 ---
 ## 役割分担
 
 - **SQLAlchemy**: Python のクラスとテーブルを対応付け、SQL を組み立てる (ORM)
 - **Alembic**: モデルの変更を DB に反映するマイグレーションツール (Django の makemigrations / migrate に相当)
 
-Django は両方が同梱ですが、FastAPI では自分で組み合わせます。agent-base はこの構成です。
+Django は両方が同梱ですが、FastAPI では自分で組み合わせます。
 
 ## エンジンとセッション
 
@@ -164,7 +164,7 @@ def downgrade():
     op.drop_column("organizations", "color")
 ```
 
-**autogenerate は必ず目で確認します。** 列名の変更を「削除 + 追加」と解釈してデータを消したり、型変更を見落としたりします。agent-base では migration 専用の Cloud Run Job がデプロイ時に `alembic upgrade head` を実行します。
+**autogenerate は必ず目で確認します。** 列名の変更を「削除 + 追加」と解釈してデータを消したり、型変更を見落としたりします。本番では migration 専用のジョブ (Cloud Run Job など) がデプロイ時に `alembic upgrade head` を実行する形にします。
 
 ## まとめ
 

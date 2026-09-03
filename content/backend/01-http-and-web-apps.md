@@ -25,7 +25,7 @@ questions:
       - "FastAPI は DB を使えない"
       - "Django は API を作れない"
     answer: 1
-    explanation: "mokujitsu は Django (テンプレートで画面も出す)、agent-base は FastAPI (API のみ、画面は Next.js)。用途で選んでいる。"
+    explanation: "画面まで出す業務アプリは Django、API だけ提供して画面は Next.js に任せる構成は FastAPI、のように用途で選ぶ。"
   - id: be-l01-4
     difficulty: 2
     question: "ステータスコード 502 / 503 / 504 を見たとき、まず疑うべき場所は?"
@@ -45,7 +45,7 @@ questions:
 3. アプリ (Django / FastAPI) がパスを見て処理を選び (**ルーティング**)、必要なら DB に問い合わせる
 4. HTML (画面) か JSON (API) を **HTTP レスポンス** として返す
 
-mokujitsu は 4 で HTML を返し、そのページ内の JS が追加で JSON API を呼びます。agent-base は API が JSON だけを返し、画面は Next.js が組み立てます。
+Django 構成では 4 で HTML を返し、そのページ内の JS が追加で JSON API を呼びます。FastAPI + Next.js 構成では API が JSON だけを返し、画面は Next.js が組み立てます。
 
 ## HTTP リクエスト
 
@@ -88,7 +88,7 @@ Content-Type: application/json
 
 ## 状態を持たない HTTP と、セッション
 
-HTTP は 1 回ごとに独立していて、前のリクエストを覚えていません。「ログイン済み」を覚えるために **Cookie** にセッション ID を入れ、サーバー側で対応表を持つ (Django のセッション) か、署名付きトークン (JWT) を持たせます (agent-base)。
+HTTP は 1 回ごとに独立していて、前のリクエストを覚えていません。「ログイン済み」を覚えるために **Cookie** にセッション ID を入れ、サーバー側で対応表を持つ (Django のセッション) か、署名付きトークン (JWT) を持たせます (API 分離型の構成で多い)。
 
 ## Django と FastAPI
 
@@ -97,7 +97,7 @@ HTTP は 1 回ごとに独立していて、前のリクエストを覚えてい
 | 性格 | フルスタック。ORM・管理画面・認証・テンプレート同梱 | API 特化。軽量で型 (Pydantic) が中心 |
 | 画面 | テンプレートで HTML を返せる | 返さない (フロントは別) |
 | DB | 自前 ORM + migrations | SQLAlchemy + Alembic を組み合わせる |
-| 使っている所 | mokujitsu, backsimp | agent-base |
+| 向いている用途 | 管理画面込みの業務アプリ | フロントを分離した API サーバー |
 
 どちらも「パスに関数を対応させ、リクエストを受けてレスポンスを返す」という同じ仕事をしています。
 

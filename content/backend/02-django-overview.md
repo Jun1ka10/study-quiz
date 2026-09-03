@@ -1,7 +1,7 @@
 ---
 id: be-02
 title: Django の全体像
-summary: プロジェクトとアプリ、settings、manage.py、リクエストが流れる順番。mokujitsu の構造を読めるようになる
+summary: プロジェクトとアプリ、settings、manage.py、リクエストが流れる順番。Django プロジェクトの構造を読めるようになる
 minutes: 12
 questions:
   - id: be-l02-1
@@ -13,7 +13,7 @@ questions:
       - "アプリの中に複数のプロジェクトがある"
       - "アプリは外部ライブラリのことだけを指す"
     answer: 1
-    explanation: "mokujitsu なら `mokujitsu/` (settings.py, urls.py) がプロジェクト、`members/` `invoices/` `expenses/` がアプリ。アプリは INSTALLED_APPS に登録して有効化する。"
+    explanation: "`config/` (settings.py, urls.py) がプロジェクト、`members/` `invoices/` `expenses/` がアプリ。アプリは INSTALLED_APPS に登録して有効化する。"
   - id: be-l02-2
     difficulty: 1
     question: "リクエストが処理される順序として正しいのは?"
@@ -48,9 +48,9 @@ questions:
 ## プロジェクトとアプリ
 
 ```
-mokujitsu/                  ← リポジトリ
+myproject/                  ← リポジトリ
 ├── manage.py               ← コマンドの入口
-├── mokujitsu/              ← プロジェクト (設定)
+├── config/                 ← プロジェクト (設定)
 │   ├── settings.py
 │   ├── urls.py             ← URL の入口
 │   └── wsgi.py / asgi.py   ← サーバーとの接続点
@@ -91,10 +91,10 @@ python manage.py migrate            # DB に適用
 python manage.py createsuperuser    # 管理画面のユーザー
 python manage.py shell              # Django 環境入りの Python シェル
 python manage.py test               # テスト
-python manage.py <自作コマンド>      # management/commands/ に置いたもの。mokujitsu の cron はこれを呼ぶ
+python manage.py <自作コマンド>      # management/commands/ に置いたもの。cron からはこれを呼ぶ
 ```
 
-mokujitsu では poetry 経由なので `poetry run python manage.py ...` です。
+poetry で管理しているなら `poetry run python manage.py ...` です。
 
 ## settings.py で押さえる項目
 
@@ -110,7 +110,7 @@ mokujitsu では poetry 経由なので `poetry run python manage.py ...` です
 
 ## 設定は環境変数から
 
-パスワードや API キーを settings.py に書くと Git に残ります。mokujitsu は **django-environ** で `.env` から読みます。
+パスワードや API キーを settings.py に書くと Git に残ります。**django-environ** で `.env` から読むのが定番です。
 
 ```python
 import environ

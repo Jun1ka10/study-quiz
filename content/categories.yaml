@@ -1,8 +1,8 @@
 # カテゴリの並び順と説明。
 #   prefix:  問題 id の接頭辞 (テストで検証)
 #   planned: これから書くレッスン。ホームに「準備中」として並ぶ
-# 対象は agent-base (FastAPI + Next.js + GCP/Terraform) と mokujitsu / backsimp (Django + EC2) で
-# 実際に使われている技術を全部カバーすること。
+# 対象は「Django + EC2 構成」と「FastAPI + Next.js + Cloud Run (Terraform) 構成」の
+# 2 種類の業務アプリで実際に使われている技術を全部カバーすること。
 categories:
   - id: python
     title: Python
@@ -69,7 +69,7 @@ categories:
   - id: aws
     title: AWS
     prefix: aws
-    description: mokujitsu が動いている EC2 + RDS + S3 の構成を理解する
+    description: EC2 + RDS + S3 で動く Django アプリの構成を理解する
     planned:
       - EC2 と EBS (起動・SSH・cron で動かす)
       - S3 と boto3
@@ -82,7 +82,7 @@ categories:
   - id: gcp
     title: GCP
     prefix: gcp
-    description: agent-base が動いている Cloud Run + Cloud SQL の構成を理解する
+    description: Cloud Run + Cloud SQL で動く API アプリの構成を理解する
     planned:
       - Cloud Run Jobs と Cloud Scheduler
       - Cloud SQL (PostgreSQL) と Private IP

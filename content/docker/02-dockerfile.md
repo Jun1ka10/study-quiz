@@ -68,7 +68,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]   # 起動時
 
 ## キャッシュが効く順番
 
-`COPY . .` を最初に書くと、ソースを 1 文字変えただけで `pip install` からやり直しになります。**依存定義だけ先に COPY して install** し、ソースはその後に COPY します。agent-base の backend/Dockerfile もこの順です。
+`COPY . .` を最初に書くと、ソースを 1 文字変えただけで `pip install` からやり直しになります。**依存定義だけ先に COPY して install** し、ソースはその後に COPY します。本番用の Dockerfile はこの順で書きます。
 
 ```dockerfile
 COPY backend/requirements.txt /app/backend/requirements.txt
@@ -80,7 +80,7 @@ COPY backend /app/backend          # ← ここだけ毎回変わる
 
 ## マルチステージビルド
 
-Next.js のように「ビルドには node_modules 全部が要るが、動かすには成果物だけでいい」場合に使います。agent-base の frontend/Dockerfile がこの形です。
+Next.js のように「ビルドには node_modules 全部が要るが、動かすには成果物だけでいい」場合に使います。Next.js の本番用 Dockerfile はこの形です。
 
 ```dockerfile
 FROM node:20-alpine AS deps

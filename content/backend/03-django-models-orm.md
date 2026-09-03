@@ -74,7 +74,7 @@ class Invoice(models.Model):
 | `DateField` / `DateTimeField` | 日付 / 日時 |
 | `ForeignKey` | 多対 1。`on_delete` は必須 |
 | `ManyToManyField` | 多対多 |
-| `UUIDField` | mokujitsu は主キーに UUID を使っている |
+| `UUIDField` | 主キーを UUID にしたいとき |
 
 `on_delete` は「参照先が消えたらどうするか」。`CASCADE` (一緒に消す) は便利ですが、請求書のように消えて困るものは `PROTECT` にします。
 

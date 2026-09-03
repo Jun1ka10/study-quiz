@@ -67,7 +67,7 @@ def member_detail(request, pk):
 - 戻り値は `HttpResponse`。`render` (テンプレート → HTML)、`redirect`、`JsonResponse` がそれを作る
 - `@login_required` で未ログインをログイン画面へ
 
-mokujitsu はこの **関数ビュー** 主体です。クラスベースビュー (ListView など) もありますが、読むときは「結局 request を受けて response を返す」と考えれば同じです。
+このレッスンは **関数ビュー** 主体で説明します。クラスベースビュー (ListView など) もありますが、読むときは「結局 request を受けて response を返す」と考えれば同じです。
 
 ## urls.py
 
@@ -82,7 +82,7 @@ urlpatterns = [
     path("csv", views.member_csv_download, name="member/csv"),
 ]
 
-# mokujitsu/urls.py (プロジェクト側で束ねる)
+# config/urls.py (プロジェクト側で束ねる)
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("members/", include("members.urls")),
